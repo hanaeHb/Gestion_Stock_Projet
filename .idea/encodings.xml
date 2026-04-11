@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/BudgetStock/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/DiscoveryStockSertvice/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/GatewayStockService/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Produit-Stock_Service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Security_Stock/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/UsersService/src/main/java" charset="UTF-8" />
+  </component>
+</project>

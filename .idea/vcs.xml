@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/BudgetStock" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/CommandeService" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/DiscoveryStockSertvice" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/FournisseurService" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/GatewayStockService" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Produit-Stock_Service" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Security_Stock" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/UsersService" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/notificationStockService" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/stock-frontend" vcs="Git" />
+  </component>
+</project>

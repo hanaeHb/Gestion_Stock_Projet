@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="Gestion_Stock_Projet" />
+        <module name="BudgetStock" />
+        <module name="DiscoveryStockSertvice" />
+        <module name="GatewayStockService" />
+      </profile>
+      <profile name="Annotation profile for UsersService" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+        </processorPath>
+        <module name="Security_Stock" />
+        <module name="Produit-Stock_Service" />
+        <module name="UsersService" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="BudgetStock" options="-parameters" />
+      <module name="DiscoveryStockSertvice" options="-parameters" />
+      <module name="GatewayStockService" options="-parameters" />
+      <module name="Produit-Stock_Service" options="-parameters" />
+      <module name="Security_Stock" options="-parameters" />
+      <module name="UsersService" options="-parameters" />
+    </option>
+  </component>
+</project>

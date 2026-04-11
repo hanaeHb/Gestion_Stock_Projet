@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/BudgetStock/pom.xml" />
+        <option value="$PROJECT_DIR$/UsersService/pom.xml" />
+        <option value="$PROJECT_DIR$/Security_Stock/pom.xml" />
+        <option value="$PROJECT_DIR$/GatewayStockService/pom.xml" />
+        <option value="$PROJECT_DIR$/Produit-Stock_Service/pom.xml" />
+        <option value="$PROJECT_DIR$/DiscoveryStockSertvice/pom.xml" />
+        <option value="$PROJECT_DIR$/pom.xml" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="openjdk-17" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
+</project>
