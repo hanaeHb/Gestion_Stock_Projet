@@ -36,6 +36,8 @@ router.post('/', authMiddleware, quotationController.createQuotation);
  * 200:
  * description: Service is up
  */
+
+router.get('/stats/:id_supplier', authMiddleware, quotationController.getSupplierStats);
 router.get('/test', (req, res) => res.json({ message: "Quotation Route is working!" }));
 
 router.get('/', authMiddleware, quotationController.getAllQuotations);

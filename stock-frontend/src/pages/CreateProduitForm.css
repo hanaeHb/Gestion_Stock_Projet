@@ -1,0 +1,221 @@
+
+.modern-form-container {
+    background: transparent;
+    min-height: 100vh;
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.form-card-premium {
+    background: transparent;
+    width: 95%;
+    max-width: 1150px;
+    min-height: 80vh;
+    border-radius: 40px;
+    display: flex;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.form-sidebar-accent {
+    width: 12px;
+    background: linear-gradient(to bottom, #4facfe, #0061ff, #730d19);
+}
+
+.premium-layout {
+    flex: 1;
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+
+.form-header-minimal h2 {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-weight: 800;
+    font-size: 38px;
+    letter-spacing: -1.5px;
+    margin-bottom: 8px;
+    background: linear-gradient(to right, #0f172a, #4facfe);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.form-header-minimal p {
+    color: #64748b;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+
+.drop-zone-premium {
+    border: 2px dashed #cbd5e1;
+    border-radius: 25px;
+    height: 200px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.image-preview-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+}
+
+.img-preview-glass {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 15px;
+}
+
+.input-grid-premium {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px 40px;
+}
+
+
+.field-box.full-width {
+    grid-column: span 2;
+}
+
+.field-box:has(textarea) {
+    grid-column: span 2;
+}
+.remove-asset {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(115, 13, 25, 0.8);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+}
+
+
+.drop-zone-premium:hover {
+    border-color: #730d19;
+    background: linear-gradient(to bottom, #81a0b7, #cbc0f1);
+    transform: translateY(-5px);
+}
+
+.field-box {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.field-box.full-width {
+    grid-column: span 2;
+}
+
+.field-box label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #334155;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.field-box input,
+.field-box select,
+.field-box textarea {
+    width: 100%;
+    padding: 0 20px;
+    border-radius: 15px;
+    border: 2px solid #e2e8f0;
+    background: #ffffff;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.field-box input,
+.field-box select {
+    height: 58px;
+}
+
+.field-box select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%234facfe'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 20px center;
+    background-size: 20px;
+    cursor: pointer;
+}
+
+.field-box textarea {
+    padding-top: 20px;
+    min-height: 180px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+
+.field-box input:focus,
+.field-box select:focus,
+.field-box textarea:focus {
+    border-color: #730d19;
+    box-shadow: 0 0 0 5px rgba(79, 172, 254, 0.1);
+    outline: none;
+    background: #fff;
+}
+
+
+.action-footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 30px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.btn-deploy-pro {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: white;
+    padding: 18px 45px;
+    border-radius: 18px;
+    font-weight: 700;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 15px 30px rgba(15, 23, 42, 0.15);
+    transition: all 0.3s ease;
+}
+
+.btn-deploy-pro:hover {
+    transform: translateY(-3px);
+    background: #730d19;
+    box-shadow: 0 20px 40px rgba(0, 97, 255, 0.3);
+}
+
+.btn-deploy-pro:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+    transform: none;
+}

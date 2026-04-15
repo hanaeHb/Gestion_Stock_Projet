@@ -1,0 +1,809 @@
+/* home.css */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    min-height: 100vh;
+    background: white;
+    background-attachment: fixed;
+}
+
+.home {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    min-height: 100vh;
+}
+
+/* HERO SECTION */
+.hero {
+    position: relative;
+    width: 100%;
+    height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* push text left, image right */
+    padding: 0 1%;
+    overflow: hidden;
+}
+
+.hero-text {
+    position: relative;
+    z-index: 2;
+    max-width: 45%; /* text width */
+    color: #1e293b;
+}
+
+.hero-text h1 {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.hero-text p {
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.hero-image {
+    width: 100%;
+    height: 500px; /* important bach canvas yban */
+}
+
+.hero-image canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero {
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+    }
+
+}
+/* Gradient line at bottom of hero */
+.hero-hr {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 18px;
+    border: none;
+    background: linear-gradient(135deg, #1e293b, #730d19);
+}
+/* Hero text additions */
+.hero-subtitle {
+    font-size: 22px;
+    letter-spacing: 8px;
+    margin-bottom: 20px;
+    color: #1e293b;
+    font-family: "Berlin Sans FB Demi";
+    font-weight: 300;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.hero-title {
+    font-size: 72px;
+    font-weight: 300;
+    margin-bottom: 20px;
+    line-height: 1.1;
+    text-align: center;
+    color:  #730d19;
+    font-family: "Berlin Sans FB Demi";
+}
+
+.hero-title span {
+    display: block;
+    font-weight: 700;
+    font-family: "Berlin Sans FB Demi";
+    color: #1e293b;
+}
+
+.hero-description {
+
+    font-size: 18px;
+    max-width: 600px;
+    font-family: "Berlin Sans FB Demi";
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* Buttons */
+.btn {
+    padding: 15px 35px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s;
+    display: inline-block;
+    border-radius: 8px;
+    box-sizing: border-box; /* important for same size */
+}
+
+/* Primary button */
+.btn-primary {
+    background: linear-gradient(135deg, #4facfe,  #730d19);
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-block;
+    border-radius: 8px;
+    box-sizing: border-box;
+    padding: 15px 35px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.57);
+}
+
+/* Buttons container */
+.hero-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* AMENITIES SECTION */
+.amenities {
+    padding: 60px 5%;
+    text-align: center;
+    background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.78)),
+    url('https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=2070&q=80')
+    center/cover no-repeat;
+    font-family: "Berlin Sans FB Demi";
+    height: 370px;
+}
+
+.amenities-header .section-subtitle {
+    font-size: 20px;
+    color: #4facfe;
+    font-weight: 400;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    font-family: "Berlin Sans FB Demi";
+}
+
+.amenities-header .section-main-title {
+    font-size: 60px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 20px;
+    margin-top: 40px;
+    font-family: "Berlin Sans FB Demi";
+}
+
+.section-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+    margin-bottom: 8px;
+}
+
+.divider-line {
+    flex: 1;
+    height: 3px;
+    background: linear-gradient(270deg, #4facfe,  #730d19, #4facfe);
+    background-size: 400% 400%;
+    animation: gradientMove 4s ease infinite;
+}
+
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+.divider-icon {
+    margin: 0 15px;
+    font-size: 37px;
+    color: #4facfe;
+    animation: floatIcon 2.5s ease-in-out infinite;
+}
+
+@keyframes floatIcon {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-6px); }
+    100% { transform: translateY(0px); }
+}
+
+.section-intro {
+    font-size: 16px;
+    color: rgb(241, 233, 210);
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+    font-family: "Berlin Sans FB Demi";
+}
+/* Gradient line for Amenities section */
+.amenities-hr {
+    width: 100%;
+    height: 18px;
+    border: none;
+    background: linear-gradient(135deg, #1e293b, #730d19);
+}
+.smart-section {
+    background: #ffffff;
+    padding: 80px 10%;
+    font-family: "Berlin Sans FB Demi", sans-serif;
+}
+
+/* Row layout */
+.content-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 60px;
+    margin-bottom: 50px;
+}
+
+/* Image */
+.left-image img {
+    width: 530px;
+}
+
+/* Text */
+.right-text {
+    max-width: 500px;
+}
+
+.smart-section h2 {
+    font-size: 36px;
+    color: #1e293b;
+    margin-bottom: 20px;
+    text-align: center;
+    font-family: "Berlin Sans FB Demi";
+}
+.smart-section h2 span {
+    font-size: 36px;
+    color: #1e293b;
+    margin-bottom: 20px;
+    font-family: "Berlin Sans FB Demi";
+}
+
+.smart-section h2:after {
+    content: '';
+    position: absolute;
+    bottom: -450px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 4px;
+    background-color: #730d19;
+    border-radius: 2px;
+
+}
+.right-text p {
+    font-size: 18px;
+    color: #64748b;
+    line-height: 1.6;
+    font-family: "Berlin Sans FB Demi";
+    text-align: center;
+}
+
+/* Center Button */
+.center-button {
+    text-align: center;
+}
+
+.learn-btn {
+    background: linear-gradient(135deg, #730d19, #1e293b);
+    color: #ffffff;
+    padding: 14px 32px;
+    border: none;
+    border-radius: 40px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.learn-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 30px rgba(115,13,25,0.3);
+}
+
+.arrow {
+    font-size: 20px;
+    transition: 0.3s;
+}
+
+.learn-btn:hover .arrow {
+    transform: translateX(6px);
+}
+/* Trusted By Section - Style carte */
+.trusted {
+    text-align: center;
+    padding: 50px;
+    background: linear-gradient(135deg, #fdf5ec, rgba(30, 41, 59, 0.86), #fdf6f6);
+    margin-bottom: 50px;
+    margin-top: 15px;
+    border: 2px solid #730d19;
+}
+
+.trusted p {
+    color: #ffffff;
+    font-size: 30px;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-family: "Berlin Sans FB Demi";
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+}
+
+.logos {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+}
+
+.logos span {
+    font-size: 22px;
+    font-weight: 600;
+    color: #000000;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+    font-family: "Berlin Sans FB Demi";
+}
+
+.logos span:hover {
+    opacity: 1;
+    color:  #730d19;
+}
+
+/* Features Section - Style carte */
+.features {
+    padding: 40px;
+    background: transparent;
+    border-radius: 20px;
+    margin-bottom: 30px;
+    font-family: "Berlin Sans FB Demi";
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+}
+
+.feature-card {
+    background: linear-gradient(#e5e7eb, #1e293b);
+    padding: 25px;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    border-top: 4px solid transparent;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(131, 14, 20, 0.85);
+}
+
+.card1 {
+    border-top-color: #3b82f6;
+}
+
+.card2 {
+    border-top-color: #f97316;
+}
+
+.card3 {
+    border-top-color: #22c55e;
+}
+
+.card4 {
+    border-top-color: #a855f7;
+}
+
+.feature-card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 12px;
+}
+
+.feature-card p {
+    color: #f1e9d2;
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+/* Feature Icon */
+.feature-icon {
+    width: 55px;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    font-size: 22px;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+/* Different Colors */
+.icon1 {
+    background: #3b82f6;
+}
+
+.icon2 {
+    background: #f97316;
+}
+
+.icon3 {
+    background: #22c55e;
+}
+
+.icon4 {
+    background: #a855f7;
+}
+.card5 {
+    border-top-color: #0ea5e9;
+}
+
+.card6 {
+    border-top-color: #facc15;
+}
+
+.card7 {
+    border-top-color: #ef4444;
+}
+
+.card8 {
+    border-top-color: #14b8a6;
+}
+
+/* Icons colors */
+.icon5 {
+    background: #0ea5e9;
+}
+
+.icon6 {
+    background: #facc15;
+}
+
+.icon7 {
+    background: #ef4444;
+}
+
+.icon8 {
+    background: #14b8a6;
+}
+.features h2 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 15px;
+    position: relative;
+    text-align: center;
+    font-family: "Berlin Sans FB Demi";
+}
+
+.features h2:after {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 4px;
+    background-color: #730d19;
+    border-radius: 2px;
+
+}
+
+.sec-sub {
+    font-size: 28px;
+    color: #4facfe;
+    max-width: 1000px;
+    line-height: 1.5;
+    text-align: center;
+    font-family: "Berlin Sans FB Demi";
+    margin: 0px auto auto;
+}
+
+.section-sub {
+    font-size: 23px;
+    color: #64748b;
+    max-width: 1000px;
+    margin: 8px auto 40px auto;
+    line-height: 1.5;
+    text-align: center;
+    font-family: "Berlin Sans FB Demi";
+    margin-bottom: 30px;
+}
+
+/* Hover effect */
+.feature-card:hover .feature-icon {
+    transform: rotate(-8deg) scale(1.1);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+/* CONTACT SECTION */
+.contact-section {
+    padding: 20px 20px;
+    background: #ffffff;
+    text-align: center;
+}
+
+.contact-section h2 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 15px;
+    position: relative;
+    text-align: center;
+    font-family: "Berlin Sans FB Demi";
+}
+.contact-section h2:after {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 4px;
+    background-color: #730d19;
+    border-radius: 2px;
+
+}
+.contact-subtitle {
+    max-width: 680px;
+    margin: 0 auto 40px auto;
+    font-size: 18px;
+    color: #64748b;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.contact-form {
+    max-width: 600px;
+    margin: auto;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.contact-form input,
+.contact-form textarea {
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    font-size: 16px;
+    font-family: "Berlin Sans FB Demi";
+    transition: 0.3s ease;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+    border-color: navy;
+    outline: none;
+    box-shadow: 0 0 8px rgba(115, 13, 25, 0.2);
+}
+
+.contact-btn {
+    background: linear-gradient(135deg, #730d19, #1e293b);
+    color: white;
+    padding: 14px 30px;
+    border: none;
+    border-radius: 30px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.contact-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 30px rgba(115,13,25,0.3);
+}
+.footer {
+    background: linear-gradient(rgba(0, 0, 0, 0.8), #1e293b);
+    color: #e2e8f0;
+    padding: 60px 5% 30px;
+    margin-top: 80px;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 40px;
+}
+
+.footer h4 {
+    color: white;
+    margin-bottom: 20px;
+}
+
+.footer p {
+    font-size: 14px;
+    color: #cbd5e1;
+    margin-bottom: 10px;
+}
+
+/* Follow title */
+.follow-title {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: white;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+/* Social Icons */
+.social-icons {
+    display: flex;
+    gap: 15px;
+}
+
+.social-icon {
+    width: 42px;
+    height: 42px;
+    background: #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: white;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+/* animation smooth */
+.social-icon:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+}
+/* Facebook */
+.social-icon.facebook:hover {
+    background-color: #3b5998;
+}
+
+/* Instagram Gradient */
+.social-icon.instagram:hover {
+    background: linear-gradient(
+            45deg,
+            #405de6,
+            #5851db,
+            #833ab4,
+            #c13584,
+            #e1306c,
+            #fd1d1d
+    );
+}
+
+/* Twitter (X) */
+.social-icon.twitter:hover {
+    background-color: #1da1f2;
+}
+
+/* LinkedIn */
+.social-icon.linkedin:hover {
+    background-color: #0077b5;
+}
+/* Footer links */
+.footer-link {
+    display: block;
+    text-decoration: none;
+    color: #cbd5e1;
+    margin-bottom: 8px;
+    transition: all 0.3s;
+    font-size: 14px;
+}
+
+.footer-link:hover {
+    color:  #730d19;
+    padding-left: 5px;
+}
+
+/* Map */
+.map-container iframe {
+    width: 100%;
+    height: 150px;
+    border-radius: 12px;
+    border: none;
+}
+
+/* Directions Button */
+.directions-btn {
+    margin-top: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #4facfe,  #730d19);
+    color: white;
+    padding: 10px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.directions-btn:hover {
+    background: white;
+    color:  #730d19;
+    border: 1px solid  #730d19;
+}
+
+/* Footer bottom */
+.footer-bottom {
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid rgb(241, 233, 210);
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .footer-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* Responsive */
+@media (max-width: 1024px) {
+    .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .footer-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .feature-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        grid-template-columns: 1fr;
+        padding: 25px;
+    }
+
+    .hero-text h1 {
+        font-size: 28px;
+    }
+
+    .feature-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .footer-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .logos {
+        flex-wrap: wrap;
+        gap: 25px;
+    }
+}

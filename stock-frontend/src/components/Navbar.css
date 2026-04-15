@@ -1,0 +1,216 @@
+/* -----------------------------
+   Navbar - Modern Pastel Gradient
+-------------------------------*/
+.navbar {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    backdrop-filter: blur(12px);
+    background: white;
+    z-index: 1000;
+    box-shadow: 0 4px 20px rgb(112, 32, 32);
+    transition: all 0.3s ease;
+    font-family: "Berlin Sans FB Demi";
+}
+
+.nav-container {
+    max-width: 1400px;
+    margin: auto;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: "Berlin Sans FB Demi";
+}
+
+/* Logo adjustments */
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+}
+
+.logo-image {
+    height: 48px;
+    width: auto;
+    object-fit: contain; /* bach ma ttdamarch */
+}
+
+/* Logo-box still flexible */
+.logo-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #4facfe, #730d19);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: white;
+    transition: transform 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .logo-image {
+        height: 50px; /* responsive size */
+    }
+}
+.logo-box:hover {
+    transform: scale(1.1);
+}
+
+/* Links */
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    font-family: "Berlin Sans FB Demi";
+}
+
+.nav-links a {
+    position: relative;
+    text-decoration: none;
+    color: #283593; /* gray */
+    font-size: 17px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    padding: 5px 0;
+    font-family: "Berlin Sans FB Demi";
+}
+
+.nav-links a:hover {
+    color: #730d19;
+}
+
+.nav-links a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 0%;
+    height: 2px;
+    background: linear-gradient(135deg, #4facfe,  #730d19);
+    transition: 0.3s;
+    border-radius: 2px;
+}
+
+.nav-links a:hover::after {
+    width: 100%;
+}
+
+/* Active link */
+.nav-links a.active {
+    color:  #730d19;
+}
+
+.nav-links a.active::after {
+    width: 100%;
+}
+
+/* Buttons */
+.nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-family: "Berlin Sans FB Demi";
+}
+
+.nav-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: "Berlin Sans FB Demi";
+}
+
+.nav-btn-primary {
+    background: linear-gradient(135deg, #4facfe,  #730d19);
+    color: white;
+    font-family: "Berlin Sans FB Demi";
+}
+
+.nav-btn-primary:hover {
+    transform: translateY(-2px);
+    font-family: "Berlin Sans FB Demi";
+}
+
+.nav-btn-secondary {
+    background: transparent;
+    color:  #730d19;
+    border: 2px solid  #730d19;
+    font-family: "Berlin Sans FB Demi";
+}
+
+.nav-btn-secondary:hover {
+    background: linear-gradient(135deg, #4facfe,  #730d19);
+    color: white;
+    border: none;
+    transform: translateY(-2px);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nav-container {
+        padding: 15px 20px;
+    }
+
+    .nav-toggle {
+        display: flex;
+    }
+
+    .nav-links {
+        position: fixed;
+        top: 70px;
+        left: -100%;
+        width: 100%;
+        height: calc(100vh - 70px);
+        background: white;
+        flex-direction: column;
+        padding: 40px 20px;
+        transition: 0.3s;
+        gap: 20px;
+        overflow-y: auto;
+    }
+
+    .nav-links.active {
+        left: 0;
+    }
+
+    .nav-links a {
+        font-size: 18px;
+        width: 100%;
+        text-align: center;
+        padding: 15px;
+    }
+
+    .nav-buttons {
+        margin-top: 20px;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .nav-btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .nav-avatar {
+        margin-top: 20px;
+    }
+}

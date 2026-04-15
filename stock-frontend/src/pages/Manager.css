@@ -1,0 +1,211 @@
+.manager-container{
+    display:flex;
+    min-height:100vh;
+    background:#eef2ff;
+    font-family:"Berlin Sans FB Demi", sans-serif;
+}
+
+.sidebar{
+    width:90px;
+    background:#ffffff;
+    border-radius:25px;
+    margin:25px;
+    padding:30px 0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    box-shadow:0 15px 35px rgba(0,0,0,0.05);
+}
+
+.menu{
+    list-style:none;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+}
+
+.menu li{
+    width:45px;
+    height:45px;
+    border-radius:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    color:#9ca3af;
+    cursor:pointer;
+}
+
+.menu li.active{
+    background:linear-gradient(135deg,#4facfe,#730d19);
+    color:white;
+}
+
+.bottom-menu{
+    list-style:none;
+    margin-top:auto;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+}
+
+.main{
+    flex:1;
+    padding:30px 40px;
+}
+
+.top-nav{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 30px;
+    background:white;
+    border-radius:20px;
+    margin-bottom:30px;
+}
+
+.nav-avatar-img {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:white;
+    padding:25px;
+    border-radius:20px;
+    box-shadow:0 10px 25px rgba(115,13,25,0.15);
+}
+
+.card-icon{
+    width:50px;
+    height:50px;
+    background:linear-gradient(135deg,#4facfe,#730d19);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    margin-bottom:10px;
+}
+
+.stock-table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.stock-table th,
+.stock-table td{
+    padding:10px;
+    border-bottom:1px solid #eee;
+}
+
+/*profil*/
+.profile-panel {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(20px);
+    padding: 40px;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+    animation: fadeIn 0.4s ease-in-out;
+}
+.profile-intro {
+    background: #f0f4ff;
+    padding: 18px 25px;
+    border-left: 6px solid #4facfe;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #333;
+}
+.profile-avatar-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.avatar-container {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #e0e0e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+}
+
+.avatar-input {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.profile-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-avatar-icon {
+    color: #888;
+}
+
+.upload-text {
+    font-size: 28px;
+    font-weight: 500;
+    color: #555;
+    cursor: pointer;
+    transition: 0.3s;
+    text-transform: uppercase;
+    font-family: "Berlin Sans FB Demi", sans-serif;
+
+}
+
+.upload-text:hover {
+    color: #000;
+}
+.profile-info-two-columns {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px 40px;
+    margin-bottom: 15px;
+}
+
+.profile-info-two-columns .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-info-two-columns label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #555;
+}
+
+.profile-info-two-columns input {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 15px;
+    outline: none;
+    transition: 0.5s;
+}
+
+.profile-info-two-columns input:focus {
+    border-color: #4facfe;
+    box-shadow: 0 0 5px rgba(79,172,254,0.5);
+}

@@ -1,0 +1,133 @@
+.purchase-tracker-container {
+    padding: 25px;
+    background: #fdfeff;
+}
+
+.purchase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.purchase-header h1 {
+    font-size: 1.6rem;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.budget-badge {
+    background: #dcfce7;
+    color: #166534;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.purchase-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.tracker-card {
+    background: white;
+    border-radius: 30px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+    border: 1px solid #f1f5f9;
+}
+
+.gauge-wrapper {
+    position: relative;
+    height: 180px;
+}
+
+.gauge-info {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+.percentage {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #475569;
+}
+
+.percentage-label {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+}
+
+
+.stats-column {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.mini-stat-card {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border-radius: 20px;
+    gap: 15px;
+    transition: transform 0.3s ease;
+}
+
+.mini-stat-card:hover {
+    transform: translateX(10px);
+}
+
+.mini-stat-card.pink { background: rgba(217, 147, 152, 0.55); border: 1px solid #af3644; }
+.mini-stat-card.purple { background: rgba(104, 137, 191, 0.35); border: 1px solid #3f5277; }
+
+.stat-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.pink .stat-icon { background: #af3644; color: white; }
+.purple .stat-icon { background: #3f5277; color: white; }
+
+.stat-data span {
+    display: block;
+    font-size: 0.85rem;
+    color: rgba(0, 0, 0, 0.84);
+}
+
+.stat-data strong {
+    font-size: 1.3rem;
+    color: #1e293b;
+}
+
+.alert-card-minimal {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+    background: #fff7ed;
+    border: 1px solid #ffedd5;
+    color: #9a3412;
+    border-radius: 15px;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 900px) {
+    .purchase-grid { grid-template-columns: 1fr; }
+}
+

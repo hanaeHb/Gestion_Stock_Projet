@@ -1,0 +1,59 @@
+body {
+    background: white;
+    font-family: "Berlin Sans FB Demi", Inter, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.pending-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 30% 30%, #ffffff 0%, #e5e7eb 30%, rgba(239, 192, 197, 0.98) 90%, #ead1d4 100%);
+    padding: 20px;
+}
+
+.pending-card {
+    background: transparent;
+    border-radius: 20px;
+    padding: 60px 40px;
+    max-width: 600px;
+    text-align: center;
+}
+
+.pending-card h1 {
+    font-size: 42px;
+    color: #730d19;
+    margin-bottom: 20px;
+}
+
+.pending-card p {
+    font-size: 18px;
+    color: #1e293b;
+    opacity: 0.85;
+    margin-bottom: 15px;
+}
+
+.pending-card p.email {
+    font-weight: 700;
+    color: #4facfe; /* highlight color */
+}
+
+.pending-card button {
+    background: linear-gradient(135deg, #4facfe, #730d19);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: 700;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+}
+
+.pending-card button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
