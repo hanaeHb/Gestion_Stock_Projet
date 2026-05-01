@@ -115,12 +115,18 @@ public class ProduitServiceImpl implements ProduitService {
 
             String categoryName = (produit.getCategory() != null) ? produit.getCategory().getNom() : "Uncategorized";
 
+            Long categoryId = (produit.getCategory() != null) ? produit.getCategory().getId() : null;
+
+            String imageUrl = produit.getImage();
             RestockRequestDTO enrichedRequest = new RestockRequestDTO(
                     request.productId(),
                     request.productName(),
                     request.requestedQty(),
                     request.fromManager(),
-                    categoryName
+                    categoryName,
+                    categoryId,
+                    request.sku(),
+                    imageUrl
             );
 
             kafkaTemplate.send("replenishment-requested", enrichedRequest);

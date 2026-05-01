@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { FiDollarSign, FiCalendar, FiCheckCircle, FiTrendingUp } from 'react-icons/fi';
+import { FiDollarSign, FiCalendar, FiCheckCircle, FiTrendingUp, } from 'react-icons/fi';
+import { FaTrash, FaEdit } from 'react-icons/fa';
 import axios from 'axios';
 import './BudgetManagement.css';
 
@@ -37,6 +38,8 @@ const BudgetManagement: React.FC = () => {
         }
 
         setLoading(true);
+        const token = localStorage.getItem('token');
+
         const payload: BudgetRequest = {
             description,
             montantInitial: amount,
@@ -45,19 +48,94 @@ const BudgetManagement: React.FC = () => {
         };
 
         try {
-            const token = localStorage.getItem('token');
-            await axios.post("http://localhost:8888/budgetstock/v1/budgets", payload, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            alert("✅ Budget created successfully !");
+            if (isEditing && editingId) {
+                await axios.put(`http://localhost:8888/budgetstock/v1/budgets/${editingId}`, payload, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                alert("✅ Budget updated successfully!");
+            } else {
+                await axios.post("http://localhost:8888/budgetstock/v1/budgets", payload, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                alert("✅ Budget created successfully!");
+            }
+
+            resetForm();
+            fetchBudgets();
         } catch (err: any) {
-            console.error(err);
-            alert("❌ Error: " + (err.response?.data?.message || "Error of Server"));
+            alert("❌ Error saving budget");
         } finally {
             setLoading(false);
         }
     };
 
+    const resetForm = () => {
+        setIsEditing(false);
+        setEditingId(null);
+        setDescription("");
+        setAmount(50000);
+        setDates({ start: '', end: '' });
+    };
+    const [budgetsList, setBudgetsList] = useState<any[]>([]);
+    const fetchBudgets = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get("http://localhost:8888/budgetstock/v1/budgets", {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setBudgetsList(res.data);
+        } catch (err) {
+            console.error("Error fetching budgets", err);
+        }
+    };
+
+    useEffect(() => {
+        fetchBudgets();
+    }, []);
+    const getStatusStyles = (status: string) => {
+        switch (status) {
+            case 'PLANNED':
+                return { label: 'Planned', color: '#818cf8', bg: '#f5f3ff' };
+            case 'ACTIVE':
+                return { label: 'Active', color: '#10b981', bg: '#ecfdf5' };
+            case 'EXHAUSTED':
+                return { label: 'Exhausted', color: '#ef4444', bg: '#fef2f2' };
+            case 'CLOSED':
+                return { label: 'Closed', color: '#64748b', bg: '#f1f5f9' };
+            default:
+                return { label: status, color: '#94a3b8', bg: '#f8fafc' };
+        }
+    };
+    const handleDelete = async (id: number) => {
+        if (!window.confirm("Are you sure you want to delete this budget? This action cannot be undone.")) return;
+
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`http://localhost:8888/budgetstock/v1/budgets/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            alert("✅ Budget deleted successfully!");
+            fetchBudgets();
+        } catch (err: any) {
+            console.error(err);
+            alert("❌ Error: " + (err.response?.data?.message || "Could not delete budget"));
+        }
+    };
+    const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [editingId, setEditingId] = useState<number | null>(null);
+
+    const handleEdit = (budget: any) => {
+        setIsEditing(true);
+
+        setEditingId(budget.idBudget);
+        setAmount(budget.montantInitial);
+        setDescription(budget.description);
+        setDates({
+            start: budget.dateDebut,
+            end: budget.dateFin
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
     return (
         <div className="budget-container animate-fade-in">
             <header className="header">
@@ -80,10 +158,10 @@ const BudgetManagement: React.FC = () => {
                                     dataKey="value"
                                     stroke="none"
                                 >
-                                    <Cell fill={COLORS[0]} />
-                                    <Cell fill={COLORS[1]} />
+                                    <Cell fill={COLORS[0]}/>
+                                    <Cell fill={COLORS[1]}/>
                                 </Pie>
-                                <Tooltip />
+                                <Tooltip/>
                             </PieChart>
                         </ResponsiveContainer>
                         <div className="chart-center-info">
@@ -111,7 +189,7 @@ const BudgetManagement: React.FC = () => {
                     <h3 className="card-title">Configuration</h3>
 
                     <div className="input-group">
-                        <label><FiDollarSign /> Budget Description</label>
+                        <label><FiDollarSign/> Budget Description</label>
                         <input
                             type="text"
                             placeholder="Ex: April Maintenance Budget"
@@ -122,30 +200,107 @@ const BudgetManagement: React.FC = () => {
 
                     <div className="dates-grid">
                         <div className="input-group">
-                            <label><FiCalendar /> Start Date</label>
+                            <label><FiCalendar/> Start Date</label>
                             <input
                                 type="date"
                                 className="modern-input"
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDates({...dates, start: e.target.value})}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDates({
+                                    ...dates,
+                                    start: e.target.value
+                                })}
                             />
                         </div>
                         <div className="input-group">
-                            <label><FiCalendar /> End Date</label>
+                            <label><FiCalendar/> End Date</label>
                             <input
                                 type="date"
                                 className="modern-input"
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDates({...dates, end: e.target.value})}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDates({
+                                    ...dates,
+                                    end: e.target.value
+                                })}
                             />
                         </div>
                     </div>
 
-                    <button
-                        className={`confirm ${loading ? 'loading' : ''}`}
-                        onClick={handleSave}
-                        disabled={loading}
-                    >
-                        {loading ? "Enregistrement..." : <><FiCheckCircle /> Confirm Plan</>}
+                    <button className="confirm" onClick={handleSave} disabled={loading}>
+                        {loading ? "Processing..." : (isEditing ? "Update Budget" : "Confirm Plan")}
                     </button>
+                </div>
+            </div>
+            <div className="budget-history-section animate-fade-up" style={{marginTop: '40px'}}>
+                <div className="table-header-box">
+                    <h3>📂 Budget History</h3>
+                    <p>Overview of all planned financial periods</p>
+                </div>
+
+                <div className="modern-table-wrapper">
+                    <table className="budget-table">
+                        <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Amount (DH)</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {budgetsList.map((b, index) => (
+                            <tr key={index}>
+                                <td>
+                                    <div className="desc-cell">
+                                        <div className="desc-icon">B</div>
+                                        <span>{b.description}</span>
+                                    </div>
+                                </td>
+                                <td className="amount-cell">{b.montantInitial?.toLocaleString()} DH</td>
+                                <td>{b.dateDebut}</td>
+                                <td>{b.dateFin}</td>
+                                <td>
+                                    {(() => {
+                                        const style = getStatusStyles(b.status);
+                                        return (
+                                            <span style={{
+                                                background: style.bg,
+                                                color: style.color,
+                                                padding: '6px 14px',
+                                                borderRadius: '100px',
+                                                fontSize: '0.75rem',
+                                                fontWeight: 800,
+                                                border: `1px solid ${style.color}20`,
+                                                display: 'inline-block',
+                                                minWidth: '85px',
+                                                textAlign: 'center'
+                                            }}>
+                                                {style.label}
+                                            </span>
+                                        );
+                                    })()}
+                                </td>
+                                <td className="actions-cell">
+                                    <div className="action-btns-wrapper">
+                                        <button
+                                            className="action-btn edit-btn"
+                                            onClick={() => handleEdit(b)}
+                                            title="Edit Budget"
+                                        >
+                                            <FaEdit/>
+                                        </button>
+                                        <button
+                                            className="action-btn delete-btn"
+                                            onClick={() => handleDelete(b.idBudget)}
+                                            title="Delete Budget"
+                                        >
+                                            <FaTrash/>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

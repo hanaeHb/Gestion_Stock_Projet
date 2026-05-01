@@ -1,0 +1,180 @@
+
+.dashboard-container {
+    padding: 20px;
+    background-color: transparent;
+}
+
+
+.dashboard-welcome {
+    margin-bottom: 30px;
+}
+
+.dashboard-welcome h2 {
+    font-size: 2rem;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dashboard-welcome p {
+    color: #64748b;
+    font-size: 1.1rem;
+}
+
+.action-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.main-action-card {
+    all: unset;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    padding: 30px;
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.main-action-card:hover {
+    transform: translateY(-8px);
+    border-color: #818cf8;
+    box-shadow: 0 20px 25px -5px rgba(129, 140, 248, 0.1);
+}
+
+.icon-box {
+    width: 65px;
+    height: 65px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+}
+
+.icon-box.purple { background: #f5f3ff; color: #818cf8; }
+.icon-box.blue { background: #eff6ff; color: #3b82f6; }
+.icon-box.green { background: #ecfdf5; color: #10b981; }
+
+.main-action-card span {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 1.1rem;
+}
+
+.action-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: #ef4444;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3);
+}
+
+.action-badge.success { background: #10b981; box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3); }
+
+
+.dashboard-content-layout {
+    display: grid;
+    grid-template-columns: 2.2fr 1fr;
+    gap: 30px;
+}
+
+.recent-quotes-card, .alerts-side-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 30px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* 4. Professional Table */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.dashboard-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.dashboard-table th {
+    text-align: left;
+    padding: 12px 15px;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.dashboard-table td {
+    padding: 20px 15px;
+    color: #334155;
+    font-size: 0.95rem;
+    border-bottom: 1px solid #f8fafc;
+}
+
+/* 5. Badges & Status */
+.badge {
+    padding: 6px 14px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.badge.pending { background: #fff7ed; color: #f97316; }
+.badge.accepted { background: #ecfdf5; color: #10b981; }
+
+.status-item-mini {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    background: #f8fafc;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.alert-item {
+    display: flex;
+    gap: 15px;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 16px;
+    border-left: 4px solid #818cf8;
+}
+
+.alert-icon { color: #818cf8; font-size: 1.2rem; }
+
+.btn-view-all {
+    all: unset;
+    color: #6366f1;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 8px 16px;
+    background: #f1f5f9;
+    border-radius: 10px;
+    transition: 0.3s;
+}
+
+.btn-view-all:hover { background: #eef2ff; color: #4f46e5; }

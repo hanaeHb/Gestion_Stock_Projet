@@ -14,7 +14,7 @@ export default function PendingValidation() {
                     <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer"
                        style={{color: "#4facfe", fontWeight: "700", textDecoration: "underline"}}>
                         Open Gmail
-                    </a>
+                    </ a>
                 </p>
                 <button onClick={() => navigate("/")}>Back to Home</button>
             </div>

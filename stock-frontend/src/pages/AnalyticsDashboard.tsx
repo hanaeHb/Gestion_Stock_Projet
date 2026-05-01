@@ -69,131 +69,125 @@ const AnalyticsDashboard: React.FC<AnalyticsProps> = ({ products, categories, bu
         .sort((a, b) => a.current - b.current)
         .slice(0, 6);
 
-    const COLORS = ['#4facfe', 'rgba(35,9,131,0.96)', '#f093fb', '#730d19', '#48c6ef', '#6f86d6'];
-
+    const COLORS = ['#A5B4FC', '#FCA5A5', '#FCD34D', '#6EE7B7', '#93C5FD', '#F9A8D4'];
 
     return (
-
-
-        <div className="analytics-container" style={{ padding: '20px' }}>
-            <div className="hub-header" style={{ marginBottom: '30px' }}>
-                <h2 className="section-title">Insights & Business Intelligence</h2>
-                <p className="section-subtitle">Visual analysis of stock levels and categories</p>
+        <div className="analytics-container" style={{ padding: '30px', background: 'transparent', borderRadius: '20px' }}>
+            <div className="hub-header" style={{ marginBottom: '40px', textAlign: 'center' }}>
+                <h2 style={{ fontSize: '2.2rem', fontWeight: '800', background: 'linear-gradient(90deg, #6366f1, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                    Insights & Business Intelligence
+                </h2>
+                <p style={{ color: '#64748b', fontSize: '1.1rem' }}>Visual analysis of stock levels and categories</p>
             </div>
-
 
             <div className="analytics-grid" style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-                gap: '25px'
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '30px'
             }}>
 
-                {/* --- Chart الجديد: Budget Monthly Trend --- */}
+                {/* 1. Monthly Budget (Full Width) */}
                 <div className="panel glass-panel" style={{
-                    padding: '20px',
-                    gridColumn: '1 / -1', // ياخد العرض كامل
-                    minHeight: '350px',
-                    background: 'white',
-                    borderRadius: '15px',
-                    boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
+                    gridColumn: '1 / -1',
+                    padding: '30px',
+                    background: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: '24px',
+                    boxShadow: '0 10px 40px rgba(99, 102, 241, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)'
                 }}>
-                    <h4 style={{marginBottom: '15px', color: '#c4b5fd'}}>💰 Monthly Budget Allocation (DH)</h4>
-                    <ResponsiveContainer width="100%" height={300}>
+                    <h4 style={{marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '10px', color: '#4338ca'}}>
+                        <span style={{padding: '8px', background: '#e0e7ff', borderRadius: '10px'}}>💰</span> Monthly Budget Allocation
+                    </h4>
+                    <ResponsiveContainer width="100%" height={350}>
                         <AreaChart data={monthlyBudgetData}>
                             <defs>
                                 <linearGradient id="colorBudget" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#c4b5fd" stopOpacity={0.8}/>
-                                    <stop offset="95%" stopColor="#c4b5fd" stopOpacity={0}/>
+                                    <stop offset="5%" stopColor="#818cf8" stopOpacity={0.3}/>
+                                    <stop offset="95%" stopColor="#818cf8" stopOpacity={0}/>
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee"/>
-                            <XAxis dataKey="month"/>
-                            <YAxis/>
-                            <Tooltip/>
-                            <Area
-                                type="monotone"
-                                dataKey="amount"
-                                stroke="#c4b5fd"
-                                fill="url(#colorBudget)"
-                                name="Budget Amount"
-                            />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9"/>
+                            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} />
+                            <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} />
+                            <Tooltip contentStyle={{borderRadius: '15px', border: 'none', boxShadow: '0 10px 20px rgba(0,0,0,0.05)'}} />
+                            <Area type="monotone" dataKey="amount" stroke="#6366f1" strokeWidth={3} fill="url(#colorBudget)" />
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>
 
-                {/* Chart 1: Donut Chart */}
+                {/* 2. Catalog Breakdown (Pie) */}
                 <div className="panel glass-panel" style={{
-                    padding: '20px',
-                    minHeight: '350px',
+                    padding: '30px',
                     background: 'white',
-                    borderRadius: '15px',
-                    boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
+                    borderRadius: '24px',
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.03)'
                 }}>
-                    <h4 style={{marginBottom: '15px', color: '#4facfe'}}>📊 Catalog Breakdown</h4>
-                    <ResponsiveContainer width="100%" height={300}>
+                    <h4 style={{marginBottom: '20px', color: '#1e293b'}}>📊 Catalog Breakdown</h4>
+                    <ResponsiveContainer width="100%" height={320}>
                         <PieChart>
                             <Pie
                                 data={categoryData}
-                                innerRadius={70}
-                                outerRadius={100}
-                                paddingAngle={5}
+                                innerRadius={80}
+                                outerRadius={110}
+                                paddingAngle={8}
                                 dataKey="value"
                             >
                                 {categoryData.map((_, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]}/>
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none"/>
                                 ))}
                             </Pie>
                             <Tooltip/>
-                            <Legend verticalAlign="bottom" height={36}/>
+                            <Legend iconType="circle" wrapperStyle={{paddingTop: '20px'}}/>
                         </PieChart>
                     </ResponsiveContainer>
                 </div>
 
-                {/* Chart 2: Bar Chart */}
-                <div className="panel glass-panel" style={{
-                    padding: '20px',
-                    minHeight: '350px',
-                    background: 'white',
-                    borderRadius: '15px',
-                    boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
-                }}>
-                    <h4 style={{marginBottom: '15px', color: '#730d19'}}>⚠️ Restocking Alert</h4>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={stockAnalysis}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee"/>
-                            <XAxis dataKey="name" tick={{fontSize: 12}}/>
-                            <YAxis tick={{fontSize: 12}}/>
+                {/* 3. Restocking Alert (Bar) */}
+                <div className="panel glass-panel" style={{padding: '30px', background: 'white', borderRadius: '24px'}}>
+                    <h4 style={{marginBottom: '25px', color: '#1e293b'}}>⚠️ Stock Alerts</h4>
+                    <ResponsiveContainer width="100%" height={350}>
+                        <BarChart data={stockAnalysis} margin={{bottom: 50}}> {/* زدنا الـ margin هنا */}
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9"/>
+                            <XAxis
+                                dataKey="name"
+                                angle={-35}
+                                textAnchor="end"
+                                interval={0}
+                                height={70}
+                                tick={{fontSize: 11}}
+                            />
+                            <YAxis axisLine={false} tickLine={false}/>
                             <Tooltip/>
-                            <Legend/>
-                            <Bar dataKey="current" fill="#4facfe" radius={[4, 4, 0, 0]} name="Current Stock"/>
-                            <Bar dataKey="threshold" fill="#730d19" radius={[4, 4, 0, 0]} name="Critical Threshold"/>
+                            <Legend verticalAlign="top" align="right" iconType="circle"/>
+                            <Bar dataKey="current" fill="#93c5fd" radius={[8, 8, 0, 0]} barSize={25}/>
+                            <Bar dataKey="threshold" fill="#fca5a5" radius={[8, 8, 0, 0]} barSize={25}/>
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
 
-                {/* Chart 3: Radar Chart */}
+                {/* 4. Radar (Full Width) */}
                 <div className="panel glass-panel" style={{
-                    padding: '20px',
                     gridColumn: '1 / -1',
-                    minHeight: '400px',
+                    padding: '40px',
                     marginTop: '20px',
-                    background: 'white',
-                    borderRadius: '15px',
-                    boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
+                    background: 'linear-gradient(135deg, #ffffff 0%, #fef2f2 100%)',
+                    borderRadius: '24px'
                 }}>
-                    <h4 style={{textAlign: 'center', marginBottom: '20px'}}>🌐 Inventory Density Radar</h4>
-                    <ResponsiveContainer width="100%" height={350}>
+                    <h4 style={{textAlign: 'center', marginBottom: '30px', color: '#475569'}}>🌐 Inventory Density
+                        Radar</h4>
+                    <ResponsiveContainer width="100%" height={400}>
                         <RadarChart cx="50%" cy="50%" outerRadius="80%" data={categoryData}>
-                            <PolarGrid stroke="#ccc"/>
-                            <PolarAngleAxis dataKey="name" tick={{fill: '#666', fontSize: 13}}/>
+                            <PolarGrid stroke="#e2e8f0"/>
+                            <PolarAngleAxis dataKey="name" tick={{fill: '#64748b', fontSize: 14}}/>
                             <Radar
-                                name="Quantité de Produits"
+                                name="Products"
                                 dataKey="value"
-                                stroke="#8884d8"
-                                fill="#8884d8"
-                                fillOpacity={0.5}
+                                stroke="#a855f7"
+                                fill="#a855f7"
+                                fillOpacity={0.4}
                             />
-                            <Tooltip/>
+                            <Tooltip />
                         </RadarChart>
                     </ResponsiveContainer>
                 </div>

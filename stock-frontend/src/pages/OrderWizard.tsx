@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaUserTie, FaCheckCircle, FaArrowLeft, FaTimes } from "react-icons/fa";
+import { FaUserTie, FaCheckCircle, FaArrowLeft, FaTimes, FaRobot } from "react-icons/fa";
 import "./OrderWizard.css";
 interface OrderWizardProps {
     isOpen: boolean;
@@ -14,29 +14,54 @@ const OrderWizard: React.FC<OrderWizardProps> = ({ isOpen, onClose, selectedRequ
     const [targetFournisseurs, setTargetFournisseurs] = useState([]);
     const [selectedFournisseur, setSelectedFournisseur] = useState<any>(null);
     const [loading, setLoading] = useState(false);
-
+    const [aiRankings, setAiRankings] = useState<any[]>([]);
     useEffect(() => {
+        if (isOpen) {
+            setStep(1);
+            setSelectedFournisseur(null);
+            setTargetFournisseurs([]);
+        }
         const cid = selectedRequest?.categoryId || selectedRequest?.productId;
 
         console.log("WIZARD CHECK - CID found:", cid);
 
         if (isOpen && cid) {
-            const fetchSuppliers = async () => {
+            const fetchData = async () => {
                 setLoading(true);
+                const token = localStorage.getItem("token");
                 try {
-                    const token = localStorage.getItem("token");
-                    const res = await axios.get(
+                    const resSuppliers = await axios.get(
                         `http://localhost:8888/service-fournisseur/api/fournisseurs/category/${cid}`,
                         { headers: { Authorization: `Bearer ${token}` } }
                     );
-                    setTargetFournisseurs(res.data);
+                    setTargetFournisseurs(resSuppliers.data);
+
+                    const resAi = await axios.get(
+                        `http://localhost:8888/prediction-service/prediction/predict-best-supplier/${cid}`,
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                    setAiRankings(resAi.data);
+                    if (resAi.data && resAi.data.length > 0 && resSuppliers.data) {
+                        const topPickFromAi = resAi.data[0];
+                        const actualSupplier = resSuppliers.data.find((f: any) =>
+                            Number(f.id_fournisseur) === Number(topPickFromAi.id_fournisseur)
+                        );
+
+                        if (actualSupplier) {
+                            setSelectedFournisseur(actualSupplier);
+                            console.log("✅ AI Selection Successful:", actualSupplier.prenom);
+                        } else {
+                            console.warn("⚠️ AI suggested a supplier ID that doesn't exist in targetFournisseurs");
+                        }
+                    }
+
                 } catch (err) {
-                    console.error("API ERROR:", err);
+                    console.error("Error fetching wizard data:", err);
                 } finally {
                     setLoading(false);
                 }
             };
-            fetchSuppliers();
+            fetchData();
         }
     }, [isOpen, selectedRequest]);
 
@@ -102,24 +127,58 @@ const OrderWizard: React.FC<OrderWizardProps> = ({ isOpen, onClose, selectedRequ
 
                     {step === 2 && (
                         <div className="wizard-step-content">
-                            <h3>Choose a Specialist Supplier</h3>
+                            <div className="ai-proof-message">
+                                <FaRobot />
+                                <p>
+                                    Our AI has selected the best supplier for you based on history from the last year
+                                    (delivery speed, quality, and price). The best candidate is highlighted below.
+                                </p>
+                            </div>
+
+                            <h3>Specialist Supplier (AI Selected)</h3>
                             <div className="suppliers-list">
-                                {loading ? <p>Recherche...</p> : targetFournisseurs.map((f: any) => (
-                                    <div
-                                        key={f.id_fournisseur}
-                                        className={`supplier-card ${selectedFournisseur?.id_fournisseur === f.id_fournisseur ? 'selected' : ''}`}
-                                        onClick={() => setSelectedFournisseur(f)}
-                                    >
-                                        <FaUserTie />
-                                        <div>
-                                            <p>{f.prenom} {f.nom}</p>
-                                            <small>{f.email}</small>
-                                        </div>
-                                    </div>
-                                ))}
+                                {loading ? (
+                                    <p>Recherche...</p>
+                                ) : (
+                                    targetFournisseurs
+                                        .sort((a: any, b: any) => {
+                                            const scoreA = aiRankings.find(r => Number(r.id_fournisseur) === Number(a.id_fournisseur))?.ai_score || 0;
+                                            const scoreB = aiRankings.find(r => Number(r.id_fournisseur) === Number(b.id_fournisseur))?.ai_score || 0;
+                                            return scoreB - scoreA;
+                                        })
+                                        .map((f: any, index: number) => {
+                                            const aiMatch = aiRankings.find(rank => Number(rank.id_fournisseur) === Number(f.id_fournisseur));
+                                            const isTopPick = index === 0;
+                                            return (
+                                                <div
+                                                    key={f.id_fournisseur}
+                                                    className={`supplier-card ${isTopPick ? 'ai-selected-card' : 'other-supplier'}`}
+                                                >
+                                                    <div className="supplier-main-info">
+                                                        <FaUserTie className="user-icon"/>
+                                                        <div>
+                                                            <p className="supplier-name">{f.prenom} {f.nom}</p>
+                                                            <small className="supplier-email">{f.email}</small>
+                                                        </div>
+                                                    </div>
+
+                                                    {aiMatch && (
+                                                        <div className="ai-recommendation">
+                                                            <div className="score-tag">
+                                                                ⭐ {aiMatch.ai_score}% Reliability
+                                                            </div>
+                                                            <span>
+                                    {aiMatch.recommendation}
+                                </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })
+                                )}
                             </div>
                             <div className="actions">
-                                <button onClick={() => setStep(1)}>Back</button>
+                            <button onClick={() => setStep(1)}>Back</button>
                                 <button
                                     className="btn-prama"
                                     disabled={!selectedFournisseur}
@@ -133,9 +192,10 @@ const OrderWizard: React.FC<OrderWizardProps> = ({ isOpen, onClose, selectedRequ
 
                     {step === 3 && (
                         <div className="wizard-step-content final-step">
-                            <FaCheckCircle size={50} color="#3498db" />
+                            <FaCheckCircle size={50} color="#3498db"/>
                             <h3>Request Price Quotation</h3>
-                            <p>You are requesting a price from <strong>{selectedFournisseur.prenom} {selectedFournisseur.nom}</strong> for:</p>
+                            <p>You are requesting a price
+                                from <strong>{selectedFournisseur.prenom} {selectedFournisseur.nom}</strong> for:</p>
                             <div className="summary-box">
                                 <p>{selectedRequest.requestedQty}x {selectedRequest.productName} </p>
                             </div>

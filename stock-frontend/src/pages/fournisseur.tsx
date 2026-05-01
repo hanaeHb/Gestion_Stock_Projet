@@ -12,13 +12,15 @@ import {
     FaTags,
     FaTasks, FaCheckCircle, FaSyncAlt, FaCheck, FaBoxOpen, FaPlus
 } from "react-icons/fa";
+import { FaCamera, FaEnvelope, FaPhone, FaIdCard, FaBriefcase, FaCalendarAlt, FaStore } from "react-icons/fa";
 import { FiGrid } from "react-icons/fi";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import SupplierAnalytics from "./SupplierAnalytics";
-
+import SupplierDashboard from './SupplierDashboard';
 interface Profile {
     userId?: number;
+    idFournisseur?: number;
     nom?: string;
     prenom?: string;
     phone?: string;
@@ -132,7 +134,7 @@ const OrderItemCard = ({ order, profile }: { order: any, profile: any }) => {
                                 onChange={(e) => setPrice(e.target.value)}
                             />
                             <button
-                                className="btn-final-submit"
+                                className="btne-final-submit"
                                 onClick={handleSendQuote}
                                 disabled={loading}
                             >
@@ -201,6 +203,7 @@ export default function Fournisseur() {
 
     const [categories, setCategories] = useState<any[]>([]);
     const [selectedCats, setSelectedCats] = useState<number[]>([]);
+    const [isSaving, setIsSaving] = useState(false)
     useEffect(() => {
         const fetchCategories = async () => {
             try {
@@ -223,25 +226,45 @@ export default function Fournisseur() {
     };
 
     const saveSpecialization = async () => {
+        setIsSaving(true);
         try {
             const token = localStorage.getItem("token");
 
-            const res = await axios.post(
+            await axios.post(
                 "http://localhost:8888/service-fournisseur/api/fournisseurs/specializations",
-                { categoryIds: selectedCats },
                 {
-                    headers: { Authorization: `Bearer ${token}` }
-                }
+                    idFournisseur: profile?.idFournisseur,
+                    categoryIds: selectedCats
+                },
+                { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            if (res.status === 200) {
-                alert("Your specializations have been successfully registered ✅");
-            }
+            alert("Your specializations have been successfully registered ✅");
         } catch (err: any) {
             console.error("Error saving specializations", err.response?.data || err.message);
             alert("Error saving specializations.");
+            setIsSaving(false);
         }
     };
+
+    useEffect(() => {
+        const fetchMySpecializations = async () => {
+            if (!profile?.idFournisseur) return;
+
+            try {
+                const token = localStorage.getItem("token");
+                const res = await axios.get(
+                    `http://localhost:8888/service-fournisseur/api/fournisseurs/${profile.idFournisseur}/specializations`,                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+
+                setSelectedCats(res.data);
+            } catch (err) {
+                console.error("Error fetching specializations", err);
+            }
+        };
+
+        fetchMySpecializations();
+    }, [profile?.idFournisseur]);
 
     const [allNotifications, setAllNotifications] = useState<any[]>([]);
     const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -270,8 +293,16 @@ export default function Fournisseur() {
         }
     }, [activeSection]);
 
-    const orderRequests = allNotifications.filter(n => n.niveau === "RFQ");
-    const quotationSuccessMessages = allNotifications.filter((n: any) => n.type === "QUOTE_FINALIZED" && n.niveau === "SUCCESS");
+    const orderRequests = allNotifications.filter(n =>
+        n.niveau === "RFQ" &&
+        n.fournisseurId?.toString() === profile?.idFournisseur?.toString()
+    );
+
+    const quotationSuccessMessages = allNotifications.filter((n: any) =>
+        n.type === "QUOTE_FINALIZED" &&
+        n.niveau === "SUCCESS" &&
+        n.fournisseurId?.toString() === profile?.idFournisseur?.toString()
+    );
 
     const handleMarkAsRead = async (id: string) => {
         try {
@@ -400,10 +431,13 @@ export default function Fournisseur() {
 
                 {/* Dashboard */}
                 {activeSection === "dashboard" && (
-                    <div className="panel large">
-                        <h3>Fournisseur Dashboard</h3>
-                        <p>Monitor your supply and orders.</p>
-                    </div>
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                        <SupplierDashboard
+                            profile={profile}
+                            notifications={allNotifications}
+                            onNavigate={(section: string) => setActiveSection(section)}
+                        />
+                    </motion.div>
                 )}
 
                 {activeSection === "bell" && (
@@ -565,7 +599,7 @@ export default function Fournisseur() {
 
                 {activeSection === "specialization" && (
                     <div className="specialization-panel fade-in">
-                        <header className="spec-header">
+                        <header className="workspace-header">
                             <h1><FaTags className="bell-icon"/>My Specializations</h1>
                             <p>Choose the product categories you can supply.</p>
                         </header>
@@ -578,10 +612,10 @@ export default function Fournisseur() {
                                     onClick={() => toggleCategory(cat.id)}
                                 >
                                     <div className="card-check">
-                                        {selectedCats.includes(cat.id) ? <FaCheck /> : <FaPlus />}
+                                        {selectedCats.includes(cat.id) ? <FaCheck/> : <FaPlus/>}
                                     </div>
                                     <div className="card-content">
-                                        <div className="icon-wrapper"><FaBoxOpen /></div>
+                                        <div className="icon-wrapper"><FaBoxOpen/></div>
                                         <h4>{cat.nom}</h4>
                                         <p>{cat.description || "Certified Supplier"}</p>
                                     </div>
@@ -598,8 +632,8 @@ export default function Fournisseur() {
                         )}
 
                         <div className="action-bar">
-                            <button className="btn-save-spec" onClick={saveSpecialization}>
-                                Save my choices
+                            <button className="btne-save-spec" onClick={saveSpecialization} disabled={isSaving}>
+                                {isSaving ? "Saving..." : "Save my choices"}
                             </button>
                         </div>
                     </div>
@@ -660,91 +694,150 @@ export default function Fournisseur() {
 
                 {/* Settings */}
                 {activeSection === "settings" && (
-                    <div className="panel large">
-                        <h3>Settings</h3>
-                        <p>Configure preferences and account options.</p>
+                    <div className="specialization-panel fade-in">
+                        <header className="workspace-header">
+                            <h1><FaCog className="bell-icon"/> Account Settings</h1>
+                            <p>Customize your supplier experience and business rules.</p>
+                        </header>
+
+                        <div className="settings-grid">
+                            {/* Business Preferences */}
+                            <div className="recent-quotes-card">
+                                <h3>Business Rules</h3>
+                                <div className="setting-row">
+                                    <label>Shipping Provided?</label>
+                                    <input type="checkbox" className="ios-switch"/>
+                                </div>
+                                <div className="setting-row">
+                                    <label>Min. Order Value (DH)</label>
+                                    <input type="number" placeholder="500" className="mini-input"/>
+                                </div>
+                            </div>
+
+                            {/* Notification Toggles */}
+                            <div className="setting-card">
+                                <h3><FaBell/> Notifications</h3>
+
+                                <div className="setting-row">
+                                    <div>
+                                        <label>New RFQ Alerts</label>
+                                        <span className="setting-info-text">Notify me when new requests match my categories</span>
+                                    </div>
+                                    <input type="checkbox" className="ios-switch" defaultChecked/>
+                                </div>
+
+                                <div className="setting-row">
+                                    <div>
+                                        <label>Email Reports</label>
+                                        <span
+                                            className="setting-info-text">Receive weekly summary of your performance</span>
+                                    </div>
+                                    <input type="checkbox" className="ios-switch"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="action-bar">
+                            <button className="btne-save-spec">Update My Settings</button>
+                        </div>
                     </div>
                 )}
 
                 {/* Profile */}
                 {activeSection === "profile" && profile && (
-                    <div className="profile-panel">
-                        <h3>Personal Information</h3>
+                    <div className="frn-profile-wrapper fade-in">
+                        <div className="frn-profile-card">
+                            <div className="frn-profile-header">
+                                <div className="frn-avatar-section">
+                                    <div className="frn-avatar-wrapper">
+                                        <div className="frn-avatar-overlay">
+                                            <FaCamera />
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="frn-avatar-input"
+                                                onChange={handleImageChange}
+                                            />
+                                        </div>
+                                        {profile.image ? (
+                                            <img
+                                                src={profile.image.startsWith('http')
+                                                    ? profile.image
+                                                    : `http://localhost:8888/service-fournisseur${profile.image}`}
+                                                alt="Profile"
+                                                className="frn-avatar-img"
+                                            />
+                                        ) : (
+                                            <div className="frn-avatar-placeholder">
+                                                <FaUser size={45} />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="frn-header-info">
+                                    <h2 className="frn-user-name">
+                                        {profile.prenom || ""} {profile.nom || ""}
+                                    </h2>
+                                    <p className="frn-role-tag">
+                                        <FaStore /> Official Supplier #{profile.idFournisseur || "N/A"}
+                                    </p>
+                                </div>
+                            </div>
 
-                        {/* Avatar */}
-                        <div className="profile-avatar-section">
-                            <div className="avatar-container">
-                                <input type="file" accept="image/*" className="avatar-input"
-                                       onChange={handleImageChange}/>
+                            <div className="frn-profile-intro">
+                                As a registered Supplier, you can manage your product catalog, respond to quote
+                                requests (RFQs), and track your delivery performance within the platform.
+                            </div>
 
-                                {profile.image ? (
-                                    <img
-                                        src={profile.image.startsWith('http')
-                                            ? profile.image
-                                            : `http://localhost:8888/service-fournisseur${profile.image}`}
-                                        alt="Profile"
-                                        className="profile-avatar-img"
+                            <div className="frn-form-grid">
+                                <div className="frn-input-group">
+                                    <label><FaUser/> First Name</label>
+                                    <input value={profile.prenom || ""} readOnly className="frn-readonly"/>
+                                </div>
+
+                                <div className="frn-input-group">
+                                    <label><FaUser/> Last Name</label>
+                                    <input value={profile.nom || ""} readOnly className="frn-readonly"/>
+                                </div>
+
+                                <div className="frn-input-group">
+                                    <label><FaEnvelope/> Email Address</label>
+                                    <input value={profile.email || ""} readOnly className="frn-readonly"/>
+                                </div>
+
+                                <div className="frn-input-group">
+                                    <label><FaPhone/> Phone Number</label>
+                                    <input value={profile.phone || ""} readOnly className="frn-readonly"/>
+                                </div>
+
+                                <div className="frn-input-group">
+                                    <label><FaIdCard/> CIN</label>
+                                    <input value={profile.cin || ""} readOnly className="frn-readonly"/>
+                                </div>
+
+                                <div className="frn-input-group">
+                                    <label><FaCheckCircle/> Account Status</label>
+                                    <div className="frn-status-container">
+                                        <span className={`frn-status-badge ${profile.status?.toLowerCase() || 'validated'}`}>
+                                            {profile.status || "VALIDATED"}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="frn-input-group">
+                                    <label><FaBriefcase/> Role</label>
+                                    <input value={"Fournisseur"} readOnly className="frn-readonly"/>
+                                </div>
+
+                                <div className="frn-input-group">
+                                    <label><FaCalendarAlt/> Join Date</label>
+                                    <input
+                                        value={profile.createdAt ? new Date(profile.createdAt).toLocaleDateString() : ""}
+                                        readOnly
+                                        className="frn-readonly"
                                     />
-                                ) : (
-                                    <FaUser size={90} className="profile-avatar-icon"/>
-                                )}
+                                </div>
                             </div>
-
-                            <h2 className="upload-text">
-                                {profile.prenom || ""} {profile.nom || ""}
-                            </h2>
-                        </div>
-
-                        {/* Infos */}
-                        <div className="profile-info-two-columns">
-
-                            <div className="form-group">
-                                <label>First Name</label>
-                                <input value={profile.prenom || ""} readOnly/>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Last Name</label>
-                                <input value={profile.nom || ""} readOnly/>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Email</label>
-                                <input value={profile.email || ""} readOnly/>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Phone</label>
-                                <input value={profile.phone || ""} readOnly/>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Cin</label>
-                                <input value={profile.cin || ""} readOnly/>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Status</label>
-                                <input value={profile.status || "VALIDATED"} readOnly/>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Role</label>
-                                <input value={"Fournisseur"} readOnly/>
-                            </div>
-
-                            <div className="form-group">
-                                <label>Join Date</label>
-                                <input
-                                    value={
-                                        profile.createdAt
-                                            ? new Date(profile.createdAt).toLocaleDateString()
-                                            : ""
-                                    }
-                                    readOnly
-                                />
-                            </div>
-
                         </div>
                     </div>
                 )}

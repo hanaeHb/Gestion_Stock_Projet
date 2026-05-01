@@ -9,6 +9,7 @@ import {
     FaSignOutAlt,
     FaBoxes, FaUserTie, FaInbox, FaFileInvoiceDollar, FaDownload, FaSync, FaTruck
 } from "react-icons/fa";
+import {  FaCamera, FaEnvelope, FaPhone, FaIdCard, FaBriefcase, FaCalendarAlt, FaCheckCircle, FaUserShield } from "react-icons/fa";
 import {FiGrid, FiTrendingUp} from "react-icons/fi";
 import axios from "axios";
 import PurchaseBudgetTracker from "./PurchaseBudgetTracker";
@@ -54,20 +55,20 @@ export default function ProcurementManager() {
 
     const [pendingFournisseurs, setPendingFournisseurs] = useState([]);
 
-    const updateNotificationStatus = async (notificationId, status, userId) => {
+    const updateNotificationStatus = async (notificationId, statut, userId) => {
         try {
             const token = localStorage.getItem("token");
 
             await axios.put(
                 `http://localhost:8888/service-notification/api/notifications/${notificationId}/status`,
-                { status },
+                { statut: statut },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
             await axios.patch(
                 `http://localhost:8888/security-stock/v1/users/${userId}/status`,
                 {
-                    active: status === "validated"
+                    active: statut === "validated"
                 },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -541,7 +542,19 @@ export default function ProcurementManager() {
                                         <div className="card-body">
                                             <div className="product-info-row">
                                                 <div className="p-avatar">
-                                                    {req.productName.charAt(0).toUpperCase()}
+                                                    {req.productImage ? (
+                                                        <img
+                                                            src={req.productImage}
+                                                            alt={req.productName}
+                                                            className="product-card-img"
+                                                            onError={(e) => {
+                                                                e.currentTarget.style.display = 'none';
+                                                                e.currentTarget.parentElement.innerText = req.productName.charAt(0).toUpperCase();
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        req.productName.charAt(0).toUpperCase()
+                                                    )}
                                                 </div>
                                                 <div className="p-details">
                                                     <h3>{req.productName}</h3>
@@ -555,10 +568,11 @@ export default function ProcurementManager() {
                                             <div className="stats-row">
                                                 <div className="stat-box">
                                                     <span className="stat-label">Quantity</span>
-                                                    <span className="stat-value highlight">{req.requestedQty} Units</span>
+                                                    <span
+                                                        className="stat-value highlight">{req.requestedQty} Units</span>
                                                 </div>
                                                 <div className="stat-box">
-                                                    <span className="stat-label">Requested By</span>
+                                                <span className="stat-label">Requested By</span>
                                                     <span className="stat-value">{req.fromManager}</span>
                                                 </div>
                                                 <div className="stat-box">
@@ -606,104 +620,107 @@ export default function ProcurementManager() {
                 )}
 
                 {activeSection === "profile" && (
-                    <div className="profile-panel">
-                        <h3>Personal Information</h3>
-
-                        <div className="profile-intro">
-                            The Procurement Manager supervises inventory, products, and analytics. Responsibilities
-                            include monitoring stock levels, tracking performance, and coordinating with staff for
-                            efficient workflow.
-                        </div>
-
-                        <div className="profile-avatar-section">
-                            <div className="avatar-container">
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="avatar-input"
-                                    onChange={async e => {
-                                        const file = e.target.files[0];
-                                        if (file) {
-                                            const reader = new FileReader();
-                                            reader.onload = async () => {
-                                                const imageBase64 = reader.result; // hna base64
-                                                setProfile({...profile, image: imageBase64});
-
-                                                try {
-                                                    const token = localStorage.getItem("token");
-                                                    await axios.put(
-                                                        `http://localhost:8888/usersservice/v1/user-profiles/me`,
-                                                        {image: imageBase64},
-                                                        {
-                                                            headers: {
-                                                                Authorization: `Bearer ${token}`
-                                                            }
-                                                        }
-                                                    );
-                                                    console.log("Image updated!");
-                                                } catch (err) {
-                                                    console.error("Error updating image", err);
-                                                }
-                                            };
-                                            reader.readAsDataURL(file);
-                                        }
-                                    }}
-                                />
-                                {profile?.image ? (
-                                    <img src={profile.image} alt="Profile" className="profile-avatar-img"/>
-                                ) : (
-                                    <FaUser size={90} className="profile-avatar-icon"/>
-                                )}
+                    <div className="pro-profile-wrapper fade-in">
+                        <div className="pro-profile-card">
+                            <div className="pro-profile-header">
+                                <div className="pro-avatar-section">
+                                    <div className="pro-avatar-wrapper">
+                                        <div className="pro-avatar-overlay">
+                                            <FaCamera />
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="pro-avatar-input"
+                                                onChange={async e => {
+                                                    const file = e.target.files[0];
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onload = async () => {
+                                                            const imageBase64 = reader.result;
+                                                            setProfile({...profile, image: imageBase64});
+                                                            try {
+                                                                const token = localStorage.getItem("token");
+                                                                await axios.put(
+                                                                    `http://localhost:8888/usersservice/v1/user-profiles/me`,
+                                                                    {image: imageBase64},
+                                                                    { headers: { Authorization: `Bearer ${token}` } }
+                                                                );
+                                                            } catch (err) { console.error("Error updating image", err); }
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                        {profile?.image ? (
+                                            <img src={profile.image} alt="Profile" className="pro-avatar-img"/>
+                                        ) : (
+                                            <div className="pro-avatar-placeholder">
+                                                <FaUser size={45} />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="pro-header-info">
+                                    <h2 className="pro-user-name">{profile?.prenom || ""} {profile?.nom || ""}</h2>
+                                    <p className="pro-role-tag"><FaUserShield /> Procurement Manager Specialist</p>
+                                </div>
                             </div>
-                            <h2 className="upload-text">{profile?.prenom || ""} {profile?.nom || ""}</h2>
-                        </div>
 
-                        {/* Inputs row */}
-                        <div className="profile-info-two-columns">
-                            <div className="form-group"><label>First Name</label><input type="text"
-                                                                                        value={profile?.nom || ""}
-                                                                                        readOnly/></div>
-                            <div className="form-group"><label>Last Name</label><input type="text"
-                                                                                       value={profile?.prenom || ""}
-                                                                                       readOnly/></div>
-                        </div>
-
-                        <div className="profile-info-two-columns">
-                            <div className="form-group"><label>Email</label><input type="email"
-                                                                                   value={profile?.email || ""}
-                                                                                   readOnly/></div>
-                            <div className="form-group"><label>Phone</label><input
-                                type="text"
-                                value={profile?.phone || ""}
-                                onChange={e => setProfile({...profile, phone: e.target.value})}
-                            /></div>
-                        </div>
-
-                        <div className="profile-info-two-columns">
-                            <div className="form-group"><label>CIN</label><input
-                                type="text"
-                                value={profile?.cin || ""}
-                                onChange={e => setProfile({...profile, cin: e.target.value})}
-                            />
+                            <div className="pro-profile-intro">
+                                The Procurement Manager supervises inventory, products, and analytics. Responsibilities
+                                include monitoring stock levels, tracking performance, and coordinating with staff for
+                                efficient workflow.
                             </div>
-                            <div className="form-group"><label>Status</label><input type="text"
-                                                                                    value={profile?.status || ""}
-                                                                                    readOnly/></div>
-                        </div>
 
-                        <div className="profile-info-two-columns">
-                            <div className="form-group"><label>Role</label><input type="text"
-                                                                                  value={profile?.metierRole || "Procurement Manager"}
-                                                                                  readOnly/></div>
-                            <div className="form-group"><label>Join Date</label><input type="text"
-                                                                                       value={profile?.createdAt || " "}
-                                                                                       readOnly/></div>
-                        </div>
+                            <div className="pro-form-grid">
+                                <div className="pro-input-group">
+                                    <label><FaUser /> First Name</label>
+                                    <input type="text" value={profile?.nom || ""} readOnly className="pro-readonly" />
+                                </div>
+                                <div className="pro-input-group">
+                                    <label><FaUser /> Last Name</label>
+                                    <input type="text" value={profile?.prenom || ""} readOnly className="pro-readonly" />
+                                </div>
 
-                        <div className="profile-actions">
-                            <button
-                                className="change-btn"
-                                onClick={async () => {
+                                <div className="pro-input-group">
+                                    <label><FaEnvelope /> Email Address</label>
+                                    <input type="email" value={profile?.email || ""} readOnly className="pro-readonly" />
+                                </div>
+                                <div className="pro-input-group">
+                                    <label><FaPhone /> Phone</label>
+                                    <input
+                                        type="text"
+                                        value={profile?.phone || ""}
+                                        onChange={e => setProfile({...profile, phone: e.target.value})}
+                                    />
+                                </div>
+
+                                <div className="pro-input-group">
+                                    <label><FaIdCard /> CIN</label>
+                                    <input
+                                        type="text"
+                                        value={profile?.cin || ""}
+                                        onChange={e => setProfile({...profile, cin: e.target.value})}
+                                    />
+                                </div>
+                                <div className="pro-input-group">
+                                    <label><FaCheckCircle /> Status</label>
+                                    <input type="text" value={profile?.status || ""} readOnly className="pro-readonly" />
+                                </div>
+
+                                <div className="pro-input-group">
+                                    <label><FaBriefcase /> Role</label>
+                                    <input type="text" value={profile?.metierRole || "Procurement Manager"} readOnly className="pro-readonly" />
+                                </div>
+                                <div className="pro-input-group">
+                                    <label><FaCalendarAlt /> Join Date</label>
+                                    <input type="text" value={profile?.createdAt || ""} readOnly className="pro-readonly" />
+                                </div>
+                            </div>
+
+                            <div className="pro-form-footer">
+                                <button className="pro-save-btn" onClick={async () => {
                                     try {
                                         const token = localStorage.getItem("token");
 
@@ -728,9 +745,10 @@ export default function ProcurementManager() {
                                         alert("Failed to update profile.");
                                     }
                                 }}
-                            >
-                                Save Changes
-                            </button>
+                                >
+                                    Save Changes
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -770,31 +788,41 @@ export default function ProcurementManager() {
                                             <tr key={f._id}>
                                                 <td>
                                                     <div className="fs-user-info">
-                                                        <div className="fs-avatar-sm">{f.firstName?.charAt(0)}</div>
-                                                        <strong>{f.firstName} {f.lastName}</strong>
+                                                        <div
+                                                            className="fs-avatar-sm">{f.fournisseur?.firstName?.charAt(0)}</div>
+                                                        <strong>{f.fournisseur?.firstName} {f.fournisseur?.lastName}</strong>
                                                     </div>
                                                 </td>
                                                 <td>
                                                     <div className="fs-contact-cell">
-                                                        <span>{f.email}</span>
-                                                        <small>{f.phone}</small>
+                                                        <span>{f.fournisseur?.email}</span>
+                                                        <small>{f.fournisseur?.phone}</small>
                                                     </div>
                                                 </td>
-                                                <td><span className="fs-cin-badge">{f.cin}</span></td>
-                                                <td><span className="fs-role-tag">{f.role}</span></td>
+                                                <td><span className="fs-cin-badge">{f.fournisseur?.cin}</span></td>
+                                                <td><span className="fs-role-tag">{f.fournisseur?.role}</span></td>
                                                 <td>{new Date(f.dateAlerte).toLocaleDateString()}</td>
                                                 <td>
-                                                    {f.cvFile ? (
-                                                        <button className="fs-download-btn light" onClick={() => downloadCV(f.cvFile.replace(/^\/?uploads\/cv\//, ''))}>
-                                                            <FaDownload /> CV
+                                                    {f.fournisseur?.cvPath ? (
+                                                        <button
+                                                            className="fs-download-btn light"
+                                                            onClick={() => {
+                                                                const cleanPath = f.fournisseur.cvPath.replace(/^\/?uploads\/cv\//, '').replace(/\\/g, '/');
+                                                                const fileName = cleanPath.split('/').pop();
+                                                                downloadCV(fileName);
+                                                            }}
+                                                        >
+                                                            <FaDownload/> CV
                                                         </button>
-                                                    ) : <span className="no-data">N/A</span>}
+                                                    ) : (
+                                                        <span className="no-data">N/A</span>
+                                                    )}
                                                 </td>
                                                 <td>
                                                     <div className="fs-actions-gap">
                                                         <button
                                                             className="fs-btn-validate"
-                                                            onClick={() => updateNotificationStatus(f._id, "validated", f.userId)}
+                                                            onClick={() => updateNotificationStatus(f._id, "validated", f.fournisseur?.userId)}
                                                         >
                                                             Validate
                                                         </button>
@@ -815,7 +843,7 @@ export default function ProcurementManager() {
                         </div>
 
                         {/* --- Header 2: Validated --- */}
-                        <div className="fs-main-header" style={{ marginTop: '40px' }}>
+                        <div className="fs-main-header" style={{marginTop: '40px'}}>
                             <div className="header-text">
                                 <h1>Validated Suppliers</h1>
                                 <p>Manage your existing verified suppliers and their account status.</p>

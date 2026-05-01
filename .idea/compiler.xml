@@ -6,9 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="Produit-Stock_Service" />
+        <module name="BudgetStock" />
+        <module name="UsersService" />
         <module name="DiscoveryStockSertvice" />
         <module name="GatewayStockService" />
-        <module name="BudgetStock" />
       </profile>
       <profile name="Annotation profile for gestion-stock-parent" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -16,18 +18,8 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
         </processorPath>
         <module name="Security_Stock" />
-      </profile>
-      <profile name="Annotation profile for Produit-Stock_Service" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
-        </processorPath>
-        <module name="Produit-Stock_Service" />
       </profile>
     </annotationProcessing>
   </component>

@@ -1,15 +1,9 @@
 import React from "react";
 import { Bar } from "react-chartjs-2";
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    Tooltip,
-    Legend
-} from "chart.js";
+import { PolarArea } from "react-chartjs-2";
+import { Chart as ChartJS, RadialLinearScale, ArcElement, Tooltip, Legend } from "chart.js";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
+ChartJS.register(RadialLinearScale, ArcElement, Tooltip, Legend);
 
 export default function UsersStatusChart({ users }) {
 
@@ -17,33 +11,29 @@ export default function UsersStatusChart({ users }) {
     const reactive = users.filter(u => u.active === false).length;
 
     const data = {
-        labels: ["Active Users", "Reactive Users"],
+        labels: ["Active", "Reactive"],
         datasets: [
             {
-                label: "Users Status",
                 data: [active, reactive],
                 backgroundColor: [
-                    "rgba(79,172,254,0.8)",
-                    "rgba(250,131,153,0.8)"
+                    "rgba(102, 126, 234, 0.7)",
+                    "rgba(251, 182, 206, 0.7)"
                 ],
-                borderRadius: 10,
-                barThickness: 40
+                borderColor: ["#667eea", "#fbb6ce"],
+                borderWidth: 2
             }
         ]
     };
 
     const options = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: false }
-        },
         scales: {
-            y: {
-                beginAtZero: true
-            }
-        }
+            r: { grid: { display: false }, ticks: { display: false } }
+        },
+        plugins: {
+            legend: { position: "bottom" }
+        },
+        maintainAspectRatio: false
     };
 
-    return <Bar data={data} options={options} />;
+    return <PolarArea data={data} options={options} />;
 }

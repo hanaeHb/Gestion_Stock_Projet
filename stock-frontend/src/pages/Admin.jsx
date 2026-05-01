@@ -15,7 +15,7 @@ import {
     FaEdit,
     FaPhone,
     FaBoxes,
-    FaTruckLoading,
+    FaTruckLoading, FaCalendarAlt, FaShieldAlt, FaIdCard,
     FaDownload, FaArrowLeft,FaArrowRight
 } from "react-icons/fa";
 import { BiCategory } from "react-icons/bi";
@@ -105,8 +105,8 @@ export default function Admin() {
                     }
                 );
                 console.log(res.data);
-                setProfile(res.data); // b7al ma katb9ach setAdminData?
-                setAdminData(res.data); // khas t3ammar state li katb9a kat3ml update
+                setProfile(res.data);
+                setAdminData(res.data);
             } catch (err) {
                 console.error("Error loading profile", err);
             }
@@ -135,7 +135,7 @@ export default function Admin() {
                 return res.json();
             })
             .then(data => {
-                setAdminData(data); // update state bach UI tban m3a data jdida
+                setAdminData(data);
                 alert("Profile updated successfully");
             })
             .catch(err => alert("Error updating profile: " + err.message));
@@ -471,6 +471,7 @@ export default function Admin() {
     useEffect(() => {
         if (activeSection === "categorys") {
             fetchCategories();
+            setCurrentCatPage(1);
         }
     }, [activeSection]);
 
@@ -497,6 +498,37 @@ export default function Admin() {
 
     const lowStockCount = products.filter(p => p.quantiteDisponible <= (p.seuilCritique || 5)).length;
     const totalCategoriesCount = categories.length;
+    const [notifs, setNotifs] = useState([]);
+    const [notifsLoading, setNotifsLoading] = useState(false);
+    const [totalCount, setTotalCount] = useState(0);
+    const fetchAllNotifications = async () => {
+        try {
+            setNotifsLoading(true);
+            const token = localStorage.getItem("token");
+            const res = await axios.get("http://localhost:8888/service-notification/api/notifications", {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = Array.isArray(res.data) ? res.data : (res.data.notifications || []);
+            setNotifs(data);
+            setNotifsLoading(false);
+        } catch (err) {
+            console.error("Error fetching notifications", err);
+            setNotifsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchAllNotifications();
+    }, []);
+    const [currentCatPage, setCurrentCatPage] = useState(1);
+    const catsPerPage = 6;
+
+    const lastCatIndex = currentCatPage * catsPerPage;
+    const firstCatIndex = lastCatIndex - catsPerPage;
+
+    const currentCategoriesList = categories.slice(firstCatIndex, lastCatIndex);
+
+    const totalCatPages = Math.ceil(categories.length / catsPerPage);
     return (
         <div className="admin-container">
 
@@ -567,7 +599,10 @@ export default function Admin() {
                                 <ul className="menu">
                                     <li className={activeSection === "bell" ? "active" : ""}
                                         onClick={() => setActiveSection("bell")}>
-                                        <FaBell/>
+                                        <div className="bell-wrapper">
+                                            <FaBell/>
+                                            {totalCount > 0 && <span className="bell-badge-count">{totalCount}</span>}
+                                        </div>
                                     </li>
                                 </ul>
                             </div>
@@ -585,7 +620,14 @@ export default function Admin() {
                 </div>
 
                 {activeSection === "budget" && <BudgetManagement />}
-                {activeSection === "bell" && <AdminNotifications />}
+                {activeSection === "bell" && (
+                    <AdminNotifications
+                        notifications={notifs}
+                        refresh={fetchAllNotifications}
+                        loading={notifsLoading}
+                        setTotalCount={setTotalCount}
+                    />
+                )}
 
                 {/* ===================== Dashboard ===================== */}
                 {activeSection === "dashboard" && (
@@ -594,72 +636,97 @@ export default function Admin() {
                             <h1>Stock & Users Dashboard</h1>
                         </header>
 
-                        <section className="cards">
+                        <section className="dash-cards-container fade-in">
 
-                            {/* Total Products   */}
-                            <div className="card">
-                                <div className="card-icon"><FaBoxes/></div>
-                                <h3>{totalProductsCount}</h3>
-                                <p>Total Products</p>
+                            {/* Total Products */}
+                            <div className="dash-card">
+                                <div className="dash-card-icon-wrapper">
+                                    <FaBoxes/>
+                                </div>
+                                <div className="dash-card-content">
+                                    <h3>{totalProductsCount}</h3>
+                                    <p>Total Products</p>
+                                </div>
                             </div>
 
-                            {/* Low Stock  */}
-                            <div className="card">
-                                <div className="card-icon">
+                            {/* Low Stock */}
+                            <div className="dash-card">
+                                <div className="dash-card-icon-wrapper low-stock-icon">
                                     <FaChartBar/>
                                 </div>
-                                <h3>{lowStockCount}</h3>
-                                <p>Low Stock</p>
+                                <div className="dash-card-content">
+                                    <h3 className="warning-text">{lowStockCount}</h3>
+                                    <p>Low Stock Items</p>
+                                </div>
                             </div>
 
                             {/* Total Users */}
-                            <div className="card">
-                                <div className="card-icon"><FaUsers/></div>
-                                <h3>{users.filter(user => !user.roles.includes("Fournisseur")).length}</h3>
-                                <p>Total Users</p>
+                            <div className="dash-card">
+                                <div className="dash-card-icon-wrapper">
+                                    <FaUsers/>
+                                </div>
+                                <div className="dash-card-content">
+                                    <h3>{users.filter(user => !user.roles.includes("Fournisseur")).length}</h3>
+                                    <p>Active Staff</p>
+                                </div>
                             </div>
-                            <div className="card">
-                                <div className="card-icon"><FaUserTie/></div>
-                                <h3>{users.filter(user => user.roles.includes("Fournisseur")).length}</h3>
-                                <p>Total Suppliers</p>
+
+                            {/* Total Suppliers */}
+                            <div className="dash-card">
+                                <div className="dash-card-icon-wrapper supplier-icon">
+                                    <FaUserTie/>
+                                </div>
+                                <div className="dash-card-content">
+                                    <h3>{users.filter(user => user.roles.includes("Fournisseur")).length}</h3>
+                                    <p>Total Suppliers</p>
+                                </div>
                             </div>
 
                             {/* Top Role */}
-                            <div className="card">
-                                <div className="card-icon"><FaCog/></div>
-                                <h3>
-                                    {(() => {
-                                        if (!users.length) return "-";
-                                        const roleCount = {};
-                                        users.forEach(u => u.roles?.forEach(r => roleCount[r] = (roleCount[r] || 0) + 1));
-                                        const topRole = Object.entries(roleCount).sort((a, b) => b[1] - a[1])[0];
-                                        return topRole ? `${topRole[0]} (${topRole[1]})` : "-";
-                                    })()}
-                                </h3>
-                                <p>Top Role</p>
+                            <div className="dash-card large">
+                                <div className="dash-card-icon-wrapper role-icon">
+                                    <FaCog/>
+                                </div>
+                                <div className="dash-card-content">
+                                    <h3>
+                                        {(() => {
+                                            if (!users.length) return "-";
+                                            const roleCount = {};
+                                            users.forEach(u => u.roles?.forEach(r => roleCount[r] = (roleCount[r] || 0) + 1));
+                                            const topRole = Object.entries(roleCount).sort((a, b) => b[1] - a[1])[0];
+                                            return topRole ? `${topRole[0]} (${topRole[1]})` : "-";
+                                        })()}
+                                    </h3>
+                                    <p>Dominant System Role</p>
+                                </div>
                             </div>
 
-                            <div className="card">
-                                <div className="card-icon"><HiViewGridAdd/></div>
-                                <h3>{totalCategoriesCount}</h3>
-                                <p>Total Categories</p>
+                            {/* Total Categories */}
+                            <div className="dash-card">
+                                <div className="dash-card-icon-wrapper category-icon">
+                                    <HiViewGridAdd/>
+                                </div>
+                                <div className="dash-card-content">
+                                    <h3>{totalCategoriesCount}</h3>
+                                    <p>Total Categories</p>
+                                </div>
                             </div>
                         </section>
 
                         {/* ===================== Users Charts ===================== */}
                         <div className="charts-row" style={{marginTop: "40px"}}>
 
-                        <section className="role-chart-section">
+                            <section className="role-chart-section">
                                 <h3>Users by Role</h3>
-                                <div style={{ height: "250px" }}>
-                                    <UsersRoleChart users={users} />
+                                <div style={{height: "250px"}}>
+                                    <UsersRoleChart users={users}/>
                                 </div>
                             </section>
 
                             <section className="role-chart-section">
                                 <h3>Users Status</h3>
-                                <div style={{ height: "250px" }}>
-                                    <UsersStatusChart users={users} />
+                                <div style={{height: "250px"}}>
+                                    <UsersStatusChart users={users}/>
                                 </div>
                             </section>
 
@@ -670,9 +737,9 @@ export default function Admin() {
                 {/* ===================== Analytics ===================== */}
                 {activeSection === "analytics" && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.4 }}
+                        initial={{opacity: 0, scale: 0.95}}
+                        animate={{opacity: 1, scale: 1}}
+                        transition={{duration: 0.4}}
                     >
                         <AnalyticsDashboard
                             products={products}
@@ -685,7 +752,7 @@ export default function Admin() {
                 {/* ===================== fournisseurs ===================== */}
                 {activeSection === "fournisseurs" && (
                     <div className="fs-section-container animate-fade-in">
-                        {/* Header العام */}
+
                         <div className="fs-main-header">
                             <div className="header-text">
                                 <h1>Suppliers Management</h1>
@@ -1062,54 +1129,126 @@ export default function Admin() {
 
                 {/* ===================== Settings ===================== */}
                 {activeSection === "settings" && (
-                    <div className="panel large">
-                        <h3>System Settings</h3>
-                        <p>Manage system configuration and security.</p>
+                    <div className="panel large animate-fade-in">
+                        <div className="settings-header">
+                            <h3>⚙️ System Settings</h3>
+                            <p>Fine-tune your stock and budget management rules.</p>
+                        </div>
+
+                        <div className="settings-grid">
+                            <div className="settings-card">
+                                <h4>🏢 Company Profile</h4>
+                                <div className="setting-item">
+                                    <label>Company Name</label>
+                                    <input type="text" placeholder="My Warehouse Ltd" className="modern-input" />
+                                </div>
+                                <div className="setting-item">
+                                    <label>Currency</label>
+                                    <select className="modern-input">
+                                        <option>Moroccan Dirham (DH)</option>
+                                        <option>Euro (€)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="settings-card">
+                                <h4>🔔 Budget & Notifications</h4>
+                                <div className="setting-toggle">
+                                    <span>Email alerts when budget is low</span>
+                                    <input type="checkbox" defaultChecked />
+                                </div>
+                                <div className="setting-item">
+                                    <label>Alert Threshold (%)</label>
+                                    <input type="number" defaultValue={85} className="modern-input" />
+                                </div>
+                            </div>
+
+                            <div className="settings-card">
+                                <h4>🔒 Security</h4>
+                                <button className="btn-outline">Change Admin Password</button>
+                                <button className="btn-outline">Manage User Roles</button>
+                            </div>
+                        </div>
+
+                        <div className="settings-footer">
+                            <button className="confirm">Save Changes</button>
+                        </div>
                     </div>
                 )}
 
                 {/* ===================== Profile ===================== */}
                 {activeSection === "profile" && (
-                    <div className="panel large profile-panel">
-                        <h3>Personal Information</h3>
-                        <div className="profile-intro">
-                            The administrator ensures system security, maintenance, and smooth operation.
-                            Responsibilities include managing users and access rights, monitoring system performance,
-                            maintaining security, and supporting other actors for a secure and efficient workflow.
-                        </div>
-                        {loading && <p>Loading profile...</p>}
-                        {adminData && (
+                    <div className="adm-profile-wrapper fade-in">
+                        <div className="adm-profile-card">
+                            <div className="adm-profile-header">
+                                <div className="adm-avatar-circle">
+                                    <FaShieldAlt />
+                                </div>
+                                <div className="adm-header-text">
+                                    <h3>Admin Control Center</h3>
+                                    <p>System security & management</p>
+                                </div>
+                            </div>
 
-                            <form className="profile-form" onSubmit={handleUpdate}>
-                                <div className="form-group"><label>First Name</label><input type="text"
-                                                                                            value={adminData?.nom}
-                                                                                            readOnly/></div>
-                                <div className="form-group"><label>Last Name</label><input type="text"
-                                                                                           value={adminData?.prenom}
-                                                                                           readOnly/></div>
-                                <div className="form-group"><label>Email</label><input type="email"
-                                                                                       value={adminData.email}
-                                                                                       readOnly/></div>
-                                <div className="form-group"><label>Telephone</label>
-                                    <input
-                                        type="text"
-                                        value={adminData.phone || ""}
-                                        onChange={e => setAdminData({...adminData, phone: e.target.value})}
-                                        placeholder="Enter phone number"
-                                    /></div>
-                                <div className="form-group"><label>CIN</label>
-                                    <input
-                                        type="text"
-                                        value={adminData.cin || ""}
-                                        onChange={e => setAdminData({...adminData, cin: e.target.value})}
-                                        placeholder="Enter CIN"/>
-                                </div>
-                                <div className="form-group"><label>Join Date</label>
-                                    <input type="text" value={adminData.createdAt || ""} readOnly/>
-                                </div>
-                                <button type="submit" className="create-btn">Update Profile</button>
-                            </form>
-                        )}
+                            <div className="adm-profile-intro">
+                                The administrator ensures system security, maintenance, and smooth operation.
+                                Managing access rights and monitoring performance for an efficient workflow.
+                            </div>
+
+                            {loading ? (
+                                <div className="adm-loading">Loading profile...</div>
+                            ) : adminData && (
+                                <form className="adm-profile-form" onSubmit={handleUpdate}>
+                                    <div className="adm-form-grid">
+                                        <div className="adm-input-group">
+                                            <label><FaUser /> First Name</label>
+                                            <input type="text" value={adminData?.nom} readOnly className="adm-readonly" />
+                                        </div>
+
+                                        <div className="adm-input-group">
+                                            <label><FaUser /> Last Name</label>
+                                            <input type="text" value={adminData?.prenom} readOnly className="adm-readonly" />
+                                        </div>
+
+                                        <div className="adm-input-group">
+                                            <label><FaEnvelope /> Email Address</label>
+                                            <input type="email" value={adminData?.email} readOnly className="adm-readonly" />
+                                        </div>
+
+                                        <div className="adm-input-group">
+                                            <label><FaPhone /> Telephone</label>
+                                            <input
+                                                type="text"
+                                                value={adminData.phone || ""}
+                                                onChange={e => setAdminData({...adminData, phone: e.target.value})}
+                                                placeholder="Enter phone number"
+                                            />
+                                        </div>
+
+                                        <div className="adm-input-group">
+                                            <label><FaIdCard /> CIN</label>
+                                            <input
+                                                type="text"
+                                                value={adminData.cin || ""}
+                                                onChange={e => setAdminData({...adminData, cin: e.target.value})}
+                                                placeholder="Enter CIN"
+                                            />
+                                        </div>
+
+                                        <div className="adm-input-group">
+                                            <label><FaCalendarAlt /> Join Date</label>
+                                            <input type="text" value={new Date(adminData.createdAt).toLocaleDateString() || ""} readOnly className="adm-readonly" />
+                                        </div>
+                                    </div>
+
+                                    <div className="adm-form-footer">
+                                        <button type="submit" className="adm-update-btn">
+                                            Update Secure Profile
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+                        </div>
                     </div>
                 )}
                 {/* Products Section */}
@@ -1213,20 +1352,22 @@ export default function Admin() {
 
                             <div className="category-info-alert">
                                 <div className="info-icon">i</div>
-                                <p>Use this panel to manage your catalog structure. A well-organized hierarchy improves stock tracking and reporting.</p>
+                                <p>Use this panel to manage your catalog structure. A well-organized hierarchy improves
+                                    stock tracking and reporting.</p>
                             </div>
 
                             <div className="category-grid">
-                                {categories.map((cat) => (
+                                {currentCategoriesList.map((cat) => (
                                     <div className="modern-cat-card" key={cat.id}>
                                         <div className="cat-card-header">
                                             <span className="cat-id-badge">ID: {cat.id}</span>
                                             <div className="cat-actions">
                                                 <button className="icon-btn edit" onClick={() => handleEditClick(cat)}>
-                                                    <FaEdit />
+                                                    <FaEdit/>
                                                 </button>
-                                                <button className="icon-btn delete" onClick={() => deleteCategory(cat.id)}>
-                                                    <FaTrash />
+                                                <button className="icon-btn delete"
+                                                        onClick={() => deleteCategory(cat.id)}>
+                                                    <FaTrash/>
                                                 </button>
                                             </div>
                                         </div>
@@ -1242,6 +1383,35 @@ export default function Admin() {
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+                            <div className="catalog-pagination">
+                                <button
+                                    className="pagi-nav-btn"
+                                    onClick={() => setCurrentCatPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={currentCatPage === 1}
+                                >
+                                    ← Previous
+                                </button>
+
+                                <div className="pagi-numbers-list">
+                                    {[...Array(totalCatPages)].map((_, i) => (
+                                        <button
+                                            key={i + 1}
+                                            onClick={() => setCurrentCatPage(i + 1)}
+                                            className={`pagi-num-btn ${currentCatPage === i + 1 ? "is-active" : ""}`}
+                                        >
+                                            {i + 1}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <button
+                                    className="pagi-nav-btn"
+                                    onClick={() => setCurrentCatPage(prev => Math.min(prev + 1, totalCatPages))}
+                                    disabled={currentCatPage === totalCatPages}
+                                >
+                                    Next →
+                                </button>
                             </div>
                         </div>
 
@@ -1279,6 +1449,7 @@ export default function Admin() {
                             </div>
                         )}
                     </div>
+
                 )}
 
             </main>

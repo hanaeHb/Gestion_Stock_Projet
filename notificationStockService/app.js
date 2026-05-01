@@ -41,7 +41,8 @@ const client = new Eureka({
 });
 
 
-
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.get('/health', (req, res) => {
   res.send({ status: 'UP' });
 });
@@ -119,6 +120,9 @@ const runKafkaConsumer = async () => {
           message: `Demand: ${event.productName} (${event.category}) requested by ${event.fromManager}`,
           productName: event.productName,
           productId: event.productId,
+          categoryId: event.categoryId,
+          sku: event.sku,
+          productImage: event.productImage,
           requestedQty: event.requestedQty,
           fromManager: event.fromManager,
           category: event.category,
@@ -145,7 +149,7 @@ const runKafkaConsumer = async () => {
             cvPath: event.cvPath,
           },
           niveau: "INFO",
-          statut: "NON_LUE"
+          statut: "PENDING"
         });
 
         await emailService.sendEmail(
@@ -171,11 +175,12 @@ const runKafkaConsumer = async () => {
         await emailService.sendEmail(event.email, subject, body);
       }
       else if (topic === "order-notifications") {
-        const { email, product, productId, quantity, orderId, message } = event;
+        const { email, product, productId, quantity, orderId, message, fournisseurId } = event;
 
         await Notification.create({
           message: message || `Nouvelle commande: ${quantity}x ${product}`,
           orderId: orderId,
+          fournisseurId: fournisseurId,
           niveau: "RFQ",
           productId: productId,
           productName: product,

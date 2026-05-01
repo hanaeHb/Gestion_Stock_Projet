@@ -1,7 +1,7 @@
 .manager-container{
     display:flex;
     min-height:100vh;
-    background:#eef2ff;
+    background:#f8f9fa;
     font-family:"Berlin Sans FB Demi", sans-serif;
 }
 
@@ -895,4 +895,198 @@ td:last-child {
 .modern-notif-item .notif-icon {
     font-size: 1.2rem;
     margin-right: 12px;
+}
+
+.mgr-profile-wrapper {
+    padding: 30px;
+    display: flex;
+    justify-content: center;
+    background-color: transparent;
+}
+
+.mgr-profile-card {
+    background: #ffffff;
+    max-width: 850px;
+    width: 100%;
+    border-radius: 24px;
+    box-shadow: 0 15px 35px rgba(102, 126, 234, 0.08);
+    padding: 40px;
+    border: 1px solid #f0f0f0;
+}
+
+.mgr-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.mgr-avatar-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 22px;
+    overflow: hidden;
+    background: #f0f2f5;
+    border: 3px solid #fff;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.mgr-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.mgr-avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #a0aec0;
+    background: #edf2f7;
+}
+
+.mgr-avatar-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(102, 126, 234, 0.6); /* Mauve overlay */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transition: 0.3s;
+}
+
+.mgr-avatar-wrapper:hover .mgr-avatar-overlay {
+    opacity: 1;
+}
+
+.mgr-avatar-input {
+    position: absolute;
+    width: 100%; height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.mgr-user-name {
+    margin: 0;
+    font-size: 1.8rem;
+    color: #2d3748;
+    font-weight: 800;
+}
+
+.mgr-role-tag {
+    margin: 5px 0 0;
+    color: #667eea; /* Mauve Color */
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Intro Box */
+.mgr-profile-intro {
+    background: #f8faff;
+    padding: 18px;
+    border-left: 5px solid #667eea;
+    border-radius: 12px;
+    color: #4a5568;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 35px;
+}
+
+/* Grid Layout */
+.mgr-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.mgr-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mgr-input-group label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #4a5568;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mgr-input-group label svg {
+    color: #764ba2; /* Violet Icon */
+}
+
+.mgr-input-group input {
+    padding: 13px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.mgr-input-group input:focus {
+    border-color: #667eea;
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.mgr-input-group input.mgr-readonly {
+    background-color: #f7fafc;
+    color: #a0aec0;
+    border-color: #edf2f7;
+    cursor: not-allowed;
+}
+
+/* Footer & Button */
+.mgr-form-footer {
+    margin-top: 40px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.mgr-save-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Same Admin Gradient */
+    color: white;
+    padding: 14px 35px;
+    border: none;
+    border-radius: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.25);
+}
+
+.mgr-save-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(102, 126, 234, 0.35);
+}
+
+/* Animation */
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 650px) {
+    .mgr-profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    .mgr-form-grid {
+        grid-template-columns: 1fr;
+    }
 }

@@ -19,6 +19,10 @@ const notificationSchema = new mongoose.Schema({
 
     productName: String,
     productId: String,
+    categoryId: String,
+    sku: String,
+    productImage: String,
+    fournisseurId: String,
     requestedQty: Number,
     fromManager: String,
     category: String,

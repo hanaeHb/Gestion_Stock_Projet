@@ -18,7 +18,7 @@ router.get("/pending", authMiddleware, hasRole("Procurement Manager", "ADMIN"), 
     try {
         const notifications = await Notification.find({
             niveau: "INFO",
-            statut: "NON_LUE",
+            statut: "PENDING",
             "fournisseur.userId": { $exists: true }
         })
             .sort({ dateAlerte: -1 })

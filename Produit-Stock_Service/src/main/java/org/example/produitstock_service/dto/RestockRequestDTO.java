@@ -5,5 +5,8 @@ public record RestockRequestDTO(
         String productName,
         Integer requestedQty,
         String fromManager,
-        String category
+        String category,
+        Long categoryId,
+        String sku,
+        String productImage
 ) {}

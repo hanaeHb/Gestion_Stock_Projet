@@ -1,24 +1,10 @@
-// UsersRoleChart.jsx
+
 import React from "react";
 import { Line } from "react-chartjs-2";
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Tooltip,
-    Legend
-} from "chart.js";
+import { Doughnut } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Tooltip,
-    Legend
-);
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 export default function UsersRoleChart({ users }) {
 
@@ -36,30 +22,30 @@ export default function UsersRoleChart({ users }) {
         labels: Object.keys(roleCount),
         datasets: [
             {
-                label: "Users by Role",
                 data: Object.values(roleCount),
-                borderColor: "#730d19",
-                backgroundColor: "rgba(115,13,25,0.52)",
-                tension: 0.4,
-                fill: true,
-                pointRadius: 5
+                backgroundColor: [
+                    "#667eea",
+                    "#764ba2",
+                    "#fbb6ce",
+                    "#a18cd1",
+                    "#4fd1c5"
+                ],
+                borderWidth: 0,
+                hoverOffset: 15,
+                cutout: "75%"
             }
         ]
     };
 
     const options = {
-        responsive: true,
         plugins: {
             legend: {
-                position: "top"
+                position: "bottom",
+                labels: { usePointStyle: true, padding: 20, font: { weight: '600' } }
             }
         },
-        scales: {
-            y: {
-                beginAtZero: true
-            }
-        }
+        maintainAspectRatio: false
     };
 
-    return <Line data={data} options={options} />;
+    return <Doughnut data={data} options={options} />;
 }

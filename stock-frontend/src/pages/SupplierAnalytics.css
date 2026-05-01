@@ -1,9 +1,8 @@
 .analytics-wrapper {
     padding: 20px;
-    background: #f8faff; /* لون خلفية خفيف بزاف */
+    background: transparent;
 }
 
-/* Header Style */
 .header-glass {
     margin-bottom: 30px;
 }
@@ -21,7 +20,7 @@
     animation: pulse 2s infinite;
 }
 
-/* Grid Design */
+
 .stats-grid-premium {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -66,7 +65,6 @@
     z-index: 1;
 }
 
-/* الألوان حسب نوع البطاقة */
 .revenue .stat-icon-circle { background: #e0f2fe; color: #0ea5e9; }
 .rate .stat-icon-circle { background: #e0e7ff; color: #6366f1; }
 .success .stat-icon-circle { background: #dcfce7; color: #22c55e; }
@@ -76,7 +74,7 @@
 .stat-label { color: #64748b; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
 .stat-value { color: #0f172a; font-size: 1.6rem; font-weight: 800; margin-top: 5px; }
 
-/* Chart Preview Card */
+
 .chart-preview-card {
     background: #ffffff;
     border-radius: 32px;

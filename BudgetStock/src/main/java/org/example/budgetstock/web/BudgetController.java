@@ -55,4 +55,18 @@ public class BudgetController {
                     .body("Insufficient budget for this operation");
         }
     }
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        budgetService.deleteBudget(id);
+        return ResponseEntity.noContent().build();
+    }
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Update an existing budget")
+    public ResponseEntity<BudgetResponseDTO> update(
+            @PathVariable Long id,
+            @Valid @RequestBody BudgetRequestDTO request) {
+        return ResponseEntity.ok(budgetService.updateBudget(id, request));
+    }
 }

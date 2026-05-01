@@ -10,6 +10,7 @@ public interface IBudgetService {
     BudgetResponseDTO createBudget(BudgetRequestDTO request);
     BudgetResponseDTO getActiveBudget();
     List<BudgetResponseDTO> getAllBudgets();
-
+    public void deleteBudget(Long id);
     boolean checkAndConsumeBudget(BigDecimal montantAction);
+    BudgetResponseDTO updateBudget(Long id, BudgetRequestDTO request);
 }

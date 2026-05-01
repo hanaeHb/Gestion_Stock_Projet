@@ -47,6 +47,7 @@ exports.createCommande = async (req, res) => {
                 value: JSON.stringify({
                     orderId: newOrder.id_commande,
                     email: emailFournisseur,
+                    fournisseurId: id_fournisseur,
                     product: pName,
                     productId: pId,
                     quantity: qty,

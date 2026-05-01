@@ -1,0 +1,11 @@
+flask
+
+pandas
+numpy
+
+scikit-learn
+
+psycopg2-binary
+mysql-connector-python
+
+py-eureka-client

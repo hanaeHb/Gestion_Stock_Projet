@@ -51,7 +51,7 @@ const runConsumer = async () => {
                         cvPath: event.cvPath
                     },
                     niveau: "INFO",
-                    statut: "NON_LUE"
+                    statut: "PENDING"
                 });
 
                 await emailService.sendEmail(
@@ -86,6 +86,9 @@ const runConsumer = async () => {
                     message: `Demand: ${event.productName} (${event.category}) requested by ${event.fromManager}`, 
                     productName: event.productName,
                     productId: event.productId,
+                    categoryId: event.categoryId,
+                    sku: event.sku,
+                    productImage: event.productImage,
                     requestedQty: event.requestedQty,
                     fromManager: event.fromManager,
                     category: event.category, 
@@ -99,11 +102,12 @@ const runConsumer = async () => {
             }
 
             else if (topic === "order-notifications") {
-                const { email, product, productId, quantity, orderId, message } = event;
+                const { email, product, productId, quantity, orderId, message, fournisseurId } = event;
 
                 await Notification.create({
                     message: message || `Nouvelle commande: ${quantity}x ${product}`,
                     orderId: orderId,
+                    fournisseurId: fournisseurId,
                     niveau: "RFQ",
                     productId: productId,
                     productName: product,    

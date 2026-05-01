@@ -10,6 +10,7 @@ import {
     FaSignOutAlt,
     FaBoxes, FaSyncAlt
 } from "react-icons/fa";
+import { FaCamera, FaEnvelope, FaPhone, FaIdCard, FaBriefcase, FaCalendarAlt, FaRocket } from "react-icons/fa";
 import { FiGrid } from "react-icons/fi";
 import axios from "axios";
 import CreateProduitForm from "./CreateProduitForm";
@@ -180,12 +181,26 @@ export default function InventoryManager() {
     const [showRestockModal, setShowRestockModal] = useState(false);
     const [targetProduct, setTargetProduct] = useState<any>(null);
     const [requestedQty, setRequestedQty] = useState<number>(100);
-    const handleSendRequest = (product: any) => {
-        setTargetProduct(product);
-        setRequestedQty(100);
-        setShowRestockModal(true);
-    };
 
+
+    const handleSendRequest = async (product: any) => {
+        setTargetProduct(product);
+        setShowRestockModal(true);
+        setRequestedQty(0);
+
+        try {
+            const token = localStorage.getItem("token");
+            const res = await axios.get(`http://localhost:8888/prediction-service/prediction/predict-restock/${product.id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (res.data && res.data.recommended_quantity) {
+                setRequestedQty(res.data.recommended_quantity);
+            }
+        } catch (err) {
+            console.error("AI Prediction Error:", err);
+        }
+    };
     const confirmRestockAction = async () => {
         if (!targetProduct || !requestedQty) return;
 
@@ -195,6 +210,8 @@ export default function InventoryManager() {
                 productId: targetProduct.id,
                 productName: targetProduct.nom,
                 requestedQty: requestedQty,
+                sku: targetProduct.sku,
+                productImage: targetProduct.image,
                 fromManager: profile?.prenom || "Inventory Dept"
             }, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -537,14 +554,14 @@ export default function InventoryManager() {
                     <div className="modal-overlay">
                         <div className="movement-modal glass-panel fade-in">
                             <div className="modal-header-styled">
-                                <h3>Restock Request</h3>
-                                <p>Specify the quantity for <strong>{targetProduct?.nom}</strong></p>
+                                <h3>✨ Smart Restock Request</h3>
+                                <p>AI analyzing 365 days of history for: <strong>{targetProduct?.nom}</strong></p>
                             </div>
 
                             <div className="modal-body" style={{padding: '20px 0'}}>
                                 <div className="form-group">
                                     <label style={{fontSize: '12px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase'}}>
-                                        Required Quantity
+                                        Recommended Quantity
                                     </label>
                                     <input
                                         type="number"
@@ -553,6 +570,13 @@ export default function InventoryManager() {
                                         onChange={(e) => setRequestedQty(Number(e.target.value))}
                                         autoFocus
                                     />
+                                    {requestedQty > 0 ? (
+                                        <p style={{color: '#4facfe', fontSize: '12px', marginTop: '8px'}}>
+                                            ✅ AI suggested this amount to avoid out-of-stock for next 7 days.
+                                        </p>
+                                    ) : (
+                                        <p style={{fontSize: '12px', color: '#94a3b8'}}>Calculating with AI...</p>
+                                    )}
                                 </div>
                             </div>
 
@@ -560,13 +584,18 @@ export default function InventoryManager() {
                                 <button className="btn-cancel-modern" onClick={() => setShowRestockModal(false)}>
                                     Cancel
                                 </button>
-                                <button className="btn-confirm-restock" onClick={confirmRestockAction}>
-                                    Send to Procurement Manager
+                                <button
+                                    className="btn-confirm-restock"
+                                    onClick={confirmRestockAction}
+                                    disabled={requestedQty <= 0}
+                                >
+                                    Confirm & Send to Kafka 🚀
                                 </button>
                             </div>
                         </div>
                     </div>
                 )}
+
                 {activeSection === "create-product" && (
                     <motion.div
                         initial={{opacity: 0, scale: 0.9}}
@@ -653,79 +682,96 @@ export default function InventoryManager() {
 
                 {/* Profile */}
                 {activeSection === "profile" && (
-                    <div className="profile-panel">
-                        <h3>Personal Information</h3>
-
-                        <div className="profile-intro">
-                            The Inventory Manager oversees stock management, product organization, and warehouse
-                            operations. Responsibilities include maintaining accurate inventory levels, analyzing stock
-                            trends, and coordinating with the team for smooth operational workflow.
-                        </div>
-
-                        <div className="profile-avatar-section">
-                            <div className="avatar-container">
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="avatar-input"
-                                    onChange={handleImageChange}
-                                />
-                                {profile?.image ? (
-                                    <img src={profile.image} alt="Profile" className="profile-avatar-img"/>
-                                ) : (
-                                    <FaUser size={90} className="profile-avatar-icon"/>
-                                )}
+                    <div className="mgr-profile-wrapper fade-in">
+                        <div className="mgr-profile-card">
+                            <div className="mgr-profile-header">
+                                <div className="mgr-avatar-section">
+                                    <div className="mgr-avatar-wrapper">
+                                        <div className="mgr-avatar-overlay">
+                                            <FaCamera />
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="mgr-avatar-input"
+                                                onChange={handleImageChange}
+                                            />
+                                        </div>
+                                        {profile?.image ? (
+                                            <img src={profile.image} alt="Profile" className="mgr-avatar-img"/>
+                                        ) : (
+                                            <div className="mgr-avatar-placeholder">
+                                                <FaUser size={45} />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="mgr-header-info">
+                                    <h2 className="mgr-user-name">{profile?.prenom || ""} {profile?.nom || ""}</h2>
+                                    <p className="mgr-role-tag"><FaRocket /> Inventory Manager Specialist</p>
+                                </div>
                             </div>
-                            <h2 className="upload-text">{profile?.prenom || ""} {profile?.nom || ""}</h2>
-                        </div>
 
-                        {/* Info */}
-                        <div className="profile-info-two-columns">
-                            <div className="form-group"><label>First Name</label><input type="text"
-                                                                                        value={profile?.nom || ""}
-                                                                                        readOnly/></div>
-                            <div className="form-group"><label>Last Name</label><input type="text"
-                                                                                       value={profile?.prenom || ""}
-                                                                                       readOnly/></div>
-                        </div>
+                            <div className="mgr-profile-intro">
+                                The Inventory Manager oversees stock management, product organization, and warehouse
+                                operations. Responsibilities include maintaining accurate inventory levels and coordinating
+                                with the team for smooth operational workflow.
+                            </div>
 
-                        <div className="profile-info-two-columns">
-                            <div className="form-group"><label>Email</label><input type="email"
-                                                                                   value={profile?.email || ""}
-                                                                                   readOnly/></div>
-                            <div className="form-group"><label>Phone</label><input
-                                type="text"
-                                value={profile?.phone || ""}
-                                onChange={e => setProfile({...profile, phone: e.target.value})}
-                            /></div>
-                        </div>
+                            <div className="mgr-form-grid">
+                                <div className="mgr-input-group">
+                                    <label><FaUser/> First Name</label>
+                                    <input type="text" value={profile?.nom || ""} readOnly className="mgr-readonly"/>
+                                </div>
+                                <div className="mgr-input-group">
+                                    <label><FaUser/> Last Name</label>
+                                    <input type="text" value={profile?.prenom || ""} readOnly className="mgr-readonly"/>
+                                </div>
 
-                        <div className="profile-info-two-columns">
-                            <div className="form-group"><label>CIN</label><input
-                                type="text"
-                                value={profile?.cin || ""}
-                                onChange={e => setProfile({...profile, cin: e.target.value})}
-                            /></div>
-                            <div className="form-group"><label>Status</label><input type="text"
-                                                                                    value={profile?.status || ""}
-                                                                                    readOnly/></div>
-                        </div>
+                                <div className="mgr-input-group">
+                                    <label><FaEnvelope/> Email Address</label>
+                                    <input type="email" value={profile?.email || ""} readOnly className="mgr-readonly"/>
+                                </div>
+                                <div className="mgr-input-group">
+                                    <label><FaPhone/> Phone Number</label>
+                                    <input
+                                        type="text"
+                                        value={profile?.phone || ""}
+                                        onChange={e => setProfile({...profile, phone: e.target.value})}
+                                        placeholder="Enter your phone"
+                                    />
+                                </div>
 
-                        <div className="profile-info-two-columns">
-                            <div className="form-group"><label>Role</label><input type="text"
-                                                                                  value={profile?.metierRole || "Inventory Manager"}
-                                                                                  readOnly/></div>
-                            <div className="form-group"><label>Join Date</label><input type="text"
-                                                                                       value={profile?.createdAt || ""}
-                                                                                       readOnly/></div>
-                        </div>
+                                <div className="mgr-input-group">
+                                    <label><FaIdCard/> CIN</label>
+                                    <input
+                                        type="text"
+                                        value={profile?.cin || ""}
+                                        onChange={e => setProfile({...profile, cin: e.target.value})}
+                                        placeholder="Enter your CIN"
+                                    />
+                                </div>
+                                <div className="mgr-input-group">
+                                    <label><FaBriefcase/> Status</label>
+                                    <input type="text" value={profile?.status || ""} readOnly className="mgr-readonly"/>
+                                </div>
+                                <div className="pro-input-group">
+                                    <label><FaBriefcase/> Role</label>
+                                    <input type="text" value={profile?.metierRole } readOnly
+                                           className="pro-readonly"/>
+                                </div>
+                                <div className="mgr-input-group">
+                                    <label><FaCalendarAlt/> Join Date</label>
+                                    <input type="text" value={profile?.createdAt || ""} readOnly
+                                           className="mgr-readonly"/>
+                                </div>
+                            </div>
 
-                        <div className="profile-actions">
-                            <button
-                                className="change-btn"
-                                onClick={async () => {
-                                    try {
-                                        const token = localStorage.getItem("token");
+                            <div className="mgr-form-footer">
+                                <button
+                                    className="mgr-save-btn"
+                                    onClick={async () => {
+                                        try {
+                                            const token = localStorage.getItem("token");
 
                                         const updatedData = {
                                             phone: profile?.phone,
@@ -747,14 +793,13 @@ export default function InventoryManager() {
                                         alert("Failed to update profile.");
                                     }
                                 }}
-                            >
-                                Save Changes
-                            </button>
+                                >
+                                    Save Changes
+                                </button>
+                            </div>
                         </div>
-
                     </div>
                 )}
-
             </main>
         </div>
     );

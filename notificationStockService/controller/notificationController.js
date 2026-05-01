@@ -23,7 +23,7 @@ exports.getById = async (req, res) => {
 // PUT /api/notifications/:id/status
 exports.updateStatus = async (req, res) => {
     try {
-        const status = req.body.status || req.query.status; // body aw query
+        const status = req.body.statut;
         if (!status) return res.status(400).json({ message: "Status is required" });
 
         const notification = await Notification.findById(req.params.id);

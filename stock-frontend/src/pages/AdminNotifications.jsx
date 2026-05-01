@@ -4,38 +4,16 @@ import { motion } from 'framer-motion';
 import { FaBell, FaExclamationTriangle, FaShoppingBag, FaTruck, FaCheckCircle, FaSync } from 'react-icons/fa';
 import './AdminNotifications.css';
 
-const AdminNotifications = () => {
-    const [allNotifications, setAllNotifications] = useState([]);
-    const [loading, setLoading] = useState(true);
+const AdminNotifications = ({ notifications, refresh, loading, setTotalCount }) => {
 
+    const stockAlerts = notifications.filter(n => n.niveau === 'ERROR' || n.niveau === 'REPLENISHMENT_ORDER');
+    const purchaseRequests = notifications.filter(n => n.type === 'NEW_ORDER_REQUEST' || n.type === 'QUOTE_RECEIVED');
+    const logistics = notifications.filter(n => n.type === 'WAITING_CONFIRMATION' || n.type === 'AWAITING_RECEPTION' || n.type === 'ORDER_SHIPPED');
+    const finalized = notifications.filter(n => n.type === 'CONFIRMED');
     useEffect(() => {
-        fetchAllNotifications();
-    }, []);
-
-    const fetchAllNotifications = async () => {
-        try {
-            setLoading(true);
-            const token = localStorage.getItem("token");
-            const config = { headers: { Authorization: `Bearer ${token}` } };
-
-            const resAll = await axios.get("http://localhost:8888/service-notification/api/notifications", config);
-
-            const data = Array.isArray(resAll.data) ? resAll.data : (resAll.data.notifications || []);
-
-            const sortedData = data.sort((a, b) => new Date(b.dateAlerte) - new Date(a.dateAlerte));
-            setAllNotifications(sortedData);
-            setLoading(false);
-        } catch (err) {
-            console.error("❌ Error fetching all notifications:", err);
-            setLoading(false);
-        }
-    };
-
-    const stockAlerts = allNotifications.filter(n => n.niveau === 'ERROR' || n.niveau === 'REPLENISHMENT_ORDER');
-    const purchaseRequests = allNotifications.filter(n => n.type === 'NEW_ORDER_REQUEST' || n.type === 'QUOTE_RECEIVED');
-    const logistics = allNotifications.filter(n => n.type === 'WAITING_CONFIRMATION' || n.type === 'AWAITING_RECEPTION' || n.type === 'ORDER_SHIPPED');
-    const finalized = allNotifications.filter(n => n.type === 'CONFIRMED');
-
+        const total = stockAlerts.length + purchaseRequests.length + logistics.length + finalized.length;
+        setTotalCount(total);
+    }, [notifications]);
     const renderGroup = (title, icon, data, color) => (
         <section className="admin-notif-group glass-panel">
             <div className="group-header" style={{ borderBottom: `3px solid ${color}` }}>
@@ -73,16 +51,16 @@ const AdminNotifications = () => {
         >
             <div className="admin-notifs-header">
                 <div className="title-section">
-                    <h1><FaBell className="bell-icon" /> Notifications Center</h1>
+                    <h1><FaBell className="bell-icon"/> Notifications Center</h1>
                     <p>Monitor all microservices activities in real-time</p>
                 </div>
-                <button className="refresh-circle-btn" onClick={fetchAllNotifications} disabled={loading}>
-                    <FaSync className={loading ? "spin" : ""} />
+                <button className="refresh-circle-btn" onClick={refresh} disabled={loading}>
+                    <FaSync className={loading ? "spin" : ""}/>
                 </button>
             </div>
 
             <div className="admin-notifs-grid">
-                {renderGroup("Stock & Inventory", <FaExclamationTriangle />, stockAlerts, "#ffb3b3")}
+                {renderGroup("Stock & Inventory", <FaExclamationTriangle/>, stockAlerts, "#ffb3b3")}
                 {renderGroup("Purchasing (RFQ)", <FaShoppingBag />, purchaseRequests, "#ffe0b3")}
                 {renderGroup("Logistics & Shipping", <FaTruck />, logistics, "#b3e0ff")}
                 {renderGroup("Completed Operations", <FaCheckCircle />, finalized, "#c2f0c2")}
