@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const QuotationSchema = new mongoose.Schema({
     id_commande: { type: String, required: true }, // ID ديال الـ Notification/RFQ
     id_produit: { type: String, required: true },
-    pName: { type: String }, // اسم المنتج
+    pName: { type: String },
     id_supplier: { type: String, required: true },
     sName: { type: String },
     supplierEmail: { type: String },
