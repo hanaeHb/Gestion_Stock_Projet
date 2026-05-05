@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: securitystock-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: securitystock-service
+  template:
+    metadata:
+      labels:
+        app: securitystock-service
+    spec:
+      containers:
+        - name: securitystock-service
+          image: securitystock-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8098
+          env:
+            # Database Config
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://host.docker.internal:3306/security_stock_db?createDatabaseIfNotExist=true
+            - name: SPRING_DATASOURCE_USERNAME
+              value: root
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: ""
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: 'update'
+
+            # Eureka Config
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://discovery-service:8761/eureka/
+            - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+              value: "true"
+
+            # Kafka Config
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: kafka-service:9092
+
+            - name: RSA_PUBLICKEY
+              value: "classpath:keys/publicKey.pem"
+            - name: RSA_PRIVATEKEY
+              value: "classpath:keys/privateKey.pem"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: securitystock-service
+spec:
+  selector:
+    app: securitystock-service
+  ports:
+    - protocol: TCP
+      port: 8098
+      targetPort: 8098
+  type: LoadBalancer
