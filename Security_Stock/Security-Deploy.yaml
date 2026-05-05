@@ -18,6 +18,9 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 8098
+          volumeMounts:
+            - name: storage-cv
+              mountPath: /app/uploads/cv
           env:
             # Database Config
             - name: SPRING_DATASOURCE_URL
@@ -43,7 +46,10 @@ spec:
               value: "classpath:keys/publicKey.pem"
             - name: RSA_PRIVATEKEY
               value: "classpath:keys/privateKey.pem"
-
+      volumes:
+        - name: storage-cv
+          hostPath:
+            path: "/run/desktop/mnt/host/c/Users/admin/Desktop/Gestion_Stock_Projet/Security_Stock/uploads/cv"
 ---
 apiVersion: v1
 kind: Service

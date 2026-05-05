@@ -4,7 +4,7 @@ const emailService = require("./emailService");
 
 const kafka = new Kafka({
     clientId: "notification-service",
-    brokers: ["localhost:9092"]
+    brokers: [process.env.KAFKA_BOOTSTRAP_SERVERS || "kafka-service:9092"]
 });
 
 const consumer = kafka.consumer({

@@ -3,7 +3,7 @@ const router = express.Router();
 const notificationController = require("../controller/notificationController");
 const authMiddleware = require("../middleware/authMiddleware");
 const hasRole = require("../middleware/hasRole");
-const Notification = require("../models/notification");
+const Notification = require("../models/Notification");
 const { hasAnyRole } = require("../middleware/hasAnyRole");
 /**
  * @swagger

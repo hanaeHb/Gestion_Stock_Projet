@@ -19,14 +19,11 @@ const PORT = 5003;
 const client = new Eureka({
   instance: {
     app: 'service-notification',
-    hostName: 'localhost', 
-    ipAddr: '127.0.0.1',
-    statusPageUrl: `http://localhost:${PORT}/info`,
-    healthCheckUrl: `http://localhost:${PORT}/health`,
-    port: {
-      '$': PORT,
-      '@enabled': 'true',
-    },
+    hostName: 'service-notification',
+    ipAddr: 'service-notification',
+    statusPageUrl: `http://service-notification:${PORT}/info`,
+    healthCheckUrl: `http://service-notification:${PORT}/health`,
+    port: { '$': PORT, '@enabled': 'true' },
     vipAddress: 'service-notification',
     dataCenterInfo: {
       '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
@@ -34,7 +31,7 @@ const client = new Eureka({
     },
   },
   eureka: {
-    host: 'localhost',
+    host: 'discovery-service',
     port: 8761,
     servicePath: '/eureka/apps/',
   },
@@ -49,7 +46,6 @@ app.get('/health', (req, res) => {
 
 app.use('/uploads/cv', express.static(path.join(__dirname, 'uploads/cv')));
 
-// Route CV download
 app.get('/download/cv/:filename', async (req, res) => {
   const fileName = req.params.filename;
   try {
@@ -65,7 +61,6 @@ app.get('/download/cv/:filename', async (req, res) => {
     res.status(404).send('File not found');
   }
 });
-
 // Connect MongoDB
 connectDB();
 
@@ -85,7 +80,7 @@ app.use('/api/notifications', notificationRoutes);
 
 const kafka = new Kafka({
   clientId: "notification-service",
-  brokers: ["localhost:9092"]
+  brokers: [process.env.KAFKA_BOOTSTRAP_SERVERS || "kafka-service:9092"]
 });
 const consumer = kafka.consumer({ groupId: "notification-group" });
 

@@ -256,18 +256,10 @@ public class UserController {
         try {
             String userDir = System.getProperty("user.dir");
 
-            java.nio.file.Path path1 = java.nio.file.Paths.get(userDir, "Security_Stock", "uploads", "cv", fileName).normalize();
+            java.nio.file.Path finalPath = java.nio.file.Paths.get("/app/uploads/cv", fileName).normalize();
 
-            java.nio.file.Path path2 = java.nio.file.Paths.get(userDir, "uploads", "cv", fileName).normalize();
-
-            java.nio.file.Path finalPath;
-
-            if (java.nio.file.Files.exists(path1)) {
-                finalPath = path1;
-            } else if (java.nio.file.Files.exists(path2)) {
-                finalPath = path2;
-            } else {
-                System.err.println("❌ File not found! Checked in: \n1: " + path1 + "\n2: " + path2);
+            if (!java.nio.file.Files.exists(finalPath)) {
+                System.err.println("❌ File not found at: " + finalPath.toAbsolutePath());
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
 
