@@ -16,10 +16,13 @@ export default function UsersStatusChart({ users }) {
             {
                 data: [active, reactive],
                 backgroundColor: [
-                    "rgba(102, 126, 234, 0.7)",
-                    "rgba(251, 182, 206, 0.7)"
+                    "rgba(115, 13, 25, 0.7)",
+                    "rgba(255, 154, 158, 0.7)"
                 ],
-                borderColor: ["#667eea", "#fbb6ce"],
+                borderColor: [
+                    "#730d19",
+                    "#ff9a9e"
+                ],
                 borderWidth: 2
             }
         ]

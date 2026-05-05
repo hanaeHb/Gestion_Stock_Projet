@@ -24,11 +24,11 @@ export default function UsersRoleChart({ users }) {
             {
                 data: Object.values(roleCount),
                 backgroundColor: [
-                    "#667eea",
-                    "#764ba2",
-                    "#fbb6ce",
-                    "#a18cd1",
-                    "#4fd1c5"
+                    "#730d19",
+                    "#a4161a",
+                    "#ff9a9e",
+                    "#ffb07c",
+                    "#ffd8be"
                 ],
                 borderWidth: 0,
                 hoverOffset: 15,

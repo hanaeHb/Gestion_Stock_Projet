@@ -221,7 +221,7 @@ const CreateProductForm: React.FC = () => {
                                         animate={{opacity: 1, x: 0}}
                                         className="success-msg"
                                     >
-                                    <FaCheckCircle /> Synced to Cloud
+                                    <FaCheckCircle /> Saved
                                     </motion.span>
                                 )}
                             </AnimatePresence>

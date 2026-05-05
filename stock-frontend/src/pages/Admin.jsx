@@ -58,11 +58,11 @@ export default function Admin() {
         lastName: "",
         phone: "",
         cin: "",
-        role: ["Manager"]
+        role: ["ADMIN"]
     });
     const [formError, setFormError] = useState("");
     const [profileData, setProfileData] = useState({
-        metierRole: "Manager"
+        metierRole: "ADMIN"
     });
     const [currentPage, setCurrentPage] = useState(1);
     const usersPerPage = 6;
@@ -529,6 +529,18 @@ export default function Admin() {
     const currentCategoriesList = categories.slice(firstCatIndex, lastCatIndex);
 
     const totalCatPages = Math.ceil(categories.length / catsPerPage);
+    const itemsPerPage = 6;
+    const filteredProducts = products.filter(p =>
+        p.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.sku.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    const indexOfLastProduct = currentPage * itemsPerPage;
+    const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
+    const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
     return (
         <div className="admin-container">
 
@@ -632,104 +644,109 @@ export default function Admin() {
                 {/* ===================== Dashboard ===================== */}
                 {activeSection === "dashboard" && (
                     <>
-                        <header className="header">
-                            <h1>Stock & Users Dashboard</h1>
-                        </header>
-
-                        <section className="dash-cards-container fade-in">
-
-                            {/* Total Products */}
-                            <div className="dash-card">
-                                <div className="dash-card-icon-wrapper">
-                                    <FaBoxes/>
-                                </div>
-                                <div className="dash-card-content">
-                                    <h3>{totalProductsCount}</h3>
-                                    <p>Total Products</p>
+                        <div className="category-container">
+                            <div className="category-modern-header">
+                                <div className="header-text">
+                                    <h1>Stock & Users Dashboard</h1>
+                                    <p>Organize and structure your inventory hierarchy</p>
                                 </div>
                             </div>
 
-                            {/* Low Stock */}
-                            <div className="dash-card">
-                                <div className="dash-card-icon-wrapper low-stock-icon">
-                                    <FaChartBar/>
-                                </div>
-                                <div className="dash-card-content">
-                                    <h3 className="warning-text">{lowStockCount}</h3>
-                                    <p>Low Stock Items</p>
-                                </div>
-                            </div>
+                            <section className="dash-cards-container fade-in">
 
-                            {/* Total Users */}
-                            <div className="dash-card">
-                                <div className="dash-card-icon-wrapper">
-                                    <FaUsers/>
+                                {/* Total Products */}
+                                <div className="dash-card">
+                                    <div className="dash-card-icon-wrapper">
+                                        <FaBoxes/>
+                                    </div>
+                                    <div className="dash-card-content">
+                                        <h3>{totalProductsCount}</h3>
+                                        <p>Total Products</p>
+                                    </div>
                                 </div>
-                                <div className="dash-card-content">
-                                    <h3>{users.filter(user => !user.roles.includes("Fournisseur")).length}</h3>
-                                    <p>Active Staff</p>
-                                </div>
-                            </div>
 
-                            {/* Total Suppliers */}
-                            <div className="dash-card">
-                                <div className="dash-card-icon-wrapper supplier-icon">
-                                    <FaUserTie/>
+                                {/* Low Stock */}
+                                <div className="dash-card">
+                                    <div className="dash-card-icon-wrapper low-stock-icon">
+                                        <FaChartBar/>
+                                    </div>
+                                    <div className="dash-card-content">
+                                        <h3 className="warning-text">{lowStockCount}</h3>
+                                        <p>Low Stock Items</p>
+                                    </div>
                                 </div>
-                                <div className="dash-card-content">
-                                    <h3>{users.filter(user => user.roles.includes("Fournisseur")).length}</h3>
-                                    <p>Total Suppliers</p>
-                                </div>
-                            </div>
 
-                            {/* Top Role */}
-                            <div className="dash-card large">
-                                <div className="dash-card-icon-wrapper role-icon">
-                                    <FaCog/>
+                                {/* Total Users */}
+                                <div className="dash-card">
+                                    <div className="dash-card-icon-wrapper">
+                                        <FaUsers/>
+                                    </div>
+                                    <div className="dash-card-content">
+                                        <h3>{users.filter(user => !user.roles.includes("Fournisseur")).length}</h3>
+                                        <p>Active Staff</p>
+                                    </div>
                                 </div>
-                                <div className="dash-card-content">
-                                    <h3>
-                                        {(() => {
-                                            if (!users.length) return "-";
-                                            const roleCount = {};
-                                            users.forEach(u => u.roles?.forEach(r => roleCount[r] = (roleCount[r] || 0) + 1));
-                                            const topRole = Object.entries(roleCount).sort((a, b) => b[1] - a[1])[0];
-                                            return topRole ? `${topRole[0]} (${topRole[1]})` : "-";
-                                        })()}
-                                    </h3>
-                                    <p>Dominant System Role</p>
-                                </div>
-                            </div>
 
-                            {/* Total Categories */}
-                            <div className="dash-card">
-                                <div className="dash-card-icon-wrapper category-icon">
-                                    <HiViewGridAdd/>
+                                {/* Total Suppliers */}
+                                <div className="dash-card">
+                                    <div className="dash-card-icon-wrapper supplier-icon">
+                                        <FaUserTie/>
+                                    </div>
+                                    <div className="dash-card-content">
+                                        <h3>{users.filter(user => user.roles.includes("Fournisseur")).length}</h3>
+                                        <p>Total Suppliers</p>
+                                    </div>
                                 </div>
-                                <div className="dash-card-content">
-                                    <h3>{totalCategoriesCount}</h3>
-                                    <p>Total Categories</p>
+
+                                {/* Top Role */}
+                                <div className="dash-card large">
+                                    <div className="dash-card-icon-wrapper role-icon">
+                                        <FaCog/>
+                                    </div>
+                                    <div className="dash-card-content">
+                                        <h3>
+                                            {(() => {
+                                                if (!users.length) return "-";
+                                                const roleCount = {};
+                                                users.forEach(u => u.roles?.forEach(r => roleCount[r] = (roleCount[r] || 0) + 1));
+                                                const topRole = Object.entries(roleCount).sort((a, b) => b[1] - a[1])[0];
+                                                return topRole ? `${topRole[0]} (${topRole[1]})` : "-";
+                                            })()}
+                                        </h3>
+                                        <p>Dominant System Role</p>
+                                    </div>
                                 </div>
-                            </div>
-                        </section>
 
-                        {/* ===================== Users Charts ===================== */}
-                        <div className="charts-row" style={{marginTop: "40px"}}>
-
-                            <section className="role-chart-section">
-                                <h3>Users by Role</h3>
-                                <div style={{height: "250px"}}>
-                                    <UsersRoleChart users={users}/>
+                                {/* Total Categories */}
+                                <div className="dash-card">
+                                    <div className="dash-card-icon-wrapper category-icon">
+                                        <HiViewGridAdd/>
+                                    </div>
+                                    <div className="dash-card-content">
+                                        <h3>{totalCategoriesCount}</h3>
+                                        <p>Total Categories</p>
+                                    </div>
                                 </div>
                             </section>
 
-                            <section className="role-chart-section">
-                                <h3>Users Status</h3>
-                                <div style={{height: "250px"}}>
-                                    <UsersStatusChart users={users}/>
-                                </div>
-                            </section>
+                            {/* ===================== Users Charts ===================== */}
+                            <div className="charts-row" style={{marginTop: "40px"}}>
 
+                                <section className="role-chart-section">
+                                    <h3>Users by Role</h3>
+                                    <div style={{height: "250px"}}>
+                                        <UsersRoleChart users={users}/>
+                                    </div>
+                                </section>
+
+                                <section className="role-chart-section">
+                                    <h3>Users Status</h3>
+                                    <div style={{height: "250px"}}>
+                                        <UsersStatusChart users={users}/>
+                                    </div>
+                                </section>
+
+                            </div>
                         </div>
                     </>
                 )}
@@ -972,17 +989,17 @@ export default function Admin() {
 
                             <div className="modern-pagination">
                                 <button
-                                    className="pagi-arrow"
+                                    className="pagi-nav-btn"
                                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                                     disabled={currentPage === 1}
-                                > <FaArrowLeft /> Previous </button>
+                                >  ← Previous  </button>
 
-                                <div className="pagi-numbers">
+                                <div className="pagi-numbers-list">
                                     {Array.from({ length: Math.ceil(users.filter(u => !u.roles.includes("Fournisseur")).length / usersPerPage) }, (_, i) => (
                                         <button
                                             key={i + 1}
                                             onClick={() => setCurrentPage(i + 1)}
-                                            className={currentPage === i + 1 ? "active" : ""}
+                                            className={`pagi-num-btn ${currentPage === i + 1 ? "active" : ""}`}
                                         >
                                             {i + 1}
                                         </button>
@@ -990,10 +1007,10 @@ export default function Admin() {
                                 </div>
 
                                 <button
-                                    className="pagi-arrow"
+                                    className="pagi-nav-btn"
                                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(users.filter(u => !u.roles.includes("Fournisseur")).length / usersPerPage)))}
                                     disabled={currentPage === Math.ceil(users.filter(u => !u.roles.includes("Fournisseur")).length / usersPerPage)}
-                                > Next <FaArrowRight /> </button>
+                                > Next →  </button>
                             </div>
                         </div>
 
@@ -1046,7 +1063,6 @@ export default function Admin() {
                                                 onChange={(e) => setUserData({...userData, role: [e.target.value]})}
                                             >
                                                 <option value="ADMIN">ADMIN</option>
-                                                <option value="Manager">Manager</option>
                                                 <option value="Procurement Manager">Procurement Manager</option>
                                                 <option value="Inventory Manager">Inventory Manager</option>
                                             </select>
@@ -1111,7 +1127,6 @@ export default function Admin() {
                                                 value={editingUser.roles[0]}
                                                 onChange={(e) => setEditingUser({...editingUser, roles: [e.target.value]})}>
                                                 <option value="ADMIN">ADMIN</option>
-                                                <option value="Manager">Manager</option>
                                                 <option value="Procurement Manager">Procurement Manager</option>
                                                 <option value="Inventory Manager">Inventory Manager</option>
                                             </select>
@@ -1288,9 +1303,7 @@ export default function Admin() {
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {products
-                                    .filter(p => p.nom.toLowerCase().includes(searchTerm.toLowerCase()) || p.sku.toLowerCase().includes(searchTerm.toLowerCase()))
-                                    .map((product) => (
+                                {currentProducts.map((product) => (
                                         <tr key={product.id}>
                                             <td>
                                                 <div className="td-info"
@@ -1332,6 +1345,36 @@ export default function Admin() {
                                     ))}
                                 </tbody>
                             </table>
+                            <div className="catalog-pagination">
+                                {/* Previous Button */}
+                                <button
+                                    className="pagi-nav-btn"
+                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={currentPage === 1}
+                                >
+                                    ← Previous
+                                </button>
+
+                                <div className="pagi-numbers-list">
+                                    {Array.from({length: totalPages}, (_, i) => i + 1).map((pageNum) => (
+                                        <button
+                                            key={pageNum}
+                                            className={`pagi-num-btn ${currentPage === pageNum ? "is-active" : ""}`}
+                                            onClick={() => setCurrentPage(pageNum)}
+                                        >
+                                            {pageNum}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <button
+                                    className="pagi-nav-btn"
+                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                    disabled={currentPage === totalPages || totalPages === 0}
+                                >
+                                    Next →
+                                </button>
+                            </div>
                         </div>
                     </motion.div>
                 )}

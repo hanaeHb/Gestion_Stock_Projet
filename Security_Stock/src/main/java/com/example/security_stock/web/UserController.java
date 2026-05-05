@@ -176,11 +176,15 @@ public class UserController {
 
     // --- REGISTER CLIENT ---
     @PostMapping("/register")
-    public ResponseEntity<UserResponseDTO> registerUserClient(@ModelAttribute UserRequestDTO request) throws IOException {
-        request.setRole(Set.of("Fournisseur"));
-        MultipartFile cvFile = request.getCv();
-        UserResponseDTO response = userService.createFour(request, cvFile);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<?> registerUserClient(@ModelAttribute UserRequestDTO request) throws IOException {
+        try {
+            request.setRole(Set.of("Fournisseur"));
+            MultipartFile cvFile = request.getCv();
+            UserResponseDTO response = userService.createFour(request, cvFile);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()));
+        }
     }
 
     // --- LOGIN ---

@@ -30,7 +30,7 @@ body {
     font-size: 35px;
     margin-bottom: 14px;
     font-weight: 650;
-    color: #1e293b;
+    color: #000000;
     font-family: "Berlin Sans FB Demi";
     text-align: center;
 }
@@ -57,20 +57,18 @@ body {
 
 input {
     background: white;
-    border: 1px solid #2a2a2a;
+    border: 1px solid #000000;
     color: #000000;
     padding: 12px 13px;
     border-radius: 8px;
     margin-bottom: 12px;
     font-size: 16px;
     outline: none;
-    width: auto;
-    transition: 0.2s ease;
     font-family: "Berlin Sans FB Demi";
 }
 
 input:focus {
-    border: 2px solid navy;
+    border: 2px solid #ff9a9e;
 
 }
 
@@ -95,15 +93,14 @@ input::placeholder {
 
 .input-group input {
     width: 100%;
-    padding: 12px 14px 12px 42px; /* space for icon */
+    padding: 12px 14px 12px 42px;
     border-radius: 8px;
-    border: 1px solid #2a2a2a;
+    border: 1px solid #ff9a9e;
     font-size: 15px;
-    transition: 0.3s ease;
 }
 
 .input-group input:focus {
-    border: 2px solid navy;
+    border: 2px solid #ff9a9e;
 }
 
 .input-icon {
@@ -111,10 +108,9 @@ input::placeholder {
     left: 14px;
     top: 38%;
     transform: translateY(-50%);
-    color: #3b5998;
+    color: #ff9a9e;
     font-size: 14px;
     pointer-events: none;
-    transition: 0.3s ease;
 }
 
 /* icon change color on focus */
@@ -126,7 +122,7 @@ input::placeholder {
 /* BUTTON */
 .login-btn {
     width: 100%;
-    background: linear-gradient(135deg, #4facfe, #730d19);
+    background: linear-gradient(135deg, #ff9a9e, #730d19);
     color: #000;
     border: none;
     padding: 12px;
@@ -136,13 +132,11 @@ input::placeholder {
     cursor: pointer;
     margin-bottom: 15px;
     transition: 0.2s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.57);
     font-family: "Berlin Sans FB Demi";
 }
 
 .login-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.57);
     font-family: "Berlin Sans FB Demi";
 }
 .socials {
@@ -154,7 +148,7 @@ input::placeholder {
 .social-btn {
     flex: 1;
     background: transparent;
-    border: 1px solid #2a2a2a;
+    border: 1px solid #ff9a9e;
     color: #000000;
     padding: 11px;
     border-radius: 8px;
@@ -198,7 +192,6 @@ input::placeholder {
 }
 
 
-/* RIGHT SIDE */
 .right {
     width: 80%;
     position: relative;
@@ -206,7 +199,6 @@ input::placeholder {
 }
 
 
-/* BIG CIRCLE */
 .big-circle {
 
     width: 1020px;
@@ -214,7 +206,7 @@ input::placeholder {
 
     border-radius: 60%;
 
-    background: radial-gradient(circle at 30% 30%, #ffffff 0%, #e5e7eb 40%, #730d19 100%);
+    background: radial-gradient(circle at 30% 30%, #ffffff 0%, rgba(243, 188, 185, 0.44) 40%, #730d19 100%);
     position: absolute;
 
     right: -200px;
@@ -255,7 +247,7 @@ input::placeholder {
     gap: 12px;
     justify-content: space-between;
     margin-top: 30px;
-    color: #1e293b;
+    color: #000000;
     margin-bottom: 50px;
 }
 
@@ -271,7 +263,7 @@ input::placeholder {
 }
 
 .play {
-    background: linear-gradient(135deg, #4facfe, #730d19);
+    background: linear-gradient(135deg, #ff9a9e, #730d19);
     color: white;
     border: none;
     padding: 10px 25px;
@@ -286,4 +278,76 @@ input::placeholder {
     transform: scale(1.1);
     background: #730d19;
     color: white;
+}
+
+.custom-toast {
+    position: fixed;
+    top: 30px;
+    right: 30px;
+    background: white;
+    padding: 16px 24px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    border-left: 5px solid #730d19;
+    animation: slideIn 0.5s ease forwards;
+    z-index: 1000;
+    min-width: 300px;
+}
+
+.toast-icon {
+    background: #730d19;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.toast-content h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #1a1a1a;
+    font-family: "Berlin Sans FB Demi";
+}
+
+.toast-content p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+    opacity: 0.8;
+}
+
+
+.toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #730d19, #ff9a9e);
+    width: 100%;
+    animation: progress 2s linear forwards;
+}
+
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes progress {
+    from { width: 100%; }
+    to { width: 0%; }
 }

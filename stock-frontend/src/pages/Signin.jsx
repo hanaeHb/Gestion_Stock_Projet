@@ -25,7 +25,7 @@ export default function SignIn() {
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-
+    const [showToast, setShowToast] = useState({ show: false, message: "", type: "" });
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -34,6 +34,20 @@ export default function SignIn() {
         e.preventDefault();
         setLoading(true);
         setError("");
+        setShowToast({ show: false, message: "", type: "" });
+        if (!formData.firstName || !formData.lastName || !formData.email ||
+            !formData.phone || !formData.cin || !formData.password || !formData.cv) {
+
+            setShowToast({
+                show: true,
+                message: "Please fill in all the required fields!",
+                type: "error"
+            });
+            setLoading(false);
+            setTimeout(() => setShowToast(prev => ({ ...prev, show: false })), 4000);
+            return;
+
+        }
 
         try {
             const data = new FormData();
@@ -61,15 +75,32 @@ export default function SignIn() {
                 localStorage.setItem("role", "Fournisseur");
             }
 
-            alert(`Fournisseur ${formData.firstName} has been registered successfully!`);
+            setShowToast({
+                show: true,
+                message: `Welcome ${formData.firstName}! Registration successful.`,
+                type: "success"
+            });
 
-            navigate("/pending-validation");
+            setLoading(false);
+            setTimeout(() => {
+                navigate("/pending-validation");
+            }, 4000);
 
         } catch (err) {
-            console.error(err);
-            setError(err.response?.data?.message || "Error during registration");
-        } finally {
-            setLoading(false);
+        console.error("Error detected:", err.response);
+
+        const errorMessage = err.response?.data?.message || "Something went wrong";
+
+        setShowToast({
+            show: true,
+            message: errorMessage,
+            type: "error"
+        });
+
+        setLoading(false);
+        setTimeout(() => {
+            setShowToast(prev => ({ ...prev, show: false }));
+        }, 4000);
         }
     };
     return (
@@ -211,6 +242,16 @@ export default function SignIn() {
                     </div>
                 </div>
             </div>
+            {showToast.show && (
+                <div className={`custom-toast ${showToast.type === "success" ? "success-toast" : "error-toast"}`}>
+                    <div className="toast-icon">{showToast.type === "success" ? "✓" : "✕"}</div>
+                    <div className="toast-content">
+                        <h4>{showToast.type === "success" ? "Success!" : "Registration Failed"}</h4>
+                        <p>{showToast.message}</p>
+                    </div>
+                    <div className="toast-progress"></div>
+                </div>
+            )}
         </div>
     );
 }

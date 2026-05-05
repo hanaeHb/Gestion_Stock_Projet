@@ -32,7 +32,7 @@
 .main-action-card {
     all: unset;
     background: #ffffff;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #ff9a9e;
     padding: 30px;
     border-radius: 24px;
     display: flex;
@@ -41,13 +41,11 @@
     cursor: pointer;
     position: relative;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .main-action-card:hover {
     transform: translateY(-8px);
-    border-color: #818cf8;
-    box-shadow: 0 20px 25px -5px rgba(129, 140, 248, 0.1);
+    border-color: #ff9a9e;
 }
 
 .icon-box {
@@ -97,8 +95,7 @@
     background: #ffffff;
     border-radius: 24px;
     padding: 30px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #ff9a9e;
 }
 
 /* 4. Professional Table */
@@ -160,14 +157,14 @@
     padding: 20px;
     background: #f8fafc;
     border-radius: 16px;
-    border-left: 4px solid #818cf8;
+    border-left: 4px solid #ff9a9e;
 }
 
-.alert-icon { color: #818cf8; font-size: 1.2rem; }
+.alert-icon { color: #ff9a9e; font-size: 1.2rem; }
 
 .btn-view-all {
     all: unset;
-    color: #6366f1;
+    color: #ff9a9e;
     font-weight: 700;
     font-size: 0.9rem;
     cursor: pointer;
@@ -177,4 +174,4 @@
     transition: 0.3s;
 }
 
-.btn-view-all:hover { background: #eef2ff; color: #4f46e5; }
+.btn-view-all:hover { background: #eef2ff; color: #ff9a9e; }

@@ -15,7 +15,9 @@ export default function Login() {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [toast, setToast] = useState({ show: false, message: "", type: "" });
+    const [userRole, setUserRole] = useState("");
     const handleLogin = async () => {
         try {
             const res = await axios.post("http://localhost:8888/security-stock/v1/users/login", {
@@ -34,38 +36,42 @@ export default function Login() {
 
             console.log("Decoded Token:", decoded);
             const userRoles = decoded.roles || [];
-
+            const role = decoded.roles && decoded.roles.length > 0 ? decoded.roles[0] : "User";
+            setUserRole(role);
+            setShowSuccess(true);
             if (decoded.roles.includes("ADMIN")) {
-                alert("Login successful as ADMIN!");
-                navigate("/Admin");
-            }
-            else if (decoded.roles.includes("Manager")) {
-                alert("Login successful as Manager!");
-                navigate("/Manager");
+                setShowSuccess(true);
+                setTimeout(() => navigate("/Admin"), 4000);
             }
             else if (decoded.roles.includes("Procurement Manager")) {
-                alert("Login successful as Procurement Manager!");
-                navigate("/ProcurementManager");
+                setShowSuccess(true);
+                setTimeout(() => navigate("/ProcurementManager"), 4000);
             }
             else if (decoded.roles.includes("Inventory Manager")) {
-                alert("Login successful as Inventory Manager!");
-                navigate("/InventoryManager");
+                setShowSuccess(true);
+                setTimeout(() => navigate("/InventoryManager"), 4000);
             }
             else if (decoded.roles.includes("Fournisseur")) {
-                alert("Login successful as Fournisseur!");
-                navigate("/fournisseur");
+                setShowSuccess(true);
+                setTimeout(() => navigate("/fournisseur"), 4000);
             }
             else {
                 navigate("/userPage");
             }
 
-        } catch (err) {
-            console.error("Login Full Error:", err);
-            if (err.response) {
-                console.error("Status:", err.response.status);
-                console.error("Data:", err.response.data);
-            }
-            alert("Login failed! Check console for details.");
+        }catch (err) {
+            console.error("Login Error:", err);
+            const errorMessage = err.response?.data?.message || "Invalid Email or Password!";
+
+            setToast({
+                show: true,
+                message: errorMessage,
+                type: "error"
+            });
+
+            setTimeout(() => {
+                setToast(prev => ({ ...prev, show: false }));
+            }, 4000);
         }
     };
     return (
@@ -141,6 +147,30 @@ export default function Login() {
 
             </div>
 
+            {showSuccess && (
+                <div className="custom-toast success-toast">
+                    <div className="toast-icon">✓</div>
+                    <div className="toast-content">
+                        <h4>Success!</h4>
+                        <p>Welcome back to Go StoCk.</p>
+                        <p>Logging you in as {userRole}...</p>
+                    </div>
+                    <div className="toast-progress"></div>
+                </div>
+            )}
+            {toast.show && (
+                <div className={`custom-toast ${toast.type === "success" ? "success-toast" : "error-toast"}`}>
+                    <div className="toast-icon">
+                        {toast.type === "success" ? "✓" : "✕"}
+                    </div>
+                    <div className="toast-content">
+                        <h4>{toast.type === "success" ? "Success!" : "Login Failed"}</h4>
+                        <p>{toast.message}</p>
+                    </div>
+                    <div className="toast-progress"></div>
+                </div>
+            )}
         </div>
+
     );
 }

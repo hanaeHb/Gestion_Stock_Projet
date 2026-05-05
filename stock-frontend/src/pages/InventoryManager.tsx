@@ -87,7 +87,8 @@ export default function InventoryManager() {
 
     const [products, setProducts] = useState<any[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
-
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 6;
     const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
     const [movementType, setMovementType] = useState<"ENTREE" | "SORTIE" | null>(null);
     const [movementQty, setMovementQty] = useState<number>(0);
@@ -224,6 +225,17 @@ export default function InventoryManager() {
             alert("Error sending request to Kafka");
         }
     };
+    const filteredProducts = products.filter(p =>
+        p.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.sku.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    const indexOfLastProduct = currentPage * itemsPerPage;
+    const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
+    const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
     return (
         <div className="manager-container">
 
@@ -460,92 +472,119 @@ export default function InventoryManager() {
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {products
-                                    .filter(p => p.nom.toLowerCase().includes(searchTerm.toLowerCase()) || p.sku.toLowerCase().includes(searchTerm.toLowerCase()))
-                                    .map((product) => (
-                                        <tr key={product.id}>
-                                            <td>
-                                                <div className="td-info"
-                                                     style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
-                                                    {product.image && <img src={product.image} alt="p"/>}
-                                                    <div>
-                                                        <strong>{product.nom}</strong>
-                                                        <span>SKU: {product.sku}</span>
-                                                    </div>
+                                {currentProducts.map((product) => (
+                                    <tr key={product.id}>
+                                        <td>
+                                            <div className="td-info"
+                                                 style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                                                {product.image && <img src={product.image} alt="p"/>}
+                                                <div>
+                                                    <strong>{product.nom}</strong>
+                                                    <span>SKU: {product.sku}</span>
                                                 </div>
-                                            </td>
-                                            <td>
+                                            </div>
+                                        </td>
+                                        <td>
                                                 <span className="badge-cat">
                                                     {product.category ? product.category.nom : (product.categorie || "No Category")}
                                                 </span>
-                                            </td>
-                                            <td>
-                                                <div className="stock-progress">
-                                                    <span>{product.quantiteDisponible ?? 0} units</span>
+                                        </td>
+                                        <td>
+                                            <div className="stock-progress">
+                                                <span>{product.quantiteDisponible ?? 0} units</span>
 
-                                                    <div className="mini-bar">
-                                                        <div style={{
-                                                            width: product.quantiteDisponible > (product.seuilCritique || 5) ? '80%' : '20%',
-                                                            backgroundColor: product.quantiteDisponible > (product.seuilCritique || 5) ? '#4facfe' : '#ef4444'
-                                                        }}></div>
-                                                    </div>
+                                                <div className="mini-bar">
+                                                    <div style={{
+                                                        width: product.quantiteDisponible > (product.seuilCritique || 5) ? '80%' : '20%',
+                                                        backgroundColor: product.quantiteDisponible > (product.seuilCritique || 5) ? '#4facfe' : '#ef4444'
+                                                    }}></div>
                                                 </div>
-                                            </td>
-                                            <td>
+                                            </div>
+                                        </td>
+                                        <td>
                                                 <span
                                                     className={`status-pill ${product.active ? 'available' : 'out-of-stock'}`}>
                                                     {product.active ? "Active" : "Disabled"}
                                                 </span>
-                                            </td>
-                                                <td>
-                                                    <div style={{display: 'flex', gap: '5px'}}>
-                                                        <button
-                                                            className="btn-action-in"
-                                                            onClick={() => {
-                                                                setSelectedProduct(product);
-                                                                setMovementType("ENTREE");
-                                                            }}
-                                                            title="Entrée de stock"
-                                                        > +
-                                                        </button>
+                                        </td>
+                                        <td>
+                                            <div style={{display: 'flex', gap: '5px'}}>
+                                                <button
+                                                    className="btn-action-in"
+                                                    onClick={() => {
+                                                        setSelectedProduct(product);
+                                                        setMovementType("ENTREE");
+                                                    }}
+                                                    title="Entrée de stock"
+                                                > +
+                                                </button>
 
-                                                        <button
-                                                            className="btn-action-out"
-                                                            onClick={() => {
-                                                                setSelectedProduct(product);
-                                                                setMovementType("SORTIE");
-                                                            }}
-                                                            title="Sortie de stock"
-                                                        > -
-                                                        </button>
-                                                        {product.quantiteDisponible <= (product.seuilCritique || 5) && (
-                                                            <button
-                                                                className="btn-request-stock"
-                                                                onClick={() => handleSendRequest(product)}
-                                                                style={{
-                                                                    backgroundColor: '#ffb347',
-                                                                    color: '#000',
-                                                                    border: 'none',
-                                                                    borderRadius: '4px',
-                                                                    padding: '4px 8px',
-                                                                    fontSize: '11px',
-                                                                    fontWeight: 'bold',
-                                                                    cursor: 'pointer',
-                                                                    marginLeft: '5px'
-                                                                }}
-                                                            >
-                                                                Request Restock
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            <td>
-                                                <button className="btn-edit-small">Edit</button>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                                <button
+                                                    className="btn-action-out"
+                                                    onClick={() => {
+                                                        setSelectedProduct(product);
+                                                        setMovementType("SORTIE");
+                                                    }}
+                                                    title="Sortie de stock"
+                                                > -
+                                                </button>
+                                                {product.quantiteDisponible <= (product.seuilCritique || 5) && (
+                                                    <button
+                                                        className="btn-request-stock"
+                                                        onClick={() => handleSendRequest(product)}
+                                                        style={{
+                                                            backgroundColor: 'rgba(243,149,83,0.76)',
+                                                            color: '#000',
+                                                            border: 'none',
+                                                            borderRadius: '4px',
+                                                            padding: '4px 8px',
+                                                            fontSize: '11px',
+                                                            fontWeight: 'bold',
+                                                            cursor: 'pointer',
+                                                            marginLeft: '5px'
+                                                        }}
+                                                    >
+                                                        Request Restock
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <button className="btn-edit-small">Edit</button>
+                                        </td>
+                                    </tr>
+                                ))}
                                 </tbody>
                             </table>
+                            <div className="catalog-pagination">
+                                <button
+                                    className="pagi-nav-btn"
+                                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                    disabled={currentPage === 1}
+                                >
+                                    ← Previous
+                                </button>
+
+                                <div className="pagi-numbers-list">
+                                    {Array.from({length: totalPages}, (_, i) => i + 1).map((pageNum) => (
+                                        <button
+                                            key={pageNum}
+                                            className={`pagi-num-btn ${currentPage === pageNum ? "is-active" : ""}`}
+                                            onClick={() => setCurrentPage(pageNum)}
+                                        >
+                                            {pageNum}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <button
+                                    className="pagi-nav-btn"
+                                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                    disabled={currentPage === totalPages || totalPages === 0}
+                                >
+                                    Next →
+                                </button>
+                            </div>
                         </div>
                     </motion.div>
                 )}
@@ -560,7 +599,12 @@ export default function InventoryManager() {
 
                             <div className="modal-body" style={{padding: '20px 0'}}>
                                 <div className="form-group">
-                                    <label style={{fontSize: '12px', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase'}}>
+                                    <label style={{
+                                        fontSize: '12px',
+                                        fontWeight: 'bold',
+                                        color: '#64748b',
+                                        textTransform: 'uppercase'
+                                    }}>
                                         Recommended Quantity
                                     </label>
                                     <input
@@ -571,7 +615,7 @@ export default function InventoryManager() {
                                         autoFocus
                                     />
                                     {requestedQty > 0 ? (
-                                        <p style={{color: '#4facfe', fontSize: '12px', marginTop: '8px'}}>
+                                        <p style={{color: '#730d19', fontSize: '12px', marginTop: '8px'}}>
                                             ✅ AI suggested this amount to avoid out-of-stock for next 7 days.
                                         </p>
                                     ) : (
@@ -754,7 +798,7 @@ export default function InventoryManager() {
                                     <label><FaBriefcase/> Status</label>
                                     <input type="text" value={profile?.status || ""} readOnly className="mgr-readonly"/>
                                 </div>
-                                <div className="pro-input-group">
+                                <div className="mgr-input-group">
                                     <label><FaBriefcase/> Role</label>
                                     <input type="text" value={profile?.metierRole } readOnly
                                            className="pro-readonly"/>

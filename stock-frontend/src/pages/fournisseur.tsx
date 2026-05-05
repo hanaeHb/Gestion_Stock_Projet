@@ -240,6 +240,7 @@ export default function Fournisseur() {
             );
 
             alert("Your specializations have been successfully registered ✅");
+            setIsSaving(false);
         } catch (err: any) {
             console.error("Error saving specializations", err.response?.data || err.message);
             alert("Error saving specializations.");

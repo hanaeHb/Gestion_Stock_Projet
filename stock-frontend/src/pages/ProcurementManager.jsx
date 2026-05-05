@@ -7,7 +7,7 @@ import {
     FaCog,
     FaUser,
     FaSignOutAlt,
-    FaBoxes, FaUserTie, FaInbox, FaFileInvoiceDollar, FaDownload, FaSync, FaTruck
+    FaBoxes, FaUserTie, FaInbox, FaFileInvoiceDollar, FaDownload, FaSync, FaTruck, FaFilePdf, FaChartLine
 } from "react-icons/fa";
 import {  FaCamera, FaEnvelope, FaPhone, FaIdCard, FaBriefcase, FaCalendarAlt, FaCheckCircle, FaUserShield } from "react-icons/fa";
 import {FiGrid, FiTrendingUp} from "react-icons/fi";
@@ -16,7 +16,8 @@ import PurchaseBudgetTracker from "./PurchaseBudgetTracker";
 import OrderWizard from "./OrderWizard";
 import QuotesManagement from "./QuotesManagement";
 import ShipmentDetails from "./ShipmentDetails";
-
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 export default function ProcurementManager() {
 
     const [activeSection, setActiveSection] = useState("dashboard");
@@ -240,6 +241,122 @@ export default function ProcurementManager() {
             alert("❌ failed:" + errorMsg);
         }
     };
+
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const cardsPerPage = 6;
+    const generateSinglePDF = (item) => {
+        const doc = new jsPDF();
+
+        // Header
+        doc.setFontSize(20);
+        doc.setTextColor(30, 41, 59);
+        doc.text("Inventory Intelligence Report", 20, 20);
+
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, 30);
+        doc.line(20, 35, 190, 35);
+
+        // Content
+        doc.setFontSize(14);
+        doc.text(`Product: ${item.nomProduit}`, 20, 50);
+
+        const data = [
+            ["Current Stock", `${item.quantiteDisponible} units`],
+            ["AI Forecasted Demand", `${item.prediction?.predicted_demand || 0}`],
+            ["Recommended Reorder", `${item.prediction?.recommended_quantity || 0}`],
+            ["Best Supplier Match", `${item.bestSupplier?.name || "N/A"}`],
+            ["AI Reliability Score", `${item.bestSupplier?.ai_score || 0}%`]
+        ];
+
+        autoTable(doc, {
+            startY: 60,
+            head: [['Metric', 'Analysis Value']],
+            body: data,
+            theme: 'striped',
+            headStyles: { fillColor: [30, 41, 59] }
+        });
+
+        doc.save(`Report_${item.nomProduit}.pdf`);
+    };
+    const generateGlobalPDF = () => {
+        const doc = new jsPDF();
+        doc.setFontSize(18);
+        doc.text("Global Inventory Intelligence Report", 14, 15);
+
+        const tableRows = reports.map(item => [
+            item.produitId,
+            item.nomProduit,
+            item.quantiteDisponible,
+            item.prediction?.predicted_demand || 0,
+            item.bestSupplier?.name || "N/A"
+        ]);
+
+        autoTable(doc, {
+            head: [['ID', 'Product', 'Stock', 'AI Demand', 'Supplier']],
+            body: tableRows,
+            startY: 25,
+            theme: 'grid',
+            headStyles: { fillColor: [149, 117, 205] }
+        });
+        doc.save("Full_Inventory_Report.pdf");
+    };
+
+    // --- 2. Refresh Logic ---
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        await generateSmartReport();
+        setIsRefreshing(false);
+    };
+
+    // --- 3. Pagination Logic ---
+    const [currentPage, setCurrentPage] = useState(1);
+    const [reports, setReports] = useState([]);
+
+    const indexOfLastCard = currentPage * cardsPerPage;
+    const indexOfFirstCard = indexOfLastCard - cardsPerPage;
+    const currentReports = reports.slice(indexOfFirstCard, indexOfLastCard);
+    const totalPages = Math.ceil(reports.length / cardsPerPage);
+
+    const generateSmartReport = async () => {
+        const token = localStorage.getItem("token");
+        const headers = { Authorization: `Bearer ${token}` };
+
+        try {
+            const alertRes = await axios.get("http://localhost:8888/produit-stock-service/v1/stocks/alertes", { headers });
+
+            const detailedData = await Promise.all(alertRes.data.map(async (stock) => {
+                try {
+                    const prodRes = await axios.get(`http://localhost:8888/produit-stock-service/v1/produits/${stock.produitId}`, { headers });
+
+                    const cid = prodRes.data.categoryId || prodRes.data.id_category || prodRes.data.category?.id;
+
+                    const aiRes = await axios.get(`http://localhost:8888/prediction-service/prediction/predict-restock/${stock.produitId}`, { headers });
+
+                    let bestSup = null;
+                    if (cid) {
+                        const supplierRes = await axios.get(`http://localhost:8888/prediction-service/prediction/predict-best-supplier/${cid}`, { headers });
+                        if (supplierRes.data && supplierRes.data.length > 0) {
+                            bestSup = supplierRes.data[0];
+                        }
+                    }
+
+                    return {
+                        ...stock,
+                        nomProduit: prodRes.data.nom,
+                        prediction: aiRes.data,
+                        bestSupplier: bestSup
+                    };
+                } catch (e) {
+                    console.error("Error for product:", stock.produitId, e);
+                    return { ...stock, nomProduit: "Unknown", prediction: null, bestSupplier: null };
+                }
+            }));
+            setReports(detailedData);
+        } catch (err) {
+            console.error("Global fetch error:", err);
+        }
+    };
     return (
         <div className="manager-container">
 
@@ -348,7 +465,6 @@ export default function ProcurementManager() {
 
                         <div className="admin-notifs-grid">
 
-                            {/* 1. Replenishment Requests */}
                             <section className="admin-notif-group">
                                 <div className="group-header" style={{ borderBottom: '3px solid #FFB347' }}>
                                     <FaInbox style={{color: '#FFB347', fontSize: '1.2rem'}}/>
@@ -405,7 +521,7 @@ export default function ProcurementManager() {
                                 </div>
                             </section>
 
-                            {/* 3. Supplier Quotes */}
+
                             <section className="admin-notif-group">
                                 <div className="group-header" style={{ borderBottom: '3px solid #2ecc71' }}>
                                     <FaFileInvoiceDollar style={{color: '#2ecc71', fontSize: '1.2rem'}}/>
@@ -433,7 +549,7 @@ export default function ProcurementManager() {
                                 </div>
                             </section>
 
-                            {/* 4. Shipment Tracking  */}
+
                             <section className="admin-notif-group">
                                 <div className="group-header" style={{ borderBottom: '3px solid #6952d2' }}>
                                     <FaTruck style={{color: '#6952d2', fontSize: '1.2rem'}}/>
@@ -512,15 +628,109 @@ export default function ProcurementManager() {
                                 <h3>{replenishmentRequests.length}</h3>
                                 <p>New Restock Requests</p>
                             </div>
-
                         </section>
+                        <div className="dashboard-content fade-in">
+
+                            {/* Control Bar (Download & Refresh) */}
+                            <div className="dashboard-controls">
+                                <div className="control-left">
+                                    <h3>Strategic Overview</h3>
+                                    <p>Showing {indexOfFirstCard + 1}-{Math.min(indexOfLastCard, reports.length)} of {reports.length} products</p>
+                                </div>
+                                <div className="control-right">
+                                    <button className="btn-refresh" onClick={handleRefresh} disabled={isRefreshing}>
+                                        {isRefreshing ? "Refreshing..." : "Refresh Data"}
+                                    </button>
+                                    <button className="btn-download-all" onClick={generateGlobalPDF}>
+                                        <FaFilePdf/> Download Full Report
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="reports-grid-compact">
+                                {currentReports.map((item) => (
+                                    <div key={item.produitId} className="report-card-small">
+                                        <div className="card-top">
+                                            <div className="title-group">
+                                                <h4>{item.nomProduit}</h4>
+                                                <span className="ref-text">Ref: {item.produitId}</span>
+                                            </div>
+                                            <span
+                                                className={`mini-badge ${item.quantiteDisponible <= item.seuilCritique ? 'crit' : 'ok'}`}>
+                                            {item.quantiteDisponible <= item.seuilCritique ? 'Urgent' : 'Optimal'}
+                                        </span>
+                                        </div>
+
+                                        <div className="card-mid">
+                                            <div className="mini-stat">
+                                                <label>Stock</label>
+                                                <span>{item.quantiteDisponible}</span>
+                                            </div>
+                                            <div className="mini-stat">
+                                                <label>AI Forecast</label>
+                                                <span
+                                                    className="peach-text">+{item.prediction?.predicted_demand || 0}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="ai-supplier-mini">
+                                            <div className="supplier-info-header">
+                                                <p><strong>{item.bestSupplier?.name || "Searching..."}</strong></p>
+
+                                                <span
+                                                    className="ai-score-number">{item.bestSupplier?.ai_score || 0}%</span>
+                                            </div>
+                                            <div className="score-bar-bg">
+                                                <div className="score-bar-fill"
+                                                     style={{width: `${item.bestSupplier?.ai_score || 0}%`}}></div>
+                                            </div>
+                                        </div>
+
+                                        <button className="btn-mini-pdf" onClick={() => generateSinglePDF(item)}>
+                                            <FaFilePdf/> PDF
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="catalog-pagination">
+
+                                <button
+                                    className="pagi-nav-btn"
+                                    disabled={currentPage === 1}
+                                    onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                                >
+                                    ← Previous
+                                </button>
+
+                                <div className="pagi-numbers-list">
+                                    {Array.from({length: totalPages}, (_, i) => i + 1).map((pageNum) => (
+                                        <button
+                                            key={pageNum}
+                                            className={`pagi-num-btn ${currentPage === pageNum ? "is-active" : ""}`}
+                                            onClick={() => setCurrentPage(pageNum)}
+                                        >
+                                            {pageNum}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <button
+                                    className="pagi-nav-btn"
+                                    disabled={currentPage === totalPages || totalPages === 0}
+                                    onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                                >
+                                    Next →
+                                </button>
+                            </div>
+                        </div>
                     </>
                 )}
                 {activeSection === "restock_orders" && (
                     <div className="restock-modern-container fade-in">
                         <header className="restock-header-modern">
                             <div className="header-text">
-                                <h1><FaInbox className="header-icon-anim" /> Critical Replenishment</h1>
+                                <h1><FaInbox className="header-icon-anim"/> Critical Replenishment</h1>
                                 <p>High-priority orders waiting for your approval</p>
                             </div>
                             <div className="header-badge">
@@ -532,7 +742,7 @@ export default function ProcurementManager() {
                         <div className="restock-grid">
                             {replenishmentRequests.length === 0 ? (
                                 <div className="empty-state-card">
-                                    <FaInbox size={50} />
+                                    <FaInbox size={50}/>
                                     <p>Great job! No pending requests at the moment.</p>
                                 </div>
                             ) : (
@@ -572,7 +782,7 @@ export default function ProcurementManager() {
                                                         className="stat-value highlight">{req.requestedQty} Units</span>
                                                 </div>
                                                 <div className="stat-box">
-                                                <span className="stat-label">Requested By</span>
+                                                    <span className="stat-label">Requested By</span>
                                                     <span className="stat-value">{req.fromManager}</span>
                                                 </div>
                                                 <div className="stat-box">

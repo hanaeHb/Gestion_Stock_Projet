@@ -4,7 +4,6 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import Signin from "./pages/Signin";
-import Manager from "./pages/Manager";
 import InventoryManager from "./pages/InventoryManager"
 import ProcurementManager from "./pages/ProcurementManager"
 import PrivateRoute from "./pages/PrivateRoute";
@@ -25,9 +24,6 @@ function App() {
                     <Route path="/admin" element={<Admin />} />
                 </Route>
 
-                <Route element={<PrivateRoute role="Manager" />}>
-                    <Route path="/Manager" element={<Manager />} />
-                </Route>
                 <Route element={<PrivateRoute role="Procurement Manager" />}>
                     <Route path="/ProcurementManager" element={<ProcurementManager />} />
                 </Route>

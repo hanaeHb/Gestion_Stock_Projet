@@ -72,7 +72,6 @@ public class UserServiceImpl implements UserService {
         user.setLastName(request.getLastName());
         user.setCin(request.getCin());
         user.setPhone(request.getPhone());
-        // Assigner le rôle si fourni
         if(request.getRole() != null && !request.getRole().isEmpty()){
             for (String roleName : request.getRole()) {
                 Role role = roleRepository.findByName(roleName)
@@ -89,10 +88,7 @@ public class UserServiceImpl implements UserService {
     public UserResponseDTO createFour(UserRequestDTO request, MultipartFile cvFile) throws IOException{
         // Vérifier si email existe déjà
         if(userRepository.existsByEmail(request.getEmail())){
-            UserResponseDTO response = new UserResponseDTO();
-            response.setEmail(request.getEmail());
-            response.setActive(false);
-            return response;
+            throw new RuntimeException("Email already exists!");
         }
 
         User user = new User();

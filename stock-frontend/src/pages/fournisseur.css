@@ -1,7 +1,7 @@
 .manager-container{
     display:flex;
     min-height:100vh;
-    background:#f8f9fa;
+    background: rgba(243, 188, 185, 0.06);
     font-family:"Berlin Sans FB Demi", sans-serif;
 }
 
@@ -14,7 +14,7 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    box-shadow:0 15px 35px rgba(0,0,0,0.05);
+
 }
 
 .menu{
@@ -37,7 +37,7 @@
 }
 
 .menu li.active{
-    background:linear-gradient(135deg,#4facfe,#730d19);
+    background:linear-gradient(135deg,#ff9a9e,#730d19);
     color:white;
 }
 
@@ -87,7 +87,7 @@
 .card-icon{
     width:50px;
     height:50px;
-    background:linear-gradient(135deg,#4facfe,#730d19);
+    background:linear-gradient(135deg,#ff9a9e,#730d19);
     border-radius:50%;
     display:flex;
     align-items:center;
@@ -119,7 +119,7 @@
 .profile-intro {
     background: #f0f4ff;
     padding: 18px 25px;
-    border-left: 6px solid #4facfe;
+    border-left: 6px solid #ff9a9e;
     border-radius: 10px;
     margin-bottom: 30px;
     font-size: 15px;
@@ -206,7 +206,7 @@
 }
 
 .profile-info-two-columns input:focus {
-    border-color: #4facfe;
+    border-color: #ff9a9e;
     box-shadow: 0 0 5px rgba(79,172,254,0.5);
 }
 
@@ -293,12 +293,11 @@
     padding: 15px 40px;
     border-radius: 12px;
     border: none;
-    background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+    background: linear-gradient(135deg, #ff9a9e 0%, #730d19 100%);
     color: white;
     font-weight: 700;
     font-size: 1rem;
     cursor: pointer;
-    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
@@ -308,7 +307,6 @@
 
 .btne-save-spec:hover {
     transform: translateY(-3px);
-    box-shadow: 0 12px 25px rgba(99, 102, 241, 0.4);
     filter: brightness(1.1);
 }
 
@@ -318,7 +316,7 @@
 
 .workspace-header {
     margin-bottom: 2.5rem;
-    border-left: 5px solid #6c5ce7;
+    border-left: 5px solid #ff9a9e;
     padding-left: 1.5rem;
 }
 
@@ -339,8 +337,7 @@
     border-radius: 24px;
     padding: 25px;
     margin-bottom: 25px;
-    border: 1px solid #eef0f2;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+    border: 1px solid #ff9a9e;
     transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -367,8 +364,8 @@
     flex: 1;
     padding: 18px;
     border-radius: 16px;
-    border: 2px solid #f1f3f5;
-    background: #f8f9fa;
+    border: 2px solid #f3cdb6;
+    background: rgba(241, 233, 210, 0.15);
     cursor: pointer;
     font-weight: 600;
     transition: 0.3s;
@@ -411,14 +408,14 @@
     width: 100%;
     padding: 15px;
     border-radius: 12px;
-    border: 2px solid #6c5ce7;
+    border: 2px solid #ff9a9e;
     font-size: 1.2rem;
     font-weight: 800;
     margin-top: 8px;
 }
 
 .btne-final-submit {
-    background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+    background: linear-gradient(135deg, #730d19 0%, #ff9a9e 100%);
     color: white;
     border: none;
     padding: 18px 30px;
@@ -443,13 +440,12 @@
 }
 
 .total-orders-badge {
-    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    background: linear-gradient(135deg, #ff9a9e, #730d19);
     color: white;
     padding: 4px 12px;
     border-radius: 50px;
     font-size: 0.85rem;
     font-weight: 600;
-    box-shadow: 0 4px 10px rgba(108, 92, 231, 0.2);
     animation: bounceIn 0.5s ease;
 }
 
@@ -460,7 +456,7 @@
 }
 
 .btn-action-quote {
-    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    background: linear-gradient(135deg, #ff9a9e, #730d19);
     color: white;
     border: none;
     padding: 8px 16px;
@@ -472,14 +468,12 @@
     align-items: center;
     gap: 8px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
     margin-top: 10px;
 }
 
 .btn-action-quote:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
-    background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+    background: linear-gradient(135deg, #730d19, #ff9a9e);
 }
 
 .btn-action-quote:active {
@@ -526,7 +520,7 @@
 
 .category-card {
     background: white;
-    border: 2px solid #f1f5f9;
+    border: 2px solid #f3cdb6;
     border-radius: 20px;
     padding: 20px;
     cursor: pointer;
@@ -537,8 +531,7 @@
 
 .category-card:hover {
     transform: translateY(-5px);
-    border-color: #4facfe;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    border-color: #f3cdb6;
 }
 
 .category-card.selected {
@@ -566,8 +559,8 @@
 
 .btn-show-more {
     background: transparent;
-    border: 1px dashed #94a3b8;
-    color: #64748b;
+    border: 1px dashed #ff9a9e;
+    color: #730d19;
     padding: 8px 20px;
     border-radius: 10px;
     cursor: pointer;
@@ -576,9 +569,9 @@
 }
 
 .btn-show-more:hover {
-    background: #f8fafc;
-    border-color: #4facfe;
-    color: #4facfe;
+    background: #f3cdb6;
+    border-color: #ff9a9e;
+    color: #730d19;
 }
 
 
@@ -592,11 +585,10 @@
     padding: 14px 45px;
     border-radius: 14px;
     border: none;
-    background: linear-gradient(135deg, #4facfe, #730d19);
+    background: linear-gradient(135deg, #ff9a9e, #730d19);
     color: white;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 8px 20px rgba(115, 13, 25, 0.2);
 }
 
 .view-actions-container {
@@ -609,8 +601,8 @@
 
 .btn-modern-view {
     background: white;
-    color: #4facfe;
-    border: 2px solid #e2e8f0;
+    color: #ff9a9e;
+    border: 2px solid #f3cdb6;
     padding: 12px 35px;
     border-radius: 50px;
     font-weight: 700;
@@ -620,14 +612,12 @@
     align-items: center;
     gap: 12px;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .btn-modern-view:hover {
-    border-color: #4facfe;
-    background: #f0f9ff;
+    border-color:#ff9a9e;
+    background: #f3cdb6;
     transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(79, 172, 254, 0.15);
 }
 
 .btn-modern-view svg {
@@ -640,8 +630,8 @@
 
 
 .btn-modern-view.view-less {
-    border-color: #94a3b8;
-    color: #64748b;
+    border-color: #f3cdb6;
+    color: #730d19;
 }
 
 .btn-modern-view.view-less:hover {
@@ -669,17 +659,16 @@
 }
 
 .qty-badge {
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-    color: #0369a1;
+    background: linear-gradient(135deg, #ff9a9e 0%, #f3cdb6 100%);
+    color: #730d19;
     padding: 6px 14px;
     border-radius: 10px;
     font-weight: 800;
     font-size: 1rem;
-    border: 1px solid #bae6fd;
+    border: 1px solid #f3cdb6;
     display: flex;
     align-items: center;
     gap: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .qty-badge small {
@@ -736,9 +725,8 @@
     max-width: 850px;
     width: 100%;
     border-radius: 24px;
-    box-shadow: 0 15px 35px rgba(102, 126, 234, 0.08);
     padding: 40px;
-    border: 1px solid #f0f0f0;
+    border: 1px solid #ff9a9e;
 }
 
 
@@ -755,9 +743,8 @@
     height: 100px;
     border-radius: 22px;
     overflow: hidden;
-    background: #f0f2f5;
+    background: #ff9a9e;
     border: 3px solid #fff;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
 }
 
 .frn-avatar-img {
@@ -772,14 +759,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #a0aec0;
-    background: #edf2f7;
+    color: #ff9a9e;
+    background: rgba(243, 205, 182, 0.35);
 }
 
 .frn-avatar-overlay {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(102, 126, 234, 0.6);
+    background: rgba(243, 205, 182, 0.35);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -809,7 +796,7 @@
 
 .frn-role-tag {
     margin: 5px 0 0;
-    color: #667eea;
+    color: #ff9a9e;
     font-weight: 600;
     font-size: 0.95rem;
     display: flex;
@@ -819,9 +806,9 @@
 
 
 .frn-profile-intro {
-    background: #f8faff;
+    background: rgba(243, 205, 182, 0.35);
     padding: 18px;
-    border-left: 5px solid #667eea;
+    border-left: 5px solid #ff9a9e;
     border-radius: 12px;
     color: #4a5568;
     font-size: 0.9rem;
@@ -885,7 +872,7 @@
 }
 
 .frn-input-group label svg {
-    color: #764ba2;
+    color: #ff9a9e;
 }
 
 .frn-input-group input {
@@ -920,13 +907,13 @@
     }
 }
 .category-card.selected {
-    border-color: #6366f1;
+    border-color: #ff9a9e;
     background-color: #f5f3ff;
     transform: scale(1.02);
 }
 
 .category-card.selected .card-check {
-    background-color: #6366f1;
+    background-color: #ff9a9e;
     color: white;
 }
 /* --- Settings Panel Layout --- */
@@ -941,8 +928,8 @@
     background: white;
     border-radius: 20px;
     padding: 25px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #ff9a9e;
+
 }
 
 .setting-card h3 {
@@ -952,7 +939,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid #ff9a9e;
     padding-bottom: 15px;
 }
 
@@ -962,7 +949,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 12px 0;
-    border-bottom: 1px solid #f8fafc;
+
 }
 
 .setting-row:last-child {
@@ -987,7 +974,7 @@
     width: 100px;
     padding: 8px 12px;
     border-radius: 8px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #ff9a9e;
     font-size: 0.9rem;
     text-align: right;
     outline: none;
@@ -995,11 +982,11 @@
 }
 
 .mini-input:focus {
-    border-color: #6366f1;
+    border-color: #ff9a9e;
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
-/* --- iOS Style Toggle Switch --- */
+
 .ios-switch {
     appearance: none;
     width: 45px;
@@ -1012,7 +999,7 @@
 }
 
 .ios-switch:checked {
-    background: #10b981; /* Green when active */
+    background: #10b981;
 }
 
 .ios-switch::before {
@@ -1025,7 +1012,6 @@
     top: 2px;
     left: 2px;
     transition: 0.3s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .ios-switch:checked::before {
@@ -1036,7 +1022,7 @@
 .settings-footer {
     margin-top: 30px;
     padding-top: 20px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid #ff9a9e;
     display: flex;
     justify-content: flex-end;
 }

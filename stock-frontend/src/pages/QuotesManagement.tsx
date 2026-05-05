@@ -16,7 +16,6 @@ export default function QuotesManagement() {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            // تجميع العروض حسب المنتج
             const grouped = res.data.reduce((acc: any, quote: any) => {
                 const key = quote.id_produit;
                 if (!acc[key]) {

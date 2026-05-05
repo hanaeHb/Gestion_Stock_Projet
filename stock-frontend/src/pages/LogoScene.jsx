@@ -47,7 +47,7 @@ function Letters() {
                 ref={oRef}
                 fontSize={4.2}
                 fontWeight="bold"
-                color="#1e293b"
+                color="#ff9a9e"
                 position={[4, 0, 0]}
                 castShadow
             >

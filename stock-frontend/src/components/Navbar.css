@@ -42,7 +42,7 @@
     width: 48px;
     height: 48px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #4facfe, #730d19);
+    background: linear-gradient(135deg, #ff9a9e, #730d19);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -71,7 +71,7 @@
 .nav-links a {
     position: relative;
     text-decoration: none;
-    color: #283593; /* gray */
+    color: #e36469;
     font-size: 17px;
     font-weight: 500;
     transition: all 0.3s ease;
@@ -90,7 +90,7 @@
     bottom: -2px;
     width: 0%;
     height: 2px;
-    background: linear-gradient(135deg, #4facfe,  #730d19);
+    background: linear-gradient(135deg, #ff9a9e,  #730d19);
     transition: 0.3s;
     border-radius: 2px;
 }
@@ -128,7 +128,7 @@
 }
 
 .nav-btn-primary {
-    background: linear-gradient(135deg, #4facfe,  #730d19);
+    background: linear-gradient(135deg, #ff9a9e,  #730d19);
     color: white;
     font-family: "Berlin Sans FB Demi";
 }
@@ -146,7 +146,7 @@
 }
 
 .nav-btn-secondary:hover {
-    background: linear-gradient(135deg, #4facfe,  #730d19);
+    background: linear-gradient(135deg, #ff9a9e,  #730d19);
     color: white;
     border: none;
     transform: translateY(-2px);

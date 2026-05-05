@@ -1,6 +1,6 @@
 .admin-notifs-page {
     padding: 30px;
-    background: #fdfeff;
+    background: transparent;
 }
 
 .page-title {
@@ -23,7 +23,6 @@
     backdrop-filter: blur(10px);
     border-radius: 20px;
     padding: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     height: 400px;
     display: flex;
     flex-direction: column;
@@ -104,13 +103,12 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: #4facfe;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    color: #ff9a9e;
     transition: all 0.3s ease;
 }
 
 .refresh-circle-btn:hover:not(:disabled) {
-    background: #f0f7ff;
+    background: #f3cdb6;
     transform: rotate(30deg) scale(1.1);
 }
 
