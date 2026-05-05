@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-commande
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-commande
+  template:
+    metadata:
+      labels:
+        app: service-commande
+    spec:
+      containers:
+        - name: service-commande
+          image: commande-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5001
+          env:
+            # PostgreSQL Config
+            - name: DB_HOST
+              value: "host.docker.internal"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: "postgres"
+            - name: DB_PASSWORD
+              value: "hanae"
+            - name: DB_NAME
+              value: "commande_system"
+
+            # Eureka Config
+            - name: EUREKA_HOST
+              value: "discovery-service"
+            - name: EUREKA_PORT
+              value: "8761"
+
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka-service:9092"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-commande
+spec:
+  selector:
+    app: service-commande
+  ports:
+    - protocol: TCP
+      port: 5001
+      targetPort: 5001
+  type: LoadBalancer

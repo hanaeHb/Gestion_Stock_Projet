@@ -1,11 +1,11 @@
 const { Pool } = require("pg");
 
 const pool = new Pool({
-    host: "localhost",
-    user: "postgres",
-    password: "hanae",
-    database: "commande_system",
-    port: 5432
+    host: process.env.DB_HOST || "host.docker.internal",
+    user: process.env.DB_USER || "postgres",
+    password: process.env.DB_PASSWORD || "hanae",
+    database: process.env.DB_NAME || "commande_system",
+    port: process.env.DB_PORT || 5432
 });
 
 pool.connect((err) => {

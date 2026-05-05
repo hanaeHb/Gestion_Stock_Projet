@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: budget-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: budget-service
+  template:
+    metadata:
+      labels:
+        app: budget-service
+    spec:
+      containers:
+        - name: budget-service
+          image: budget-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8064
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://host.docker.internal:3306/db_budget_stock?createDatabaseIfNotExist=true
+            - name: SPRING_DATASOURCE_USERNAME
+              value: root
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: ""
+            - name: SPRING_JPA_DATABASE_PLATFORM
+              value: org.hibernate.dialect.MySQLDialect
+
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://discovery-service:8761/eureka/
+            - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+              value: "true"
+
+            - name: RSA_PUBLICKEY
+              value: "classpath:keys/publicKey.pem"
+            - name: RSA_PRIVATEKEY
+              value: "classpath:keys/privateKey.pem"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: budget-service
+spec:
+  selector:
+    app: budget-service
+  ports:
+    - protocol: TCP
+      port: 8064
+      targetPort: 8064
+  type: LoadBalancer

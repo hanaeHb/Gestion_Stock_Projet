@@ -15,11 +15,11 @@ const PORT = 5001;
 const client = new Eureka({
   instance: {
     app: 'service-commande',
-    hostName: 'localhost',
+    hostName: 'service-commande',
     instanceId: `service-commande:${PORT}`,
-    ipAddr: '127.0.0.1',
-    statusPageUrl: `http://localhost:${PORT}/info`,
-    healthCheckUrl: `http://localhost:${PORT}/health`,
+    ipAddr: 'service-commande',
+    statusPageUrl: `http://service-commande:${PORT}/info`,
+    healthCheckUrl: `http://service-commande:${PORT}/health`,
     port: {
       '$': PORT,
       '@enabled': 'true',
@@ -31,7 +31,7 @@ const client = new Eureka({
     },
   },
   eureka: {
-    host: 'localhost',
+    host: 'discovery-service',
     port: 8761,
     servicePath: '/eureka/apps/',
   },
