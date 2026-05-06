@@ -18,7 +18,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/quotation_d
 const eurekaClient = new Eureka({
   instance: {
     app: 'QUOTATION-SERVICE',
-    hostName: 'localhost',
+    hostName: process.env.HOSTNAME || 'localhost',
     ipAddr: '127.0.0.1',
     port: { '$': PORT, '@enabled': 'true' },
     vipAddress: 'QUOTATION-SERVICE',
@@ -28,7 +28,7 @@ const eurekaClient = new Eureka({
     },
   },
   eureka: {
-    host: 'localhost',
+    host: process.env.EUREKA_HOST || 'localhost',
     port: 8761,
     servicePath: '/eureka/apps/',
   },

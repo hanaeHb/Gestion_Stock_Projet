@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quotation-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quotation-service
+  template:
+    metadata:
+      labels:
+        app: quotation-service
+    spec:
+      containers:
+        - name: quotation-service
+          image: quotation-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5005
+          env:
+            - name: MONGO_URI
+              value: mongodb://host.docker.internal:27017/quotation_db
+            - name: EUREKA_HOST
+              value: "discovery-service"
+
+            - name: PORT
+              value: "5005"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quotation-service
+spec:
+  selector:
+    app: quotation-service
+  ports:
+    - protocol: TCP
+      port: 5005
+      targetPort: 5005
+  type: LoadBalancer
