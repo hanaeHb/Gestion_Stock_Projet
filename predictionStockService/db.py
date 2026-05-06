@@ -2,25 +2,25 @@ import mysql.connector
 import psycopg2
 import pandas as pd
 from mysql.connector import Error
+import os
 
 # --- 1. MySQL Configuration (Stayed exactly as your Spring Boot setup) ---
 MYSQL_CONFIG = {
-    "host": 'localhost',
+    "host": os.getenv('MYSQL_HOST', 'localhost'),
     "port": 3306,
-    "user": 'root',
-    "password": '',
-    "database": 'produitstockdb'
+    "user": os.getenv('MYSQL_USER', 'root'),
+    "password": os.getenv('MYSQL_PASSWORD', ''),
+    "database": os.getenv('MYSQL_DB', 'produitstockdb')
 }
 
 # --- 2. PostgreSQL Configuration (For our new Supplier AI Data) ---
 DB_CONFIG = {
-    "dbname": "procurement_system",
-    "user": "postgres",
-    "password": "hanae",
-    "host": "localhost",
+    "dbname": os.getenv('PG_DB', 'procurement_system'),
+    "user": os.getenv('PG_USER', 'postgres'),
+    "password": os.getenv('PG_PASSWORD', 'hanae'),
+    "host": os.getenv('PG_HOST', 'localhost'),
     "port": "5432"
 }
-
 def get_db_connection():
     """ Connect to MySQL (Original Function) """
     try:

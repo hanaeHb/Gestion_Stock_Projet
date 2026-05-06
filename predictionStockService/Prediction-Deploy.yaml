@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prediction-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prediction-service
+  template:
+    metadata:
+      labels:
+        app: prediction-service
+    spec:
+      containers:
+        - name: prediction-service
+          image: prediction-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5008
+          env:
+
+            - name: MYSQL_HOST
+              value: "host.docker.internal"
+            - name: MYSQL_USER
+              value: "root"
+            - name: MYSQL_PASSWORD
+              value: ""
+            - name: MYSQL_DB
+              value: "produitstockdb"
+
+
+            - name: PG_HOST
+              value: "host.docker.internal"
+            - name: PG_USER
+              value: "postgres"
+            - name: PG_PASSWORD
+              value: "hanae"
+            - name: PG_DB
+              value: "procurement_system"
+
+
+            - name: EUREKA_SERVER
+              value: "http://discovery-service:8761/eureka/"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prediction-service
+spec:
+  selector:
+    app: prediction-service
+  ports:
+    - protocol: TCP
+      port: 5008
+      targetPort: 5008
+  type: LoadBalancer
