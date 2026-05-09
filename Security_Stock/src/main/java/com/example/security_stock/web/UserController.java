@@ -254,9 +254,14 @@ public class UserController {
     @GetMapping("/download/{fileName}")
     public ResponseEntity<byte[]> downloadCV(@PathVariable String fileName) {
         try {
-            String userDir = System.getProperty("user.dir");
+            java.nio.file.Path finalPath = java.nio.file.Paths.get("Security_Stock", "uploads", "cv", fileName).normalize();
 
-            java.nio.file.Path finalPath = java.nio.file.Paths.get("/app/uploads/cv", fileName).normalize();
+            System.out.println("🔍 Debug: Looking for file at: " + finalPath.toAbsolutePath());
+
+            if (!java.nio.file.Files.exists(finalPath)) {
+                // 2. Ila mazal malqahch, n-jerbo n-choufo gha f uploads (fallback)
+                finalPath = java.nio.file.Paths.get("uploads", "cv", fileName).normalize();
+            }
 
             if (!java.nio.file.Files.exists(finalPath)) {
                 System.err.println("❌ File not found at: " + finalPath.toAbsolutePath());

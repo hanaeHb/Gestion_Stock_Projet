@@ -16,7 +16,7 @@ const app = express();
 const PORT = 5003;
 
 // Eureka
-const client = new Eureka({
+/*const client = new Eureka({
   instance: {
     app: 'service-notification',
     hostName: 'service-notification',
@@ -35,8 +35,33 @@ const client = new Eureka({
     port: 8761,
     servicePath: '/eureka/apps/',
   },
-});
+});*/
 
+const client = new Eureka({
+  instance: {
+    app: 'service-notification',
+    hostName: 'localhost',      // Trje3 localhost
+    instanceId: `service-notification:${PORT}`,
+    ipAddr: '127.0.0.1',        // Trje3 IP local
+    statusPageUrl: `http://localhost:${PORT}/info`,
+    healthCheckUrl: `http://localhost:${PORT}/health`,
+    port: {
+      '$': PORT,
+      '@enabled': 'true'
+    },
+    vipAddress: 'service-notification',
+    dataCenterInfo: {
+      '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
+      name: 'MyOwn',
+    },
+  },
+  eureka: {
+    // Eureka server f l-PC dyalk
+    host: 'localhost',
+    port: 8761,
+    servicePath: '/eureka/apps/',
+  },
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -80,8 +105,9 @@ app.use('/api/notifications', notificationRoutes);
 
 const kafka = new Kafka({
   clientId: "notification-service",
-  brokers: [process.env.KAFKA_BOOTSTRAP_SERVERS || "kafka-service:9092"]
+  brokers: ["localhost:9092"]
 });
+
 const consumer = kafka.consumer({ groupId: "notification-group" });
 
 const runKafkaConsumer = async () => {

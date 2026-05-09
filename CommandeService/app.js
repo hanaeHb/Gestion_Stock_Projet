@@ -12,7 +12,7 @@ const app = express();
 const PORT = 5001;
 
 // Eureka Client
-const client = new Eureka({
+/*const client = new Eureka({
   instance: {
     app: 'service-commande',
     hostName: 'service-commande',
@@ -35,8 +35,33 @@ const client = new Eureka({
     port: 8761,
     servicePath: '/eureka/apps/',
   },
-});
+});*/
 
+const client = new Eureka({
+  instance: {
+    app: 'SERVICE-COMMANDE',
+    hostName: 'localhost', // Trje3 localhost f blast s-miya d l-pod
+    instanceId: `service-commande:${PORT}`,
+    ipAddr: '127.0.0.1',   // Trje3 IP local
+    statusPageUrl: `http://localhost:${PORT}/info`,
+    healthCheckUrl: `http://localhost:${PORT}/health`,
+    port: {
+      '$': PORT,
+      '@enabled': 'true',
+    },
+    vipAddress: 'SERVICE-COMMANDE',
+    dataCenterInfo: {
+      '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
+      name: 'MyOwn',
+    },
+  },
+  eureka: {
+    // Eureka Server li khddam 3ndek f l-PC
+    host: 'localhost',
+    port: 8761,
+    servicePath: '/eureka/apps/',
+  },
+});
 // Middleware
 app.use(bodyParser.json());
 
