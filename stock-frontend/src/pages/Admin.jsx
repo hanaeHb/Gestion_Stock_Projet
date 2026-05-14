@@ -115,6 +115,7 @@ export default function Admin() {
     }, []);
 
     // ===================== Update Profile =====================
+    const [statusMessage, setStatusMessage] = useState({ show: false, message: "", type: "" });
     const handleUpdate = (e) => {
         e.preventDefault();
         const token = localStorage.getItem("token");
@@ -136,9 +137,21 @@ export default function Admin() {
             })
             .then(data => {
                 setAdminData(data);
-                alert("Profile updated successfully");
+                setStatusMessage({
+                    show: true,
+                    message: "Profile updated successfully",
+                    type: "success"
+                });
+                setTimeout(() => setStatusMessage({ ...statusMessage, show: false }), 4000);
             })
-            .catch(err => alert("Error updating profile: " + err.message));
+            .catch(err => {
+                setStatusMessage({
+                    show: true,
+                    message: "Erreur: " + err.message,
+                    type: "error"
+                });
+                setTimeout(() => setStatusMessage({ ...statusMessage, show: false }), 4000);
+            });
     };
 
     const fetchUsers = async () => {
@@ -647,7 +660,7 @@ export default function Admin() {
                         <div className="category-container">
                             <div className="category-modern-header">
                                 <div className="header-text">
-                                    <h1>Stock & Users Dashboard</h1>
+                                    <h1>Dashboard Global</h1>
                                     <p>Organize and structure your inventory hierarchy</p>
                                 </div>
                             </div>
@@ -1264,6 +1277,18 @@ export default function Admin() {
                                 </form>
                             )}
                         </div>
+                        {statusMessage.show && (
+                            <div className={`custom-toast ${statusMessage.type === "success" ? "success-toast" : "error-toast"}`}>
+                                <div className="toast-icon">
+                                    {statusMessage.type === "success" ? "✓" : "✕"}
+                                </div>
+                                <div className="toast-content">
+                                    <h4>{statusMessage.type === "success" ? "Success !" : "Erreur"}</h4>
+                                    <p>{statusMessage.message}</p>
+                                </div>
+                                <div className="toast-progress"></div>
+                            </div>
+                        )}
                     </div>
                 )}
                 {/* Products Section */}

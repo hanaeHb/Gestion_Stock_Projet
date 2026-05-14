@@ -10,50 +10,64 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(circle at 30% 30%, #ffffff 0%, #e5e7eb 30%, rgba(239, 192, 197, 0.98) 90%, #ead1d4 100%);
+    background: radial-gradient(circle at 30% 30%, #ffffff 0%, #fff5f5 40%, #ffedee 100%);
     padding: 20px;
 }
 
 .pending-card {
-    background: transparent;
-    border-radius: 20px;
+    background: white;
+    border-radius: 24px;
     padding: 60px 40px;
-    max-width: 600px;
+    max-width: 550px;
     text-align: center;
+    border: 1px solid #ff9a9e22;
 }
 
 .pending-card h1 {
-    font-size: 42px;
+    font-size: 40px;
     color: #730d19;
     margin-bottom: 20px;
+    font-family: "Berlin Sans FB Demi";
 }
 
 .pending-card p {
     font-size: 18px;
-    color: #1e293b;
-    opacity: 0.85;
+    color: #e36469;
+    line-height: 1.6;
     margin-bottom: 15px;
 }
 
 .pending-card p.email {
     font-weight: 700;
-    color: #4facfe; /* highlight color */
+    color: #730d19;
+    background: #fff0f1;
+    padding: 5px 12px;
+    border-radius: 8px;
+    display: inline-block;
 }
 
 .pending-card button {
-    background: linear-gradient(135deg, #4facfe, #730d19);
+    background: linear-gradient(135deg, #ff9a9e, #730d19);
     color: white;
     border: none;
-    padding: 12px 25px;
+    padding: 14px 35px;
     border-radius: 12px;
     font-size: 16px;
     cursor: pointer;
-    font-weight: 700;
-    margin-top: 20px;
+    font-weight: 600;
+    margin-top: 30px;
     transition: all 0.3s ease;
+    font-family: "Berlin Sans FB Demi";
 }
 
 .pending-card button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transform: translateY(-3px);
+    opacity: 0.95;
+}
+
+.pending-card::before {
+    content: "⏳";
+    font-size: 50px;
+    display: block;
+    margin-bottom: 20px;
 }
