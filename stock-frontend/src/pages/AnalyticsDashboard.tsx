@@ -69,17 +69,23 @@ const AnalyticsDashboard: React.FC<AnalyticsProps> = ({ products, categories, bu
         .sort((a, b) => a.current - b.current)
         .slice(0, 6);
 
-    const COLORS = ['#A5B4FC', '#FCA5A5', '#FCD34D', '#6EE7B7', '#93C5FD', '#F9A8D4'];
-
+    const COLORS = ['#ff9a9e', '#fca5a5', '#730d19', '#e36469', '#ffccd2', '#b33939'];
+    const mainGradient = "linear-gradient(135deg, #ff9a9e, #730d19)";
     return (
-        <div className="analytics-container" style={{ padding: '30px', background: 'transparent', borderRadius: '20px' }}>
-            <div className="hub-header" style={{ marginBottom: '40px', textAlign: 'center' }}>
-                <h2 style={{ fontSize: '2.2rem', fontWeight: '800', background: 'linear-gradient(90deg, #6366f1, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                    Insights & Business Intelligence
-                </h2>
-                <p style={{ color: '#64748b', fontSize: '1.1rem' }}>Visual analysis of stock levels and categories</p>
+        <div className="analytics-container" style={{padding: '30px', background: 'transparent', borderRadius: '20px'}}>
+            <div className="analytics-container" style={{padding: '30px', background: 'transparent'}}>
+                <div className="hub-header" style={{marginBottom: '40px', textAlign: 'center'}}>
+                    <h2 style={{
+                        fontSize: '2.2rem',
+                        fontWeight: '800',
+                        color: '#000000',
+                        fontFamily: "Berlin Sans FB Demi"
+                    }}>
+                        Insights & Business Intelligence
+                    </h2>
+                    <p style={{color: '#e36469', fontSize: '1.1rem'}}>Analyse visuelle des stocks et catégories</p>
+                </div>
             </div>
-
             <div className="analytics-grid" style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(2, 1fr)',
@@ -90,28 +96,42 @@ const AnalyticsDashboard: React.FC<AnalyticsProps> = ({ products, categories, bu
                 <div className="panel glass-panel" style={{
                     gridColumn: '1 / -1',
                     padding: '30px',
-                    background: 'rgba(255, 255, 255, 0.8)',
-                    backdropFilter: 'blur(10px)',
+                    background: 'white',
                     borderRadius: '24px',
-                    boxShadow: '0 10px 40px rgba(99, 102, 241, 0.05)',
-                    border: '1px solid rgba(255, 255, 255, 0.3)'
+                    boxShadow: '0 10px 40px rgba(115, 13, 25, 0.05)',
+                    border: '1px solid #ff9a9e33'
                 }}>
-                    <h4 style={{marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '10px', color: '#4338ca'}}>
-                        <span style={{padding: '8px', background: '#e0e7ff', borderRadius: '10px'}}>💰</span> Monthly Budget Allocation
+                    <h4 style={{
+                        marginBottom: '25px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        color: '#730d19'
+                    }}>
+                            <span style={{
+                                padding: '8px',
+                                background: '#fff0f1',
+                                borderRadius: '10px'
+                            }}>💰</span> Allocation Budgétaire Mensuelle
                     </h4>
                     <ResponsiveContainer width="100%" height={350}>
                         <AreaChart data={monthlyBudgetData}>
                             <defs>
                                 <linearGradient id="colorBudget" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#818cf8" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#818cf8" stopOpacity={0}/>
+                                    <stop offset="5%" stopColor="#ff9a9e" stopOpacity={0.4}/>
+                                    <stop offset="95%" stopColor="#730d19" stopOpacity={0}/>
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9"/>
-                            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} />
-                            <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} />
-                            <Tooltip contentStyle={{borderRadius: '15px', border: 'none', boxShadow: '0 10px 20px rgba(0,0,0,0.05)'}} />
-                            <Area type="monotone" dataKey="amount" stroke="#6366f1" strokeWidth={3} fill="url(#colorBudget)" />
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#fff0f1"/>
+                            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#e36469'}}/>
+                            <YAxis axisLine={false} tickLine={false} tick={{fill: '#e36469'}}/>
+                            <Tooltip contentStyle={{
+                                borderRadius: '15px',
+                                border: 'none',
+                                boxShadow: '0 10px 20px rgba(115,13,25,0.1)'
+                            }}/>
+                            <Area type="monotone" dataKey="amount" stroke="#730d19" strokeWidth={3}
+                                  fill="url(#colorBudget)"/>
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>
@@ -121,9 +141,10 @@ const AnalyticsDashboard: React.FC<AnalyticsProps> = ({ products, categories, bu
                     padding: '30px',
                     background: 'white',
                     borderRadius: '24px',
-                    boxShadow: '0 10px 40px rgba(0,0,0,0.03)'
+                    boxShadow: '0 10px 40px rgba(115, 13, 25, 0.05)',
+                    border: '1px solid #ff9a9e22'
                 }}>
-                    <h4 style={{marginBottom: '20px', color: '#1e293b'}}>📊 Catalog Breakdown</h4>
+                    <h4 style={{marginBottom: '20px', color: '#730d19'}}>📊 Répartition du Catalogue</h4>
                     <ResponsiveContainer width="100%" height={320}>
                         <PieChart>
                             <Pie
@@ -144,24 +165,30 @@ const AnalyticsDashboard: React.FC<AnalyticsProps> = ({ products, categories, bu
                 </div>
 
                 {/* 3. Restocking Alert (Bar) */}
-                <div className="panel glass-panel" style={{padding: '30px', background: 'white', borderRadius: '24px'}}>
-                    <h4 style={{marginBottom: '25px', color: '#1e293b'}}>⚠️ Stock Alerts</h4>
+                <div className="panel glass-panel" style={{
+                    padding: '30px',
+                    background: 'white',
+                    borderRadius: '24px',
+                    boxShadow: '0 10px 40px rgba(115, 13, 25, 0.05)',
+                    border: '1px solid #ff9a9e22'
+                }}>
+                    <h4 style={{marginBottom: '25px', color: '#730d19'}}>⚠️ Alertes de Stock</h4>
                     <ResponsiveContainer width="100%" height={350}>
-                        <BarChart data={stockAnalysis} margin={{bottom: 50}}> {/* زدنا الـ margin هنا */}
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9"/>
+                        <BarChart data={stockAnalysis} margin={{bottom: 50}}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#fff0f1"/>
                             <XAxis
                                 dataKey="name"
                                 angle={-35}
                                 textAnchor="end"
                                 interval={0}
                                 height={70}
-                                tick={{fontSize: 11}}
+                                tick={{fontSize: 11, fill: '#e36469'}}
                             />
-                            <YAxis axisLine={false} tickLine={false}/>
+                            <YAxis axisLine={false} tickLine={false} tick={{fill: '#e36469'}}/>
                             <Tooltip/>
                             <Legend verticalAlign="top" align="right" iconType="circle"/>
-                            <Bar dataKey="current" fill="#93c5fd" radius={[8, 8, 0, 0]} barSize={25}/>
-                            <Bar dataKey="threshold" fill="#fca5a5" radius={[8, 8, 0, 0]} barSize={25}/>
+                            <Bar name="Actuel" dataKey="current" fill="#ff9a9e" radius={[8, 8, 0, 0]} barSize={25}/>
+                            <Bar name="Seuil" dataKey="threshold" fill="#730d19" radius={[8, 8, 0, 0]} barSize={25}/>
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
@@ -171,23 +198,24 @@ const AnalyticsDashboard: React.FC<AnalyticsProps> = ({ products, categories, bu
                     gridColumn: '1 / -1',
                     padding: '40px',
                     marginTop: '20px',
-                    background: 'linear-gradient(135deg, #ffffff 0%, #fef2f2 100%)',
-                    borderRadius: '24px'
+                    background: 'linear-gradient(135deg, #ffffff 0%, #fff5f6 100%)',
+                    borderRadius: '24px',
+                    border: '1px solid #ff9a9e33'
                 }}>
-                    <h4 style={{textAlign: 'center', marginBottom: '30px', color: '#475569'}}>🌐 Inventory Density
-                        Radar</h4>
+                    <h4 style={{textAlign: 'center', marginBottom: '30px', color: '#730d19'}}>🌐 Densité de
+                        l'Inventaire</h4>
                     <ResponsiveContainer width="100%" height={400}>
                         <RadarChart cx="50%" cy="50%" outerRadius="80%" data={categoryData}>
-                            <PolarGrid stroke="#e2e8f0"/>
-                            <PolarAngleAxis dataKey="name" tick={{fill: '#64748b', fontSize: 14}}/>
+                            <PolarGrid stroke="#ff9a9e"/>
+                            <PolarAngleAxis dataKey="name" tick={{fill: '#e36469', fontSize: 14}}/>
                             <Radar
-                                name="Products"
+                                name="Produits"
                                 dataKey="value"
-                                stroke="#a855f7"
-                                fill="#a855f7"
-                                fillOpacity={0.4}
+                                stroke="#730d19"
+                                fill="#ff9a9e"
+                                fillOpacity={0.5}
                             />
-                            <Tooltip />
+                            <Tooltip/>
                         </RadarChart>
                     </ResponsiveContainer>
                 </div>
