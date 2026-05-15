@@ -7,7 +7,7 @@ import {
     FaCog,
     FaUser,
     FaSignOutAlt,
-    FaBoxes, FaUserTie, FaInbox, FaFileInvoiceDollar, FaDownload, FaSync, FaTruck, FaFilePdf, FaChartLine
+    FaBoxes, FaUserTie, FaInbox, FaFileInvoiceDollar, FaDownload, FaSync, FaTruck, FaFilePdf, FaChartLine, FaUserClock
 } from "react-icons/fa";
 import {  FaCamera, FaEnvelope, FaPhone, FaIdCard, FaBriefcase, FaCalendarAlt, FaCheckCircle, FaUserShield } from "react-icons/fa";
 import {FiGrid, FiTrendingUp} from "react-icons/fi";
@@ -146,7 +146,8 @@ export default function ProcurementManager() {
                 setPendingFournisseurs(pending);
                 setReplenishmentRequests(restock);
 
-                setNotificationCount(pending.length + restock.length + quotes.length + shipments.length);
+                const totalNotifs = pending.length + restock.length + quotes.length + shipments.length;
+                setNotificationCount(totalNotifs);
 
                 setLoading(false);
             } catch (err) {
@@ -357,6 +358,22 @@ export default function ProcurementManager() {
             console.error("Global fetch error:", err);
         }
     };
+    const [products, setProducts] = useState([]);
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                const res = await axios.get("http://localhost:8888/produit-stock-service/v1/produits", {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setProducts(res.data);
+            } catch (err) {
+                console.error("Error fetching products for dashboard", err);
+            }
+        };
+        fetchProducts();
+    }, []);
     return (
         <div className="manager-container">
 
@@ -424,10 +441,16 @@ export default function ProcurementManager() {
                             <ul className="menu">
                                 <li className={activeSection === "bell" ? "active" : ""}
                                     onClick={() => setActiveSection("bell")}>
-                                    <FaBell/>
+                                    <div className="bell-wrapper">
+                                        <FaBell/>
+                                        {notificationCount > 0 && (
+                                            <span className="bell-badge-count">
+                                            {notificationCount}
+                                        </span>
+                                        )}
+                                    </div>
                                 </li>
                             </ul>
-                            {notificationCount > 0 && <span className="badge-number">{notificationCount}</span>}
                         </div>
 
                         <div className="nav-avatar"
@@ -595,38 +618,52 @@ export default function ProcurementManager() {
                 {/* Dashboard */}
                 {activeSection === "dashboard" && (
                     <>
-                        <header className="header">
-                            <h1>Manager Dashboard</h1>
-                            <p className="subtitle">
-                                Monitor inventory performance and stock status.
-                            </p>
-                        </header>
 
-                        <section className="cards">
+                    <div className="category-container">
+                        <div className="category-modern-header">
+                            <div className="header-text">
+                                <h1>Dashboard Global</h1>
+                                <p>Monitor inventory performance and stock status.</p>
+                            </div>
+                        </div>
 
-                            <div className="card">
-                                <div className="card-icon"><FaBoxes/></div>
-                                <h3>1,248</h3>
-                                <p>Total Products</p>
+                        <section className="stats-dashboard-grid">
+
+                            <div className="status-glass-card warning-light">
+                                <div className="card-icon-wrapper"><FaChartBar/></div>
+                                <div className="dash-card-content">
+                                    <h3 className="stat-number">{products?.filter(p => p.quantiteDisponible <= (p.seuilCritique || 5)).length || 0}</h3>
+                                    <p>Critical Stock Items</p>
+                                </div>
                             </div>
 
-                            <div className="card">
-                                <div className="card-icon"><FaChartBar/></div>
-                                <h3>82</h3>
-                                <p>Low Stock</p>
+                            {/* Card 2: Pending Suppliers */}
+                            <div className="status-glass-card pending-light"
+                                 onClick={() => setActiveSection("notifications")}>
+                                <div className="card-icon-wrapper"><FaUserClock/></div>
+                                <div className="dash-card-content">
+                                    <h3 className="stat-number">{pendingFournisseurs.length}</h3>
+                                    <p>Pending Suppliers</p>
+                                </div>
                             </div>
 
-                            <div className="card">
-                                <div className="card-icon"><FaFolder/></div>
-                                <h3>36</h3>
-                                <p>Categories</p>
+                            {/* Card 3: Validated Suppliers */}
+                            <div className="status-glass-card success-light">
+                                <div className="card-icon-wrapper"><FaCheckCircle/></div>
+                                <div className="dash-card-content">
+                                    <h3 className="stat-number">{validatedFournisseurs.length}</h3>
+                                    <p>Verified Partners</p>
+                                </div>
                             </div>
 
-                            <div className="card" onClick={() => setActiveSection("restock_orders")}
-                                 style={{cursor: 'pointer'}}>
-                                <div className="card-icon"><FaInbox/></div>
-                                <h3>{replenishmentRequests.length}</h3>
-                                <p>New Restock Requests</p>
+                            {/* Card 4: Restock Orders */}
+                            <div className="status-glass-card primary-light"
+                                 onClick={() => setActiveSection("restock_orders")}>
+                                <div className="card-icon-wrapper"><FaInbox/></div>
+                                <div className="dash-card-content">
+                                    <h3 className="stat-number">{replenishmentRequests.length}</h3>
+                                    <p >Replenishment Orders</p>
+                                </div>
                             </div>
                         </section>
                         <div className="dashboard-content fade-in">
@@ -724,396 +761,411 @@ export default function ProcurementManager() {
                                 </button>
                             </div>
                         </div>
+                    </div>
                     </>
-                )}
-                {activeSection === "restock_orders" && (
-                    <div className="restock-modern-container fade-in">
-                        <header className="restock-header-modern">
-                            <div className="header-text">
-                                <h1><FaInbox className="header-icon-anim"/> Critical Replenishment</h1>
-                                <p>High-priority orders waiting for your approval</p>
-                            </div>
-                            <div className="header-badge">
-                                <span className="pulse-dot"></span>
-                                {replenishmentRequests.length} Requests Pending
-                            </div>
-                        </header>
-
-                        <div className="restock-grid">
-                            {replenishmentRequests.length === 0 ? (
-                                <div className="empty-state-card">
-                                    <FaInbox size={50}/>
-                                    <p>Great job! No pending requests at the moment.</p>
+                    )}
+                    {activeSection === "restock_orders" && (
+                        <div className="restock-modern-container fade-in">
+                            <header className="restock-header-modern">
+                                <div className="category-modern-header">
+                                    <div className="header-text">
+                                        <h1>Critical Replenishment</h1>
+                                        <p>High-priority orders waiting for your approval</p>
+                                    </div>
                                 </div>
-                            ) : (
-                                replenishmentRequests.map((req) => (
-                                    <div key={req._id} className="restock-card-modern">
-                                        <div className="card-status-line"></div>
-                                        <div className="card-body">
-                                            <div className="product-info-row">
-                                                <div className="p-avatar">
-                                                    {req.productImage ? (
-                                                        <img
-                                                            src={req.productImage}
-                                                            alt={req.productName}
-                                                            className="product-card-img"
-                                                            onError={(e) => {
-                                                                e.currentTarget.style.display = 'none';
-                                                                e.currentTarget.parentElement.innerText = req.productName.charAt(0).toUpperCase();
-                                                            }}
-                                                        />
-                                                    ) : (
-                                                        req.productName.charAt(0).toUpperCase()
-                                                    )}
+                                <div className="header-badge">
+                                    <span className="pulse-dot"></span>
+                                    {replenishmentRequests.length} Requests Pending
+                                </div>
+                            </header>
+
+                            <div className="restock-grid">
+                                {replenishmentRequests.length === 0 ? (
+                                    <div className="empty-state-card">
+                                        <FaInbox size={50}/>
+                                        <p>Great job! No pending requests at the moment.</p>
+                                    </div>
+                                ) : (
+                                    replenishmentRequests.map((req) => (
+                                        <div key={req._id} className="restock-card-modern">
+                                            <div className="card-status-line"></div>
+                                            <div className="card-body">
+                                                <div className="product-info-row">
+                                                    <div className="p-avatar">
+                                                        {req.productImage ? (
+                                                            <img
+                                                                src={req.productImage}
+                                                                alt={req.productName}
+                                                                className="product-card-img"
+                                                                onError={(e) => {
+                                                                    e.currentTarget.style.display = 'none';
+                                                                    e.currentTarget.parentElement.innerText = req.productName.charAt(0).toUpperCase();
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            req.productName.charAt(0).toUpperCase()
+                                                        )}
+                                                    </div>
+                                                    <div className="p-details">
+                                                        <h3>{req.productName}</h3>
+                                                        <span className="p-id">SKU: {req.sku}</span>
+                                                    </div>
+                                                    <div className="p-category">
+                                                        <span className="cat-badge">{req.category || "General"}</span>
+                                                    </div>
                                                 </div>
-                                                <div className="p-details">
-                                                    <h3>{req.productName}</h3>
-                                                    <span className="p-id">SKU: {req.sku}</span>
+
+                                                <div className="stats-row">
+                                                    <div className="stat-box">
+                                                        <span className="stat-label">Quantity</span>
+                                                        <span
+                                                            className="stat-value highlight">{req.requestedQty} Units</span>
+                                                    </div>
+                                                    <div className="stat-box">
+                                                        <span className="stat-label">Requested By</span>
+                                                        <span className="stat-value">{req.fromManager}</span>
+                                                    </div>
+                                                    <div className="stat-box">
+                                                        <span className="stat-label">Request Date</span>
+                                                        <span
+                                                            className="stat-value">{new Date(req.dateAlerte || Date.now()).toLocaleDateString()}</span>
+                                                    </div>
                                                 </div>
-                                                <div className="p-category">
-                                                    <span className="cat-badge">{req.category || "General"}</span>
+
+                                                <div className="card-actions">
+                                                    <button
+                                                        className="btn-order-premium"
+                                                        onClick={() => {
+                                                            setCurrentRequest(req);
+                                                            setIsWizardOpen(true);
+                                                        }}
+                                                    >
+                                                        Approve & Process Order
+                                                    </button>
                                                 </div>
                                             </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    )}
 
-                                            <div className="stats-row">
-                                                <div className="stat-box">
-                                                    <span className="stat-label">Quantity</span>
-                                                    <span
-                                                        className="stat-value highlight">{req.requestedQty} Units</span>
-                                                </div>
-                                                <div className="stat-box">
-                                                    <span className="stat-label">Requested By</span>
-                                                    <span className="stat-value">{req.fromManager}</span>
-                                                </div>
-                                                <div className="stat-box">
-                                                    <span className="stat-label">Request Date</span>
-                                                    <span className="stat-value">{new Date(req.dateAlerte || Date.now()).toLocaleDateString()}</span>
-                                                </div>
-                                            </div>
+                    <OrderWizard
+                        isOpen={isWizardOpen}
+                        onClose={() => setIsWizardOpen(false)}
+                        selectedRequest={currentRequest}
+                        onSuccess={(id) => {
+                            setReplenishmentRequests(prev => prev.filter(r => r._id !== id));
+                            alert("Commande traitée avec succès !");
+                        }}
+                    />
 
-                                            <div className="card-actions">
-                                                <button
-                                                    className="btn-order-premium"
-                                                    onClick={() => {
-                                                        setCurrentRequest(req);
-                                                        setIsWizardOpen(true);
+
+                    {activeSection === "settings" && (
+                        <div className="panel large">
+                            <h3>Manager Settings</h3>
+                            <p>Configure inventory preferences and system options.</p>
+                        </div>
+                    )}
+
+                    {activeSection === "profile" && (
+                        <div className="pro-profile-wrapper fade-in">
+                            <div className="pro-profile-card">
+                                <div className="pro-profile-header">
+                                    <div className="pro-avatar-section">
+                                        <div className="pro-avatar-wrapper">
+                                            <div className="pro-avatar-overlay">
+                                                <FaCamera/>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="pro-avatar-input"
+                                                    onChange={async e => {
+                                                        const file = e.target.files[0];
+                                                        if (file) {
+                                                            const reader = new FileReader();
+                                                            reader.onload = async () => {
+                                                                const imageBase64 = reader.result;
+                                                                setProfile({...profile, image: imageBase64});
+                                                                try {
+                                                                    const token = localStorage.getItem("token");
+                                                                    await axios.put(
+                                                                        `http://localhost:8888/usersservice/v1/user-profiles/me`,
+                                                                        {image: imageBase64},
+                                                                        {headers: {Authorization: `Bearer ${token}`}}
+                                                                    );
+                                                                } catch (err) {
+                                                                    console.error("Error updating image", err);
+                                                                }
+                                                            };
+                                                            reader.readAsDataURL(file);
+                                                        }
                                                     }}
-                                                >
-                                                    Approve & Process Order
-                                                </button>
+                                                />
                                             </div>
+                                            {profile?.image ? (
+                                                <img src={profile.image} alt="Profile" className="pro-avatar-img"/>
+                                            ) : (
+                                                <div className="pro-avatar-placeholder">
+                                                    <FaUser size={45}/>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                <OrderWizard
-                    isOpen={isWizardOpen}
-                    onClose={() => setIsWizardOpen(false)}
-                    selectedRequest={currentRequest}
-                    onSuccess={(id) => {
-                        setReplenishmentRequests(prev => prev.filter(r => r._id !== id));
-                        alert("Commande traitée avec succès !");
-                    }}
-                />
-
-
-
-                {activeSection === "settings" && (
-                    <div className="panel large">
-                        <h3>Manager Settings</h3>
-                        <p>Configure inventory preferences and system options.</p>
-                    </div>
-                )}
-
-                {activeSection === "profile" && (
-                    <div className="pro-profile-wrapper fade-in">
-                        <div className="pro-profile-card">
-                            <div className="pro-profile-header">
-                                <div className="pro-avatar-section">
-                                    <div className="pro-avatar-wrapper">
-                                        <div className="pro-avatar-overlay">
-                                            <FaCamera />
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                className="pro-avatar-input"
-                                                onChange={async e => {
-                                                    const file = e.target.files[0];
-                                                    if (file) {
-                                                        const reader = new FileReader();
-                                                        reader.onload = async () => {
-                                                            const imageBase64 = reader.result;
-                                                            setProfile({...profile, image: imageBase64});
-                                                            try {
-                                                                const token = localStorage.getItem("token");
-                                                                await axios.put(
-                                                                    `http://localhost:8888/usersservice/v1/user-profiles/me`,
-                                                                    {image: imageBase64},
-                                                                    { headers: { Authorization: `Bearer ${token}` } }
-                                                                );
-                                                            } catch (err) { console.error("Error updating image", err); }
-                                                        };
-                                                        reader.readAsDataURL(file);
-                                                    }
-                                                }}
-                                            />
-                                        </div>
-                                        {profile?.image ? (
-                                            <img src={profile.image} alt="Profile" className="pro-avatar-img"/>
-                                        ) : (
-                                            <div className="pro-avatar-placeholder">
-                                                <FaUser size={45} />
-                                            </div>
-                                        )}
+                                    <div className="pro-header-info">
+                                        <h2 className="pro-user-name">{profile?.prenom || ""} {profile?.nom || ""}</h2>
+                                        <p className="pro-role-tag"><FaUserShield/> Procurement Manager Specialist</p>
                                     </div>
                                 </div>
-                                <div className="pro-header-info">
-                                    <h2 className="pro-user-name">{profile?.prenom || ""} {profile?.nom || ""}</h2>
-                                    <p className="pro-role-tag"><FaUserShield /> Procurement Manager Specialist</p>
-                                </div>
-                            </div>
 
-                            <div className="pro-profile-intro">
-                                The Procurement Manager supervises inventory, products, and analytics. Responsibilities
-                                include monitoring stock levels, tracking performance, and coordinating with staff for
-                                efficient workflow.
-                            </div>
-
-                            <div className="pro-form-grid">
-                                <div className="pro-input-group">
-                                    <label><FaUser /> First Name</label>
-                                    <input type="text" value={profile?.nom || ""} readOnly className="pro-readonly" />
-                                </div>
-                                <div className="pro-input-group">
-                                    <label><FaUser /> Last Name</label>
-                                    <input type="text" value={profile?.prenom || ""} readOnly className="pro-readonly" />
+                                <div className="pro-profile-intro">
+                                    The Procurement Manager supervises inventory, products, and analytics.
+                                    Responsibilities
+                                    include monitoring stock levels, tracking performance, and coordinating with staff
+                                    for
+                                    efficient workflow.
                                 </div>
 
-                                <div className="pro-input-group">
-                                    <label><FaEnvelope /> Email Address</label>
-                                    <input type="email" value={profile?.email || ""} readOnly className="pro-readonly" />
-                                </div>
-                                <div className="pro-input-group">
-                                    <label><FaPhone /> Phone</label>
-                                    <input
-                                        type="text"
-                                        value={profile?.phone || ""}
-                                        onChange={e => setProfile({...profile, phone: e.target.value})}
-                                    />
+                                <div className="pro-form-grid">
+                                    <div className="pro-input-group">
+                                        <label><FaUser/> First Name</label>
+                                        <input type="text" value={profile?.nom || ""} readOnly
+                                               className="pro-readonly"/>
+                                    </div>
+                                    <div className="pro-input-group">
+                                        <label><FaUser/> Last Name</label>
+                                        <input type="text" value={profile?.prenom || ""} readOnly
+                                               className="pro-readonly"/>
+                                    </div>
+
+                                    <div className="pro-input-group">
+                                        <label><FaEnvelope/> Email Address</label>
+                                        <input type="email" value={profile?.email || ""} readOnly
+                                               className="pro-readonly"/>
+                                    </div>
+                                    <div className="pro-input-group">
+                                        <label><FaPhone/> Phone</label>
+                                        <input
+                                            type="text"
+                                            value={profile?.phone || ""}
+                                            onChange={e => setProfile({...profile, phone: e.target.value})}
+                                        />
+                                    </div>
+
+                                    <div className="pro-input-group">
+                                        <label><FaIdCard/> CIN</label>
+                                        <input
+                                            type="text"
+                                            value={profile?.cin || ""}
+                                            onChange={e => setProfile({...profile, cin: e.target.value})}
+                                        />
+                                    </div>
+                                    <div className="pro-input-group">
+                                        <label><FaCheckCircle/> Status</label>
+                                        <input type="text" value={profile?.status || ""} readOnly
+                                               className="pro-readonly"/>
+                                    </div>
+
+                                    <div className="pro-input-group">
+                                        <label><FaBriefcase/> Role</label>
+                                        <input type="text" value={profile?.metierRole || "Procurement Manager"} readOnly
+                                               className="pro-readonly"/>
+                                    </div>
+                                    <div className="pro-input-group">
+                                        <label><FaCalendarAlt/> Join Date</label>
+                                        <input type="text" value={profile?.createdAt || ""} readOnly
+                                               className="pro-readonly"/>
+                                    </div>
                                 </div>
 
-                                <div className="pro-input-group">
-                                    <label><FaIdCard /> CIN</label>
-                                    <input
-                                        type="text"
-                                        value={profile?.cin || ""}
-                                        onChange={e => setProfile({...profile, cin: e.target.value})}
-                                    />
+                                <div className="pro-form-footer">
+                                    <button className="pro-save-btn" onClick={async () => {
+                                        try {
+                                            const token = localStorage.getItem("token");
+
+                                            // hna ghi les fields editable
+                                            const updatedData = {
+                                                phone: profile?.phone,
+                                                cin: profile?.cin,
+                                            };
+
+                                            const res = await axios.put(
+                                                `http://localhost:8888/usersservice/v1/user-profiles/me`,
+                                                updatedData,
+                                                {
+                                                    headers: {Authorization: `Bearer ${token}`},
+                                                }
+                                            );
+
+                                            setProfile(res.data); // update local state
+                                            alert("Profile updated successfully ✅");
+                                        } catch (err) {
+                                            console.error("Error updating profile", err.response || err.message);
+                                            alert("Failed to update profile.");
+                                        }
+                                    }}
+                                    >
+                                        Save Changes
+                                    </button>
                                 </div>
-                                <div className="pro-input-group">
-                                    <label><FaCheckCircle /> Status</label>
-                                    <input type="text" value={profile?.status || ""} readOnly className="pro-readonly" />
-                                </div>
-
-                                <div className="pro-input-group">
-                                    <label><FaBriefcase /> Role</label>
-                                    <input type="text" value={profile?.metierRole || "Procurement Manager"} readOnly className="pro-readonly" />
-                                </div>
-                                <div className="pro-input-group">
-                                    <label><FaCalendarAlt /> Join Date</label>
-                                    <input type="text" value={profile?.createdAt || ""} readOnly className="pro-readonly" />
-                                </div>
-                            </div>
-
-                            <div className="pro-form-footer">
-                                <button className="pro-save-btn" onClick={async () => {
-                                    try {
-                                        const token = localStorage.getItem("token");
-
-                                        // hna ghi les fields editable
-                                        const updatedData = {
-                                            phone: profile?.phone,
-                                            cin: profile?.cin,
-                                        };
-
-                                        const res = await axios.put(
-                                            `http://localhost:8888/usersservice/v1/user-profiles/me`,
-                                            updatedData,
-                                            {
-                                                headers: {Authorization: `Bearer ${token}`},
-                                            }
-                                        );
-
-                                        setProfile(res.data); // update local state
-                                        alert("Profile updated successfully ✅");
-                                    } catch (err) {
-                                        console.error("Error updating profile", err.response || err.message);
-                                        alert("Failed to update profile.");
-                                    }
-                                }}
-                                >
-                                    Save Changes
-                                </button>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {activeSection === "fournisseurs" && (
-                    <div className="fs-section-container animate-fade-in">
-                        {/* --- Header 1: Pending --- */}
-                        <div className="fs-main-header">
-                            <div className="header-text">
-                                <h1>Pending Suppliers</h1>
-                                <p>Approve or reject the new supplier requests to join the platform.</p>
+                    {activeSection === "fournisseurs" && (
+                        <div className="fs-section-container animate-fade-in">
+                            {/* --- Header 1: Pending --- */}
+                            <div className="fs-main-header">
+                                <div className="header-text">
+                                    <h1>Pending Suppliers</h1>
+                                    <p>Approve or reject the new supplier requests to join the platform.</p>
+                                </div>
+                                <div className="fs-stats-badge yellow">
+                                    {pendingFournisseurs.length} Waiting
+                                </div>
                             </div>
-                            <div className="fs-stats-badge yellow">
-                                {pendingFournisseurs.length} Waiting
-                            </div>
-                        </div>
 
-                        <div className="fs-card-wrapper">
-                            <div className="fs-table-responsive">
-                                {pendingFournisseurs.length === 0 ? (
-                                    <div className="empty-state">No suppliers waiting for approval.</div>
-                                ) : (
-                                    <table className="fs-modern-table">
-                                        <thead>
-                                        <tr>
-                                            <th>Supplier Name</th>
-                                            <th>Contact Details</th>
-                                            <th>CIN</th>
-                                            <th>Role</th>
-                                            <th>Date</th>
-                                            <th>Document</th>
-                                            <th style={{ textAlign: "center" }}>Actions</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {pendingFournisseurs.map((f) => (
-                                            <tr key={f._id}>
-                                                <td>
-                                                    <div className="fs-user-info">
-                                                        <div
-                                                            className="fs-avatar-sm">{f.fournisseur?.firstName?.charAt(0)}</div>
-                                                        <strong>{f.fournisseur?.firstName} {f.fournisseur?.lastName}</strong>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div className="fs-contact-cell">
-                                                        <span>{f.fournisseur?.email}</span>
-                                                        <small>{f.fournisseur?.phone}</small>
-                                                    </div>
-                                                </td>
-                                                <td><span className="fs-cin-badge">{f.fournisseur?.cin}</span></td>
-                                                <td><span className="fs-role-tag">{f.fournisseur?.role}</span></td>
-                                                <td>{new Date(f.dateAlerte).toLocaleDateString()}</td>
-                                                <td>
-                                                    {f.fournisseur?.cvPath ? (
-                                                        <button
-                                                            className="fs-download-btn light"
-                                                            onClick={() => {
-                                                                const cleanPath = f.fournisseur.cvPath.replace(/^\/?uploads\/cv\//, '').replace(/\\/g, '/');
-                                                                const fileName = cleanPath.split('/').pop();
-                                                                downloadCV(fileName);
-                                                            }}
-                                                        >
-                                                            <FaDownload/> CV
-                                                        </button>
-                                                    ) : (
-                                                        <span className="no-data">N/A</span>
-                                                    )}
-                                                </td>
-                                                <td>
-                                                    <div className="fs-actions-gap">
-                                                        <button
-                                                            className="fs-btn-validate"
-                                                            onClick={() => updateNotificationStatus(f._id, "validated", f.fournisseur?.userId)}
-                                                        >
-                                                            Validate
-                                                        </button>
-                                                        <button
-                                                            className="fs-btn-reject"
-                                                            onClick={() => rejectFournisseur(f._id)}
-                                                        >
-                                                            Refuse
-                                                        </button>
-                                                    </div>
-                                                </td>
+                            <div className="fs-card-wrapper">
+                                <div className="fs-table-responsive">
+                                    {pendingFournisseurs.length === 0 ? (
+                                        <div className="empty-state">No suppliers waiting for approval.</div>
+                                    ) : (
+                                        <table className="fs-modern-table">
+                                            <thead>
+                                            <tr>
+                                                <th>Supplier Name</th>
+                                                <th>Contact Details</th>
+                                                <th>CIN</th>
+                                                <th>Role</th>
+                                                <th>Date</th>
+                                                <th>Document</th>
+                                                <th style={{textAlign: "center"}}>Actions</th>
                                             </tr>
-                                        ))}
-                                        </tbody>
-                                    </table>
-                                )}
+                                            </thead>
+                                            <tbody>
+                                            {pendingFournisseurs.map((f) => (
+                                                <tr key={f._id}>
+                                                    <td>
+                                                        <div className="fs-user-info">
+                                                            <div
+                                                                className="fs-avatar-sm">{f.fournisseur?.firstName?.charAt(0)}</div>
+                                                            <strong>{f.fournisseur?.firstName} {f.fournisseur?.lastName}</strong>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div className="fs-contact-cell">
+                                                            <span>{f.fournisseur?.email}</span>
+                                                            <small>{f.fournisseur?.phone}</small>
+                                                        </div>
+                                                    </td>
+                                                    <td><span className="fs-cin-badge">{f.fournisseur?.cin}</span></td>
+                                                    <td><span className="fs-role-tag">{f.fournisseur?.role}</span></td>
+                                                    <td>{new Date(f.dateAlerte).toLocaleDateString()}</td>
+                                                    <td>
+                                                        {f.fournisseur?.cvPath ? (
+                                                            <button
+                                                                className="fs-download-btn light"
+                                                                onClick={() => {
+                                                                    const cleanPath = f.fournisseur.cvPath.replace(/^\/?uploads\/cv\//, '').replace(/\\/g, '/');
+                                                                    const fileName = cleanPath.split('/').pop();
+                                                                    downloadCV(fileName);
+                                                                }}
+                                                            >
+                                                                <FaDownload/> CV
+                                                            </button>
+                                                        ) : (
+                                                            <span className="no-data">N/A</span>
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        <div className="fs-actions-gap">
+                                                            <button
+                                                                className="fs-btn-validate"
+                                                                onClick={() => updateNotificationStatus(f._id, "validated", f.fournisseur?.userId)}
+                                                            >
+                                                                Validate
+                                                            </button>
+                                                            <button
+                                                                className="fs-btn-reject"
+                                                                onClick={() => rejectFournisseur(f._id)}
+                                                            >
+                                                                Refuse
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            </tbody>
+                                        </table>
+                                    )}
+                                </div>
                             </div>
-                        </div>
 
-                        {/* --- Header 2: Validated --- */}
-                        <div className="fs-main-header" style={{marginTop: '40px'}}>
-                            <div className="header-text">
-                                <h1>Validated Suppliers</h1>
-                                <p>Manage your existing verified suppliers and their account status.</p>
+                            {/* --- Header 2: Validated --- */}
+                            <div className="fs-main-header" style={{marginTop: '40px'}}>
+                                <div className="header-text">
+                                    <h1>Validated Suppliers</h1>
+                                    <p>Manage your existing verified suppliers and their account status.</p>
+                                </div>
+                                <div className="fs-stats-badge green">
+                                    {validatedFournisseurs.length} Verified
+                                </div>
                             </div>
-                            <div className="fs-stats-badge green">
-                                {validatedFournisseurs.length} Verified
-                            </div>
-                        </div>
 
-                        <div className="fs-card-wrapper">
-                            <div className="fs-table-responsive">
-                                {validatedFournisseurs.length === 0 ? (
-                                    <div className="empty-state">No validated suppliers found.</div>
-                                ) : (
-                                    <table className="fs-modern-table">
-                                        <thead>
-                                        <tr>
-                                            <th>Supplier Name</th>
-                                            <th>Email & Phone</th>
-                                            <th>CIN</th>
-                                            <th>Approved Date</th>
-                                            <th>CV</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        {validatedFournisseurs.map(f => (
-                                            <tr key={f._id || f.id}>
-                                                <td>
-                                                    <div className="fs-user-info">
-                                                        <div className="fs-avatar-sm green-style">{f.firstName?.charAt(0)}</div>
-                                                        <strong>{f.firstName} {f.lastName}</strong>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div className="fs-contact-cell">
-                                                        <span>{f.email}</span>
-                                                        <small>{f.phone}</small>
-                                                    </div>
-                                                </td>
-                                                <td><span className="fs-cin-badge">{f.cin}</span></td>
-                                                <td>{new Date(f.dateAlerte).toLocaleDateString()}</td>
-                                                <td>
-                                                    {f.cvFile ? (
-                                                        <button className="fs-download-btn light" onClick={() => downloadCV(f.cvFile.replace(/^\/?uploads\/cv\//, ''))}>
-                                                            <FaDownload /> CV
-                                                        </button>
-                                                    ) : "N/A"}
-                                                </td>
-
+                            <div className="fs-card-wrapper">
+                                <div className="fs-table-responsive">
+                                    {validatedFournisseurs.length === 0 ? (
+                                        <div className="empty-state">No validated suppliers found.</div>
+                                    ) : (
+                                        <table className="fs-modern-table">
+                                            <thead>
+                                            <tr>
+                                                <th>Supplier Name</th>
+                                                <th>Email & Phone</th>
+                                                <th>CIN</th>
+                                                <th>Approved Date</th>
+                                                <th>CV</th>
                                             </tr>
-                                        ))}
-                                        </tbody>
-                                    </table>
-                                )}
+                                            </thead>
+                                            <tbody>
+                                            {validatedFournisseurs.map(f => (
+                                                <tr key={f._id || f.id}>
+                                                    <td>
+                                                        <div className="fs-user-info">
+                                                            <div
+                                                                className="fs-avatar-sm green-style">{f.firstName?.charAt(0)}</div>
+                                                            <strong>{f.firstName} {f.lastName}</strong>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div className="fs-contact-cell">
+                                                            <span>{f.email}</span>
+                                                            <small>{f.phone}</small>
+                                                        </div>
+                                                    </td>
+                                                    <td><span className="fs-cin-badge">{f.cin}</span></td>
+                                                    <td>{new Date(f.dateAlerte).toLocaleDateString()}</td>
+                                                    <td>
+                                                        {f.cvFile ? (
+                                                            <button className="fs-download-btn light"
+                                                                    onClick={() => downloadCV(f.cvFile.replace(/^\/?uploads\/cv\//, ''))}>
+                                                                <FaDownload/> CV
+                                                            </button>
+                                                        ) : "N/A"}
+                                                    </td>
+
+                                                </tr>
+                                            ))}
+                                            </tbody>
+                                        </table>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
-            </main>
+                    )}
+                    </main>
 
-        </div>
-    );
-}
+                    </div>
+                    );
+                }

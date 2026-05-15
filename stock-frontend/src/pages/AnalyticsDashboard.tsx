@@ -25,6 +25,7 @@ interface AnalyticsProps {
 interface BudgetData {
     id?: number;
     montantInitial: number;
+    montantConsomme: number;
     dateDebut: string;
     description: string;
 }
@@ -37,10 +38,12 @@ interface AnalyticsProps {
 const AnalyticsDashboard: React.FC<AnalyticsProps> = ({ products, categories, budgets = []}) => {
 
     const monthlyBudgetData = [
-        { month: 'Jan', amount: 0 }, { month: 'Feb', amount: 0 }, { month: 'Mar', amount: 0 },
-        { month: 'Apr', amount: 0 }, { month: 'May', amount: 0 }, { month: 'Jun', amount: 0 },
-        { month: 'Jul', amount: 0 }, { month: 'Aug', amount: 0 }, { month: 'Sep', amount: 0 },
-        { month: 'Oct', amount: 0 }, { month: 'Nov', amount: 0 }, { month: 'Dec', amount: 0 }
+        { month: 'Jan', budget: 0, consomme: 0 }, { month: 'Feb', budget: 0, consomme: 0 },
+        { month: 'Mar', budget: 0, consomme: 0 }, { month: 'Apr', budget: 0, consomme: 0 },
+        { month: 'May', budget: 0, consomme: 0 }, { month: 'Jun', budget: 0, consomme: 0 },
+        { month: 'Jul', budget: 0, consomme: 0 }, { month: 'Aug', budget: 0, consomme: 0 },
+        { month: 'Sep', budget: 0, consomme: 0 }, { month: 'Oct', budget: 0, consomme: 0 },
+        { month: 'Nov', budget: 0, consomme: 0 }, { month: 'Dec', budget: 0, consomme: 0 }
     ];
 
     budgets.forEach(b => {
@@ -48,11 +51,28 @@ const AnalyticsDashboard: React.FC<AnalyticsProps> = ({ products, categories, bu
             const date = new Date(b.dateDebut);
             const monthIndex = date.getMonth();
             if (monthIndex >= 0 && monthIndex < 12) {
-                monthlyBudgetData[monthIndex].amount += b.montantInitial;
+                monthlyBudgetData[monthIndex].budget += b.montantInitial;
+                monthlyBudgetData[monthIndex].consomme += (b.montantConsomme || 0);
             }
         }
     });
-
+    const CustomTooltip = ({ active, payload, label }: any) => {
+        if (active && payload && payload.length) {
+            const budget = payload[0].value;
+            const consomme = payload[1].value;
+            const remaining = budget - consomme;
+            return (
+                <div style={{ background: 'white', padding: '15px', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid #ff9a9e33' }}>
+                    <p style={{ fontWeight: 'bold', color: '#730d19', marginBottom: '5px' }}>{label}</p>
+                    <p style={{ color: '#e36469', fontSize: '13px' }}>💰 Initial: {budget.toLocaleString()} DH</p>
+                    <p style={{ color: '#730d19', fontSize: '13px' }}>📉 Consumes: {consomme.toLocaleString()} DH</p>
+                    <hr style={{ border: '0.5px solid #eee', margin: '5px 0' }} />
+                    <p style={{ color: '#10b981', fontWeight: 'bold', fontSize: '14px' }}>✅ Remaining: {remaining.toLocaleString()} DH</p>
+                </div>
+            );
+        }
+        return null;
+    };
     const categoryData = categories.map(cat => ({
         name: cat.nom,
         value: products.filter(p =>
@@ -92,7 +112,7 @@ const AnalyticsDashboard: React.FC<AnalyticsProps> = ({ products, categories, bu
                 gap: '30px'
             }}>
 
-                {/* 1. Monthly Budget (Full Width) */}
+                {/* 1. Monthly Budget Allocation vs Consumption */}
                 <div className="panel glass-panel" style={{
                     gridColumn: '1 / -1',
                     padding: '30px',
@@ -101,37 +121,50 @@ const AnalyticsDashboard: React.FC<AnalyticsProps> = ({ products, categories, bu
                     boxShadow: '0 10px 40px rgba(115, 13, 25, 0.05)',
                     border: '1px solid #ff9a9e33'
                 }}>
-                    <h4 style={{
-                        marginBottom: '25px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        color: '#730d19'
-                    }}>
-                            <span style={{
-                                padding: '8px',
-                                background: '#fff0f1',
-                                borderRadius: '10px'
-                            }}>💰</span> Allocation Budgétaire Mensuelle
+                    <h4 style={{ marginBottom: '25px', display: 'flex', alignItems: 'center', gap: '10px', color: '#730d19' }}>
+                        <span style={{ padding: '8px', background: '#fff0f1', borderRadius: '10px' }}>📊</span>
+                        Monthly Budget Performance (Initial vs. Consumed)
                     </h4>
-                    <ResponsiveContainer width="100%" height={350}>
+                    <ResponsiveContainer width="100%" height={380}>
                         <AreaChart data={monthlyBudgetData}>
                             <defs>
                                 <linearGradient id="colorBudget" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#ff9a9e" stopOpacity={0.4}/>
-                                    <stop offset="95%" stopColor="#730d19" stopOpacity={0}/>
+                                    <stop offset="5%" stopColor="#ff9a9e" stopOpacity={0.3}/>
+                                    <stop offset="95%" stopColor="#ff9a9e" stopOpacity={0}/>
+                                </linearGradient>
+                                <linearGradient id="colorConsomme" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#730d19" stopOpacity={0.6}/>
+                                    <stop offset="95%" stopColor="#730d19" stopOpacity={0.1}/>
                                 </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#fff0f1"/>
                             <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#e36469'}}/>
                             <YAxis axisLine={false} tickLine={false} tick={{fill: '#e36469'}}/>
-                            <Tooltip contentStyle={{
-                                borderRadius: '15px',
-                                border: 'none',
-                                boxShadow: '0 10px 20px rgba(115,13,25,0.1)'
-                            }}/>
-                            <Area type="monotone" dataKey="amount" stroke="#730d19" strokeWidth={3}
-                                  fill="url(#colorBudget)"/>
+
+
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend verticalAlign="top" height={36} iconType="circle"/>
+
+
+                            <Area
+                                name="Allocated Budget"
+                                type="monotone"
+                                dataKey="budget"
+                                stroke="#ff9a9e"
+                                strokeWidth={2}
+                                fill="url(#colorBudget)"
+                                strokeDasharray="5 5"
+                            />
+
+
+                            <Area
+                                name="Amount Consumed"
+                                type="monotone"
+                                dataKey="consomme"
+                                stroke="#730d19"
+                                strokeWidth={3}
+                                fill="url(#colorConsomme)"
+                            />
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>
