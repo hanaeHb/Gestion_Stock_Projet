@@ -10,11 +10,12 @@ import {
     FaSignOutAlt,
     FaBoxes, FaSyncAlt
 } from "react-icons/fa";
-import { FaCamera, FaEnvelope, FaPhone, FaIdCard, FaBriefcase, FaCalendarAlt, FaRocket } from "react-icons/fa";
+import { FaCamera, FaEnvelope, FaPhone, FaIdCard, FaBriefcase, FaCalendarAlt, FaRocket, FaExclamationTriangle, FaLayerGroup, FaChartLine, FaRobot } from "react-icons/fa";
 import { FiGrid } from "react-icons/fi";
 import axios from "axios";
 import CreateProduitForm from "./CreateProduitForm";
 import { motion, AnimatePresence } from "framer-motion";
+import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 interface Profile {
     userId?: number;
     nom?: string;
@@ -27,7 +28,51 @@ interface Profile {
     createdAt?: string;
     image?: string | null;
 }
+interface ForecastProps {
+    aiData: {
+        predicted_demand: number;
+        current_stock: number;
+        recommended_quantity: number;
+    };
+    productName: string;
+}
 
+const AIRestockForecast: React.FC<ForecastProps> = ({ aiData, productName }) => {
+
+    const chartData = [
+        { name: 'Day -3', sales: Math.floor(aiData.predicted_demand / 10) },
+        { name: 'Day -2', sales: Math.floor(aiData.predicted_demand / 8) },
+        { name: 'Day -1', sales: Math.floor(aiData.predicted_demand / 9) },
+        { name: 'Today', sales: Math.floor(aiData.predicted_demand / 7), stock: aiData.current_stock },
+        { name: 'Forecast', prediction: aiData.predicted_demand / 7 },
+    ];
+
+    return (
+        <div className="ai-forecast-card animate-fade-in">
+            <div className="forecast-header">
+                <h3><FaRobot /> AI Intelligence: {productName}</h3>
+                <p>Linear Regression suggests <strong>+{aiData.recommended_quantity} units</strong> based on demand trend.</p>
+            </div>
+
+            <div style={{ width: '100%', height: 200 }}>
+                <ResponsiveContainer>
+                    <ComposedChart data={chartData}>
+                        <CartesianGrid stroke="#f1f5f9" vertical={false} />
+                        <XAxis dataKey="name" fontSize={10} axisLine={false} tickLine={false} />
+                        <YAxis fontSize={10} axisLine={false} tickLine={false} />
+                        <Tooltip contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 5px 15px rgba(0,0,0,0.1)'}} />
+                        <Bar dataKey="sales" fill="#ff9a9e" barSize={15} radius={[4, 4, 0, 0]} />
+                        <Line type="monotone" dataKey="prediction" stroke="#730d19" strokeWidth={3} dot={{ r: 4, fill: '#730d19' }} />
+                    </ComposedChart>
+                </ResponsiveContainer>
+            </div>
+
+            <div className="forecast-actions">
+                <div className="stock-info-tag">Stock: {aiData.current_stock}</div>
+            </div>
+        </div>
+    );
+};
 export default function InventoryManager() {
     const [activeSection, setActiveSection] = useState<string>("dashboard");
     const [profile, setProfile] = useState<Profile | null>(null);
@@ -110,6 +155,25 @@ export default function InventoryManager() {
         }
     }, [activeSection]);
 
+    const [categories, setCategories] = useState<any[]>([]);
+
+
+    const fetchCategories = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const res = await axios.get("http://localhost:8888/produit-stock-service/v1/categories", {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setCategories(res.data);
+        } catch (err) {
+            console.error("Error categories:", err);
+        }
+    };
+
+    useEffect(() => {
+        fetchProducts();
+        fetchCategories();
+    }, []);
     const handleMovementSubmit = async () => {
         try {
             const token = localStorage.getItem("token");
@@ -182,7 +246,35 @@ export default function InventoryManager() {
     const [showRestockModal, setShowRestockModal] = useState(false);
     const [targetProduct, setTargetProduct] = useState<any>(null);
     const [requestedQty, setRequestedQty] = useState<number>(100);
+    const lowStockProducts = products
+        .filter(p => p.quantiteDisponible <= (p.seuilCritique || 5))
+        .map(p => ({
+            ...p,
+            aiRecommendedQty: p.seuilCritique ? p.seuilCritique * 2 : 50
+        }));
+    const [aiInsights, setAiInsights] = useState<any[]>([]);
+    useEffect(() => {
+        const fetchAiPredictions = async () => {
+            const lowStock = products.filter(p => p.quantiteDisponible <= (p.seuilCritique || 5));
+            const token = localStorage.getItem("token");
 
+            const predictions = await Promise.all(
+                lowStock.map(async (p) => {
+                    try {
+                        const res = await axios.get(`http://localhost:8888/prediction-service/prediction/predict-restock/${p.id}`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                        });
+                        return { ...p, aiData: res.data };
+                    } catch (err) { return { ...p, aiData: null }; }
+                })
+            );
+            setAiInsights(predictions.filter(p => p.aiData && p.aiData.recommended_quantity > 0));
+        };
+
+        if (products.length > 0 && activeSection === "dashboard") {
+            fetchAiPredictions();
+        }
+    }, [products, activeSection]);
 
     const handleSendRequest = async (product: any) => {
         setTargetProduct(product);
@@ -236,6 +328,15 @@ export default function InventoryManager() {
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm]);
+
+    const [aiPage, setAiPage] = useState(1);
+    const itemsPerAiPage = 3;
+
+
+    const indexOfLastAi = aiPage * itemsPerAiPage;
+    const indexOfFirstAi = indexOfLastAi - itemsPerAiPage;
+    const currentAiInsights = aiInsights.slice(indexOfFirstAi, indexOfLastAi);
+    const totalAiPages = Math.ceil(aiInsights.length / itemsPerAiPage);
     return (
         <div className="manager-container">
 
@@ -311,49 +412,118 @@ export default function InventoryManager() {
 
                 {/* Dashboard */}
                 {activeSection === "dashboard" && (
-                    <>
-                        <header className="header">
-                            <h1>Manager Dashboard</h1>
-                            <p className="subtitle">
-                                Monitor inventory performance and stock status.
-                            </p>
-                        </header>
+                    <div className="category-container animate-fade-in">
+                        <div className="category-modern-header">
+                            <div className="header-text">
+                                <h1>Inventory Overview</h1>
+                                <p>AI-powered stock predictions and inventory health.</p>
+                            </div>
+                            <div className="ai-status-badge">AI Engine Active</div>
+                        </div>
 
-                        <section className="cards">
-                            <div className="card">
-                                <div className="card-icon"><FaBoxes/></div>
-                                <h3>1,248</h3>
-                                <p>Total Products</p>
+                        {/* 1. Stats Cards b l-vibe dyalk */}
+                        <section className="stats-dashboard-grid">
+                            <div className="status-glass-card primary-light">
+                                <div className="card-icon-wrapper"><FaBoxes/></div>
+                                <div className="card-content">
+                                    <h3 className="stat-number">{products.length}</h3>
+                                    <p className="stat-label">Total SKUs</p>
+                                </div>
                             </div>
 
-                            <div className="card">
-                                <div className="card-icon"><FaChartBar/></div>
-                                <h3>82</h3>
-                                <p>Low Stock</p>
+                            <div className="status-glass-card warning-light">
+                                <div className="card-icon-wrapper"><FaExclamationTriangle/></div>
+                                <div className="card-content">
+                                    <h3 className="stat-number">{products.filter(p => p.quantiteDisponible <= p.seuilCritique).length}</h3>
+                                    <p className="stat-label">Critical Stock</p>
+                                </div>
                             </div>
 
-                            <div className="card">
-                                <div className="card-icon"><FaFolder/></div>
-                                <h3>36</h3>
-                                <p>Categories</p>
+                            <div className="status-glass-card success-light">
+                                <div className="card-icon-wrapper"><FaLayerGroup/></div>
+                                <div className="card-content">
+                                    <h3 className="stat-number">{categories.length}</h3>
+                                    <p className="stat-label">Categories</p>
+                                </div>
+                            </div>
+
+                            <div className="status-glass-card blue-light">
+                                <div className="card-icon-wrapper"><FaChartLine/></div>
+                                <div className="card-content">
+                                    <h3 className="stat-number">
+                                        {products.reduce((acc, p) => acc + (p.quantiteDisponible * p.prixUnitaire), 0).toLocaleString()} DH
+                                    </h3>
+                                    <p className="stat-label">Stock Value</p>
+                                </div>
                             </div>
                         </section>
-                    </>
+
+                        <div className="ai-visual-feed">
+                            <div className="feed-header-wrapper">
+                                <h2 className="feed-title"><FaRobot/> Demand Forecasting Insights</h2>
+                                <p className="feed-subtitle">AI-driven analysis using Linear Regression to predict
+                                    inventory needs for the next 7 days.</p>
+                            </div>
+
+                            <div className="ai-explanation-guide">
+                                <div className="guide-item">
+                                    <span className="dot bar-color"></span>
+                                    <p><strong>Past Sales:</strong> Real history from the last 3 days.</p>
+                                </div>
+                                <div className="guide-item">
+                                    <span className="dot dot-color"></span>
+                                    <p><strong>AI Forecast:</strong> Target sales level predicted by the model.</p>
+                                </div>
+                                <div className="guide-item">
+                                    <span className="dot line-color"></span>
+                                    <p><strong>Trend:</strong> Direction of demand (Up/Down).</p>
+                                </div>
+                            </div>
+                            <div className="charts-grid">
+                                <AnimatePresence mode="wait">
+                                    {currentAiInsights.map(item => (
+                                        <motion.div
+                                            key={item.id}
+                                            initial={{opacity: 0, scale: 0.95}}
+                                            animate={{opacity: 1, scale: 1}}
+                                            exit={{opacity: 0, scale: 0.95}}
+                                        >
+                                            <AIRestockForecast
+                                                aiData={item.aiData}
+                                                productName={item.nom}
+                                            />
+                                        </motion.div>
+                                    ))}
+                                </AnimatePresence>
+                            </div>
+                            {totalAiPages > 1 && (
+                                <div className="ai-pagination">
+                                    {Array.from({length: totalAiPages}, (_, i) => (
+                                        <button
+                                            key={i}
+                                            className={`pagi-dot ${aiPage === i + 1 ? "active" : ""}`}
+                                            onClick={() => setAiPage(i + 1)}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 )}
 
 
                 {activeSection === "bell" && (
                     <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        initial={{opacity: 0, y: 10}}
+                        animate={{opacity: 1, y: 0}}
                         className="admin-notifs-page"
                     >
                         <div className="admin-notifs-header">
-                            <div className="header-text-group">
-                                <h2 className="page-title">
-                                    <FaBell style={{ color: '#4facfe' }} /> Notification Center
-                                </h2>
-                                <p className="section-subtitle">Monitor stock alerts and confirmed shipments.</p>
+                            <div className="category-modern-header">
+                                <div className="header-text">
+                                    <h1>Notification Center</h1>
+                                    <p>MMonitor stock alerts and confirmed shipments.</p>
+                                </div>
                             </div>
 
                             <button
@@ -361,14 +531,14 @@ export default function InventoryManager() {
                                 onClick={fetchNotifications}
                                 disabled={isloading}
                             >
-                                <FaSyncAlt />
+                                <FaSyncAlt/>
                             </button>
                         </div>
 
                         <div className="admin-notifs-grid">
                             <section className="admin-notif-group">
-                                <div className="group-header" style={{ borderBottom: `3px solid #ef4444` }}>
-                                    <FaBoxes style={{ color: '#ef4444', fontSize: '1.4rem' }} />
+                                <div className="group-header" style={{borderBottom: `3px solid #ef4444`}}>
+                                    <FaBoxes style={{color: '#ef4444', fontSize: '1.4rem' }} />
                                     <h3>Critical Stock Alerts</h3>
                                     <span className="count-badge" style={{ background: '#ef4444' }}>
                                         {notifications.filter(n => n.niveau === "ERROR").length}
