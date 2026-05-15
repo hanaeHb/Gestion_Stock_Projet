@@ -1324,7 +1324,6 @@ export default function Admin() {
                                     <th>Category</th>
                                     <th>Stock Level</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -1362,9 +1361,6 @@ export default function Admin() {
                                                     className={`status-pill ${product.active ? 'available' : 'out-of-stock'}`}>
                                                     {product.active ? "Active" : "Disabled"}
                                                 </span>
-                                            </td>
-                                            <td>
-                                                <button className="btn-edit-small">Edit</button>
                                             </td>
                                         </tr>
                                     ))}
