@@ -47,7 +47,7 @@ public class BudgetServiceImpl implements IBudgetService {
         Budget savedBudget = budgetRepository.save(budget);
         return budgetMapper.toResponse(savedBudget);
     }
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 * * * * *")
     @Transactional
     public void updateStatusDynamically() {
         LocalDate today = LocalDate.now();
@@ -72,6 +72,7 @@ public class BudgetServiceImpl implements IBudgetService {
 
     @Override
     public List<BudgetResponseDTO> getAllBudgets() {
+        updateStatusDynamically();
         return budgetRepository.findAll().stream()
                 .map(budgetMapper::toResponse)
                 .collect(Collectors.toList());
