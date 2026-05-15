@@ -200,6 +200,7 @@ export default function InventoryManager() {
     const [notifications, setNotifications] = useState<any[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [isloading, setLoading] = useState(true);
+    const [notificationCount, setNotificationCount] = useState(0);
     const fetchNotifications = async () => {
         try {
             setLoading(true);
@@ -214,6 +215,8 @@ export default function InventoryManager() {
             );
 
             setNotifications(filtered);
+
+            setNotificationCount(filtered.length);
             setLoading(false);
         } catch (err) {
             console.error("Error fetching notifications", err);
@@ -391,7 +394,14 @@ export default function InventoryManager() {
                             <ul className="menu">
                                 <li className={activeSection === "bell" ? "active" : ""}
                                     onClick={() => setActiveSection("bell")}>
-                                    <FaBell/>
+                                    <div className="bell-wrapper">
+                                        <FaBell/>
+                                        {notificationCount > 0 && (
+                                            <span className="bell-badge-count">
+                                            {notificationCount}
+                                        </span>
+                                        )}
+                                    </div>
                                 </li>
                             </ul>
                         </div>
@@ -421,7 +431,6 @@ export default function InventoryManager() {
                             <div className="ai-status-badge">AI Engine Active</div>
                         </div>
 
-                        {/* 1. Stats Cards b l-vibe dyalk */}
                         <section className="stats-dashboard-grid">
                             <div className="status-glass-card primary-light">
                                 <div className="card-icon-wrapper"><FaBoxes/></div>

@@ -42,6 +42,8 @@ router.get('/test', (req, res) => res.json({ message: "Quotation Route is workin
 
 router.get('/', authMiddleware, quotationController.getAllQuotations);
 
+router.post('/refuse', authMiddleware, quotationController.refuseQuotation);
+
 router.patch('/:id/status', authMiddleware, quotationController.updateQuotationStatus);
 
 module.exports = router;

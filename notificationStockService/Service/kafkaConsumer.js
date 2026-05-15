@@ -147,6 +147,16 @@ const runConsumer = async () => {
                     });
 
                     console.log(`✅ Notification updated & Manager notified for Order: ${orderId}`);
+                }else if (type === "QUOTATION_REFUSED") {
+
+                    await Notification.create({
+                        message: `🚫 The supplier ${event.sName} has rejected the offer for \"${event.productName}". Reason: ${event.reason || 'Not specified'}`,
+                        niveau: "ERROR",
+                        statut: "NON_LUE",
+                        type: "QUOTE_REFUSED_BY_SUPPLIER",
+                        dateAlerte: new Date(),
+                        orderId: event.orderId
+                    });
                 }
                 else if (type === "QUOTATION_ACCEPTED") {
                     const finalProductId = event.pId || event.productId || event.id_produit;

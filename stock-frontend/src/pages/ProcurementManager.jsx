@@ -142,11 +142,12 @@ export default function ProcurementManager() {
                 const restock = data.filter(n => n.niveau === "REPLENISHMENT_ORDER");
                 const quotes = data.filter(n => n.type === "QUOTE_RECEIVED");
                 const shipments = data.filter(n => n.type === "WAITING_CONFIRMATION");
+                const refusedQuotes = data.filter(n => n.type === "QUOTE_REFUSED_BY_SUPPLIER");
 
                 setPendingFournisseurs(pending);
                 setReplenishmentRequests(restock);
 
-                const totalNotifs = pending.length + restock.length + quotes.length + shipments.length;
+                const totalNotifs = pending.length + restock.length + quotes.length + shipments.length + refusedQuotes.length;
                 setNotificationCount(totalNotifs);
 
                 setLoading(false);
@@ -211,6 +212,7 @@ export default function ProcurementManager() {
     const [currentRequest, setCurrentRequest] = useState(null);
     const [allNotifications, setAllNotifications] = useState([]);
     const quoteNotifications = allNotifications.filter(n => n.type === "QUOTE_RECEIVED");
+    const refusedQuotes = allNotifications.filter(n => n.type === "QUOTE_REFUSED_BY_SUPPLIER");
     const handleConfirmReception = async (notif) => {
         try {
             const token = localStorage.getItem("token");
@@ -550,31 +552,48 @@ export default function ProcurementManager() {
                                     <FaFileInvoiceDollar style={{color: '#2ecc71', fontSize: '1.2rem'}}/>
                                     <h3>Supplier Quotes</h3>
                                     <span className="count-badge" style={{background: '#2ecc71'}}>
-                        {quoteNotifications.length}
-                    </span>
+                                    {quoteNotifications.length + refusedQuotes.length}
+                                </span>
                                 </div>
                                 <div className="notif-scroll-area">
-                                    {quoteNotifications.length > 0 ? (
-                                        quoteNotifications.map(notif => (
-                                            <div key={notif._id} className="admin-notif-item" onClick={() => setActiveSection("quotes")}>
+
+                                    {[...quoteNotifications, ...refusedQuotes].sort((a, b) => new Date(b.dateAlerte).getTime() - new Date(a.dateAlerte).getTime()).map(notif => {
+                                        const isRefused = notif.type === "QUOTE_REFUSED_BY_SUPPLIER";
+                                        return (
+                                            <div
+                                                key={notif._id}
+                                                className={`admin-notif-item ${isRefused ? 'refused-border' : 'accepted-border'}`}
+                                                onClick={() => setActiveSection("quotes")}
+                                            >
                                                 <div className="notif-content">
-                                                    <p className="msg"><strong>Offer Received:</strong> {notif.message}</p>
+                                                    <p className="msg">
+                                                        <strong style={{color: isRefused ? '#ef4444' : '#2ecc71'}}>
+                                                            {isRefused ? "🚫 Rejected:" : "✅ Offer Received:"}
+                                                        </strong>
+                                                        {" "}{notif.message}
+                                                    </p>
+
                                                     <div className="meta-tags">
-                                                        <span className="tag price">Pending Quote</span>
+                                                        <span className={`tag ${isRefused ? 'tag-red' : 'tag-green'}`}>
+                                                            {isRefused ? "Supplier refused offer" : "Pending Quote"}
+                                                        </span>
                                                     </div>
-                                                    <span className="time">{new Date(notif.dateAlerte).toLocaleString()}</span>
+                                                    <span
+                                                        className="time">{new Date(notif.dateAlerte).toLocaleString()}</span>
                                                 </div>
                                             </div>
-                                        ))
-                                    ) : (
-                                        <div className="empty-msg">No new quotes received yet.</div>
+                                        );
+                                    })}
+
+                                    {quoteNotifications.length === 0 && refusedQuotes.length === 0 && (
+                                        <div className="empty-msg">No activity from suppliers yet.</div>
                                     )}
                                 </div>
                             </section>
 
 
                             <section className="admin-notif-group">
-                                <div className="group-header" style={{ borderBottom: '3px solid #6952d2' }}>
+                                <div className="group-header" style={{borderBottom: '3px solid #6952d2'}}>
                                     <FaTruck style={{color: '#6952d2', fontSize: '1.2rem'}}/>
                                     <h3>Shipment Tracking</h3>
                                     <span className="count-badge" style={{background: '#6952d2'}}>
@@ -586,7 +605,8 @@ export default function ProcurementManager() {
                                         allNotifications.filter(n => n.type === "WAITING_CONFIRMATION").map(notif => (
                                             <div key={notif._id} className="admin-notif-item">
                                                 <div className="notif-content">
-                                                    <p className="msg"><strong>In Transit 🚢</strong>: {notif.message}</p>
+                                                    <p className="msg"><strong>In Transit 🚢</strong>: {notif.message}
+                                                    </p>
 
                                                     <ShipmentDetails
                                                         arrivalRange={notif.arrivalRange}
@@ -647,7 +667,7 @@ export default function ProcurementManager() {
                                 </div>
                             </div>
 
-                            {/* Card 3: Validated Suppliers */}
+
                             <div className="status-glass-card success-light">
                                 <div className="card-icon-wrapper"><FaCheckCircle/></div>
                                 <div className="dash-card-content">
@@ -668,7 +688,6 @@ export default function ProcurementManager() {
                         </section>
                         <div className="dashboard-content fade-in">
 
-                            {/* Control Bar (Download & Refresh) */}
                             <div className="dashboard-controls">
                                 <div className="control-left">
                                     <h3>Strategic Overview</h3>

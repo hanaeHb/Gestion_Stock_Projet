@@ -54,7 +54,34 @@ exports.createQuotation = async (req, res) => {
         }
     }
 };
+exports.refuseQuotation = async (req, res) => {
+    try {
+        const { orderId, productId, productName, supplierName, reason } = req.body;
 
+        console.log(`🚫 Refusal received for Order ${orderId} from ${supplierName}`);
+
+        await producer.connect();
+        await producer.send({
+            topic: 'quotation-updates',
+            messages: [{
+                value: JSON.stringify({
+                    type: 'QUOTATION_REFUSED',
+                    orderId: orderId,
+                    productId: productId,
+                    productName: productName,
+                    sName: supplierName,
+                    reason: reason
+                })
+            }]
+        });
+        await producer.disconnect();
+
+        res.status(200).json({ message: "Refusal sent to manager via Kafka" });
+    } catch (err) {
+        console.error("❌ Error in refuseQuotation:", err.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
 exports.getAllQuotations = async (req, res) => {
     try {
         const quotes = await Quotation.find().sort({ createdAt: -1 });

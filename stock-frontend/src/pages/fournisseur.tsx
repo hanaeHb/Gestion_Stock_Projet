@@ -77,7 +77,36 @@ const OrderItemCard = ({ order, profile }: { order: any, profile: any }) => {
             setLoading(false);
         }
     };
+    const handleRefuseQuote = async () => {
+        if (!reason.trim()) {
+            alert("Please provide a reason for refusal.");
+            return;
+        }
 
+        setLoading(true);
+        try {
+            const token = localStorage.getItem("token");
+
+            await axios.post("http://localhost:8888/quotation-service/api/quotations/refuse", {
+                orderId: order.orderId || order._id,
+                productId: order.productId,
+                productName: order.productName,
+                supplierName: `${profile?.prenom} ${profile?.nom}`,
+                reason: reason
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            alert("Refusal sent successfully. ✖");
+            setDecision("pending");
+            setReason("");
+        } catch (err) {
+            console.error("Error refusing quote:", err);
+            alert("Failed to send refusal.");
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <motion.div layout className={`order-stepper-card ${decision}`}>
             <div className="order-main-info">
@@ -115,13 +144,25 @@ const OrderItemCard = ({ order, profile }: { order: any, profile: any }) => {
 
             <AnimatePresence mode="wait">
                 {decision === "refused" && (
-                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="action-sub-panel refuse-panel">
-                        <textarea
-                            placeholder="Why? (e.g. Stock finished)"
-                            value={reason}
-                            onChange={(e) => setReason(e.target.value)}
-                        />
-                        <button className="btn-send-refusal" onClick={() => alert("Refusal sent")}>Send Refusal</button>
+                    <motion.div
+                        key="refusal-panel"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="action-sub-panel refuse-panel"
+                    >
+                    <textarea
+                        placeholder="Why? (e.g. Stock finished)"
+                        value={reason}
+                        onChange={(e) => setReason(e.target.value)}
+                    />
+                        <button
+                            className="btn-send-refusal"
+                            onClick={handleRefuseQuote}
+                            disabled={loading}
+                        >
+                            {loading ? "Sending..." : "Send Refusal"}
+                        </button>
                     </motion.div>
                 )}
                 {decision === "accepted" && (

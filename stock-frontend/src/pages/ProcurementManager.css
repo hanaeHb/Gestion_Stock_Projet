@@ -1253,3 +1253,28 @@
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: #fff;
 }
+
+
+.tag-green {
+    background: #e8fdf0;
+    color: #2ecc71;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.tag-red {
+    background: #fee2e2;
+    color: #ef4444;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+
+.admin-notif-item:hover {
+    filter: brightness(0.98);
+    cursor: pointer;
+}
