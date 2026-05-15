@@ -8,6 +8,7 @@ import './BudgetManagement.css';
 interface BudgetRequest {
     description: string;
     montantInitial: number;
+    montantConsomme: number;
     dateDebut: string;
     dateFin: string;
 }
@@ -43,6 +44,7 @@ const BudgetManagement: React.FC = () => {
         const payload: BudgetRequest = {
             description,
             montantInitial: amount,
+            montantConsomme: amount,
             dateDebut: dates.start,
             dateFin: dates.end
         };
@@ -240,6 +242,8 @@ const BudgetManagement: React.FC = () => {
                         <tr>
                             <th>Description</th>
                             <th>Amount (DH)</th>
+                            <th>Consommation & Suivi</th>
+                            <th>Budget Disponible</th>
                             <th>Start Date</th>
                             <th>End Date</th>
                             <th>Status</th>
@@ -247,58 +251,90 @@ const BudgetManagement: React.FC = () => {
                         </tr>
                         </thead>
                         <tbody>
-                        {budgetsList.map((b, index) => (
-                            <tr key={index}>
-                                <td>
-                                    <div className="desc-cell">
-                                        <div className="desc-icon">B</div>
-                                        <span>{b.description}</span>
-                                    </div>
-                                </td>
-                                <td className="amount-cell">{b.montantInitial?.toLocaleString()} DH</td>
-                                <td>{b.dateDebut}</td>
-                                <td>{b.dateFin}</td>
-                                <td>
-                                    {(() => {
-                                        const style = getStatusStyles(b.status);
-                                        return (
-                                            <span style={{
-                                                background: style.bg,
-                                                color: style.color,
-                                                padding: '6px 14px',
-                                                borderRadius: '100px',
-                                                fontSize: '0.75rem',
-                                                fontWeight: 800,
-                                                border: `1px solid ${style.color}20`,
-                                                display: 'inline-block',
-                                                minWidth: '85px',
-                                                textAlign: 'center'
-                                            }}>
-                                                {style.label}
-                                            </span>
-                                        );
-                                    })()}
-                                </td>
-                                <td className="actions-cell">
-                                    <div className="action-btns-wrapper">
-                                        <button
-                                            className="action-btn edit-btn"
-                                            onClick={() => handleEdit(b)}
-                                            title="Edit Budget"
-                                        >
-                                            <FaEdit/>
-                                        </button>
-                                        <button
-                                            className="action-btn delete-btn"
-                                            onClick={() => handleDelete(b.idBudget)}
-                                            title="Delete Budget"
-                                        >
-                                            <FaTrash/>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
+                        {budgetsList.map((b, index) => {
+
+                            const initial = b.montantInitial || 0;
+                            const consomme = b.montantConsomme || 0;
+                            const remaining = initial - consomme;
+                            const utilization = initial > 0 ? (consomme / initial) * 100 : 0;
+                            const style = getStatusStyles(b.status);
+
+                            return (
+                                <tr key={index}>
+                                    <td>
+                                        <div className="desc-cell">
+                                            <div className="desc-icon">B</div>
+                                            <span>{b.description}</span>
+                                        </div>
+                                    </td>
+                                    <td className="amount-cell">{b.montantInitial?.toLocaleString()} DH</td>
+                                    <td className="amount-cell">{b.montantConsomme?.toLocaleString()} DH</td>
+                                    <td className="progress-cell">
+                                        <div className="usage-info">
+
+                                            <div className="usage-stats">
+                                                <span
+                                                    className="amount-spent">{b.montantConsomme?.toLocaleString()} DH <small>(Consumes)</small></span>
+                                                <span
+                                                    className="amount-available"> / {remaining.toLocaleString()} DH <small>(Remaining)</small></span>
+                                            </div>
+                                            <span className="percent-label">{utilization.toFixed(1)}%</span>
+                                        </div>
+
+                                        <div className="progress-track">
+                                            <div
+                                                className="progress-fill"
+                                                style={{
+                                                    width: `${Math.min(utilization, 100)}%`,
+                                                    background: utilization > 90 ? '#730d19' : 'linear-gradient(90deg, #ff9a9e, #730d19)'
+                                                }}
+                                            ></div>
+                                        </div>
+                                    </td>
+                                    <td>{b.dateDebut}</td>
+                                    <td>{b.dateFin}</td>
+                                    <td>
+                                        {(() => {
+                                            const style = getStatusStyles(b.status);
+                                            return (
+                                                <span style={{
+                                                    background: style.bg,
+                                                    color: style.color,
+                                                    padding: '6px 14px',
+                                                    borderRadius: '100px',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 800,
+                                                    border: `1px solid ${style.color}20`,
+                                                    display: 'inline-block',
+                                                    minWidth: '85px',
+                                                    textAlign: 'center'
+                                                }}>
+                                                    {style.label}
+                                                </span>
+                                            );
+                                        })()}
+                                    </td>
+                                    <td className="actions-cell">
+                                        <div className="action-btns-wrapper">
+                                            <button
+                                                className="action-btn edit-btn"
+                                                onClick={() => handleEdit(b)}
+                                                title="Edit Budget"
+                                            >
+                                                <FaEdit/>
+                                            </button>
+                                            <button
+                                                className="action-btn delete-btn"
+                                                onClick={() => handleDelete(b.idBudget)}
+                                                title="Delete Budget"
+                                            >
+                                                <FaTrash/>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })}
                         </tbody>
                     </table>
                 </div>
