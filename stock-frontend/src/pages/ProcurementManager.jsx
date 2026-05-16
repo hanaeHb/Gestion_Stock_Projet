@@ -396,7 +396,7 @@ export default function ProcurementManager() {
 
                     <li className={activeSection === "quotes" ? "active" : ""}
                         onClick={() => setActiveSection("quotes")}>
-                        <FaChartBar/>
+                        <FaBoxes/>
                     </li>
                     <li className={activeSection === "restock_orders" ? "active" : ""}
                         onClick={() => setActiveSection("restock_orders")}>

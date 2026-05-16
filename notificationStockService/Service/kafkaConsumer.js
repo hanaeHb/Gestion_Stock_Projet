@@ -6,7 +6,7 @@ const kafka = new Kafka({
     clientId: "notification-service",
     brokers: ["localhost:9092"]
 });
-
+const axios = require('axios');
 const consumer = kafka.consumer({
     groupId: "notification-service-group"
 });
@@ -148,15 +148,127 @@ const runConsumer = async () => {
 
                     console.log(`✅ Notification updated & Manager notified for Order: ${orderId}`);
                 }else if (type === "QUOTATION_REFUSED") {
-
+                    // 1. Notification dyal l-refus l-awwali
                     await Notification.create({
-                        message: `🚫 The supplier ${event.sName} has rejected the offer for \"${event.productName}". Reason: ${event.reason || 'Not specified'}`,
+                        message: `🚫 The supplier ${event.sName} has rejected the offer for "${event.productName}". Reason: ${event.reason || 'Not specified'}`,
                         niveau: "ERROR",
                         statut: "NON_LUE",
+                        categoryId: event.categoryId,
                         type: "QUOTE_REFUSED_BY_SUPPLIER",
                         dateAlerte: new Date(),
                         orderId: event.orderId
                     });
+
+                    // Main background pipeline tracking logic
+                    console.log(`=== 🤖 STARTING AUTOMATED FALLBACK PIPELINE (Product ID: ${event.productId}) ===`);
+
+                    const internalAuthHeader = "Bearer " + process.env.INTERNAL_SERVICE_TOKEN;
+                    let targetFournisseurs = [];
+                    let aiRankings = [];
+
+                    // --- STEP 2: FETCH SUPPLIERS BY CATEGORY ---
+                    try {
+                        const resSuppliers = await axios.get(
+                            `http://localhost:8888/service-fournisseur/api/fournisseurs/category/${event.productId}`
+                        );
+                        targetFournisseurs = resSuppliers.data;
+                        console.log(`✅ [Step 2 - Supplier Service]: Fetched ${targetFournisseurs.length} alternative targets successfully.`);
+                    } catch (err) {
+                        console.error(`❌ [CRITICAL ERROR - SUPPLIER SERVICE]: Failed to fetch suppliers for category/product ID ${event.productId}.`);
+                        console.error(`Reason: ${err.message}`, err.response ? `| Status: ${err.response.status}` : '');
+                        return; // Stop pipeline early if we can't find suppliers at all
+                    }
+
+                    // --- STEP 3: FETCH AI PREDICTIONS ---
+                    try {
+                        const resAi = await axios.get(
+                            `http://localhost:8888/prediction-service/prediction/predict-best-supplier/${event.productId}`,
+                            { headers: { Authorization: internalAuthHeader } }
+                        );
+                        aiRankings = resAi.data;
+                        console.log(`✅ [Step 3 - Prediction Service]: AI rankings loaded successfully.`);
+                    } catch (err) {
+                        // 💡 Microservices Tip: Default to targetFournisseurs even if AI service crashes
+                        console.error(`⚠️ [NON-CRITICAL ERROR - PREDICTION SERVICE]: Failed to reach prediction pipeline.`);
+                        console.error(`Reason: ${err.message}`, err.response ? `| Status: ${err.response.status}` : '');
+                        console.log(`🔄 [Fallback Strategy]: Proceeding with raw supplier sequence without AI ranking weights.`);
+                        aiRankings = [];
+                    }
+
+                    // --- STEP 4: SORT SUPPLIERS ACCORDING TO RANKINGS ---
+                    const sortedSuppliers = [...targetFournisseurs].sort((a, b) => {
+                        const scoreA = aiRankings.find(r => Number(r.id_fournisseur) === Number(a.id_fournisseur))?.ai_score || 0;
+                        const scoreB = aiRankings.find(r => Number(r.id_fournisseur) === Number(b.id_fournisseur))?.ai_score || 0;
+                        return scoreB - scoreA;
+                    });
+
+                    // --- STEP 5: CALCULATE PLAN B RE-ROUTING ---
+                    const currentSupplierIndex = sortedSuppliers.findIndex(f =>
+                        f.prenom + " " + f.nom === event.sName ||
+                        f.nom === event.sName ||
+                        Number(f.id_fournisseur) === Number(event.id_fournisseur)
+                    );
+
+                    const nextSupplier = sortedSuppliers[currentSupplierIndex + 1];
+
+                    if (nextSupplier) {
+                        console.log(`🎯 [Pipeline Blueprint]: Next target identified -> ${nextSupplier.prenom} ${nextSupplier.nom} (ID: ${nextSupplier.id_fournisseur}).`);
+
+                        // ===== 🎯 EXECUTE PLAN B CREATION =====
+                        const newOrderData = {
+                            id_fournisseur: nextSupplier.id_fournisseur,
+                            emailFournisseur: nextSupplier.email,
+                            id_request: event.id_request || null,
+                            items: [{
+                                id_produit: event.productId,
+                                productName: event.productName,
+                                quantite: event.quantite || 1,
+                                prix_unitaire: null
+                            }],
+                            total: 0,
+                            status: 'WAITING_FOR_QUOTATION',
+                            dateCommande: new Date().toISOString()
+                        };
+
+                        // --- STEP 6: DISPATCH FALLBACK ORDER VIA AXIOS/KAFKA ---
+                        try {
+                            await axios.post("http://localhost:8888/service-commande/api/commandes", newOrderData, {
+                                headers: { Authorization: internalAuthHeader }
+                            });
+                            console.log(`🚀 [Step 6 - Commande Service]: Fallback order registered successfully via network bridging.`);
+
+                            // Log notification to UI manager
+                            await Notification.create({
+                                message: `🛡️ Plan B Activated: Order for "${event.productName}" re-routed to backup supplier ${nextSupplier.prenom} ${nextSupplier.nom} seamlessly.`,
+                                niveau: "WARNING",
+                                statut: "NON_LUE",
+                                type: "PLAN_B_ACTIVATED",
+                                dateAlerte: new Date(),
+                                orderId: event.orderId
+                            });
+
+                            console.log(`✅ === AUTOMATED FALLBACK EXECUTED SUCCESSFULLY FOR ORDER: ${event.orderId} ===`);
+
+                        } catch (err) {
+                            console.error(`❌ [CRITICAL ERROR - COMMANDE SERVICE]: Fallback order propagation failed.`);
+                            console.error(`Reason: ${err.message}`, err.response ? `| Data: ${JSON.stringify(err.response.data)}` : '');
+                        }
+
+                    } else {
+                        // ===== ⚠️ DEAD-END (NO ALTERNATIVE) =====
+                        console.warn(`🚨 [Pipeline Sourcing Alert]: No alternative targets available downstream for category ${event.productId}.`);
+
+                        await Notification.create({
+                            message: `🚨 Critical: ${event.sName} refused "${event.productName}" and no fallback backup supplier exists for this category. Manual sourcing required!`,
+                            niveau: "ERROR",
+                            statut: "NON_LUE",
+                            type: "NO_FALLBACK_AVAILABLE",
+                            dateAlerte: new Date(),
+                            orderId: event.orderId
+                        });
+
+                        console.log(`❌ === AUTOMATED FALLBACK TERMINATED: NO PLAN B MATCH ===`);
+                    }
                 }
                 else if (type === "QUOTATION_ACCEPTED") {
                     const finalProductId = event.pId || event.productId || event.id_produit;

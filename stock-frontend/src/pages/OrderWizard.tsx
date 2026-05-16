@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaUserTie, FaCheckCircle, FaArrowLeft, FaTimes, FaRobot } from "react-icons/fa";
+import { FaUserTie, FaCheckCircle, FaTimes, FaRobot, FaShieldAlt, FaExclamationTriangle } from "react-icons/fa";
 import "./OrderWizard.css";
+
 interface OrderWizardProps {
     isOpen: boolean;
     onClose: () => void;
@@ -15,6 +16,7 @@ const OrderWizard: React.FC<OrderWizardProps> = ({ isOpen, onClose, selectedRequ
     const [selectedFournisseur, setSelectedFournisseur] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [aiRankings, setAiRankings] = useState<any[]>([]);
+
     useEffect(() => {
         if (isOpen) {
             setStep(1);
@@ -41,6 +43,7 @@ const OrderWizard: React.FC<OrderWizardProps> = ({ isOpen, onClose, selectedRequ
                         { headers: { Authorization: `Bearer ${token}` } }
                     );
                     setAiRankings(resAi.data);
+
                     if (resAi.data && resAi.data.length > 0 && resSuppliers.data) {
                         const topPickFromAi = resAi.data[0];
                         const actualSupplier = resSuppliers.data.find((f: any) =>
@@ -50,8 +53,6 @@ const OrderWizard: React.FC<OrderWizardProps> = ({ isOpen, onClose, selectedRequ
                         if (actualSupplier) {
                             setSelectedFournisseur(actualSupplier);
                             console.log("✅ AI Selection Successful:", actualSupplier.prenom);
-                        } else {
-                            console.warn("⚠️ AI suggested a supplier ID that doesn't exist in targetFournisseurs");
                         }
                     }
 
@@ -68,6 +69,7 @@ const OrderWizard: React.FC<OrderWizardProps> = ({ isOpen, onClose, selectedRequ
     const submitToKafka = async () => {
         try {
             const token = localStorage.getItem("token");
+
 
             const orderData = {
                 id_fournisseur: selectedFournisseur.id_fournisseur,
@@ -90,7 +92,7 @@ const OrderWizard: React.FC<OrderWizardProps> = ({ isOpen, onClose, selectedRequ
 
             onSuccess(selectedRequest._id);
             onClose();
-            alert(`Request sent to ${selectedFournisseur.prenom}! Waiting for their price.`);
+            alert(`Primary request routed to ${selectedFournisseur.prenom}! Fallback pipeline armed. 🔥`);
 
         } catch (err: any) {
             console.error("Kafka Sync Error:", err.response?.data || err.message);
@@ -99,6 +101,13 @@ const OrderWizard: React.FC<OrderWizardProps> = ({ isOpen, onClose, selectedRequ
     };
 
     if (!isOpen) return null;
+
+
+    const sortedSuppliers = [...targetFournisseurs].sort((a: any, b: any) => {
+        const scoreA = aiRankings.find(r => Number(r.id_fournisseur) === Number(a.id_fournisseur))?.ai_score || 0;
+        const scoreB = aiRankings.find(r => Number(r.id_fournisseur) === Number(b.id_fournisseur))?.ai_score || 0;
+        return scoreB - scoreA;
+    });
 
     return (
         <div className="wizard-overlay">
@@ -130,55 +139,66 @@ const OrderWizard: React.FC<OrderWizardProps> = ({ isOpen, onClose, selectedRequ
                             <div className="ai-proof-message">
                                 <FaRobot />
                                 <p>
-                                    Our AI has selected the best supplier for you based on history from the last year
-                                    (delivery speed, quality, and price). The best candidate is highlighted below.
+                                    Our AI has structured an automated routing pipeline based on historical reliability. If the primary supplier rejects, the system rolls over instantly.
                                 </p>
                             </div>
 
-                            <h3>Specialist Supplier (AI Selected)</h3>
+                            <h3>Smart Routing Pipeline</h3>
                             <div className="suppliers-list">
                                 {loading ? (
-                                    <p>Recherche...</p>
+                                    <p className="loading-text">Analyzing database...</p>
                                 ) : (
-                                    targetFournisseurs
-                                        .sort((a: any, b: any) => {
-                                            const scoreA = aiRankings.find(r => Number(r.id_fournisseur) === Number(a.id_fournisseur))?.ai_score || 0;
-                                            const scoreB = aiRankings.find(r => Number(r.id_fournisseur) === Number(b.id_fournisseur))?.ai_score || 0;
-                                            return scoreB - scoreA;
-                                        })
-                                        .map((f: any, index: number) => {
-                                            const aiMatch = aiRankings.find(rank => Number(rank.id_fournisseur) === Number(f.id_fournisseur));
-                                            const isTopPick = index === 0;
-                                            return (
-                                                <div
-                                                    key={f.id_fournisseur}
-                                                    className={`supplier-card ${isTopPick ? 'ai-selected-card' : 'other-supplier'}`}
-                                                >
-                                                    <div className="supplier-main-info">
+                                    sortedSuppliers.map((f: any, index: number) => {
+                                        const aiMatch = aiRankings.find(rank => Number(rank.id_fournisseur) === Number(f.id_fournisseur));
+                                        const isPrimary = index === 0;
+                                        const isBackup = index === 1;
+
+                                        return (
+                                            <div
+                                                key={f.id_fournisseur}
+                                                className={`supplier-card-v2 ${isPrimary ? 'primary-route-card' : isBackup ? 'backup-route-card' : 'hidden-route-card'}`}
+                                            >
+                                                <div className="supplier-main-info">
+                                                    <div className="icon-wrapper">
                                                         <FaUserTie className="user-icon"/>
-                                                        <div>
-                                                            <p className="supplier-name">{f.prenom} {f.nom}</p>
-                                                            <small className="supplier-email">{f.email}</small>
-                                                        </div>
+                                                        <span className="route-index-dot">{index + 1}</span>
                                                     </div>
+                                                    <div>
+                                                        <p className="supplier-name">{f.prenom} {f.nom}</p>
+                                                        <small className="supplier-email">{f.email}</small>
+                                                    </div>
+                                                </div>
+
+                                                <div className="ai-recommendation-block">
+                                                    {isPrimary && (
+                                                        <span className="pipeline-badge primary-badge">🎯 Primary Target</span>
+                                                    )}
+                                                    {isBackup && (
+                                                        <span className="pipeline-badge backup-badge">🛡️ Fallback Plan B</span>
+                                                    )}
 
                                                     {aiMatch && (
-                                                        <div className="ai-recommendation">
-                                                            <div className="score-tag">
-                                                                ⭐ {aiMatch.ai_score}% Reliability
-                                                            </div>
-                                                            <span>
-                                    {aiMatch.recommendation}
-                                </span>
+                                                        <div className="score-tag-v2">
+                                                            ⭐ {aiMatch.ai_score}%
                                                         </div>
                                                     )}
                                                 </div>
-                                            );
-                                        })
+                                            </div>
+                                        );
+                                    })
+                                )}
+
+                                {/* Fallback warning text if there's no backup supplier found */}
+                                {!loading && sortedSuppliers.length <= 1 && (
+                                    <div className="fallback-warning-message">
+                                        <FaExclamationTriangle />
+                                        <p><strong>No Fallback Available:</strong> There are no alternative suppliers registered in this category. In case of refusal, manual sourcing will be required.</p>
+                                    </div>
                                 )}
                             </div>
+
                             <div className="actions">
-                            <button onClick={() => setStep(1)}>Back</button>
+                                <button onClick={() => setStep(1)}>Back</button>
                                 <button
                                     className="btn-prama"
                                     disabled={!selectedFournisseur}
@@ -192,10 +212,9 @@ const OrderWizard: React.FC<OrderWizardProps> = ({ isOpen, onClose, selectedRequ
 
                     {step === 3 && (
                         <div className="wizard-step-content final-step">
-                            <FaCheckCircle size={50} color="#3498db"/>
+                            <FaCheckCircle size={50} color="#730d19"/>
                             <h3>Request Price Quotation</h3>
-                            <p>You are requesting a price
-                                from <strong>{selectedFournisseur.prenom} {selectedFournisseur.nom}</strong> for:</p>
+                            <p>You are requesting a price from <strong>{selectedFournisseur?.prenom} {selectedFournisseur?.nom}</strong> for:</p>
                             <div className="summary-box">
                                 <p>{selectedRequest.requestedQty}x {selectedRequest.productName} </p>
                             </div>

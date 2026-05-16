@@ -91,6 +91,7 @@ const OrderItemCard = ({ order, profile }: { order: any, profile: any }) => {
                 orderId: order.orderId || order._id,
                 productId: order.productId,
                 productName: order.productName,
+                categoryId: order.categoryId,
                 supplierName: `${profile?.prenom} ${profile?.nom}`,
                 reason: reason
             }, {
