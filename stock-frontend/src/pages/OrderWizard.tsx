@@ -89,7 +89,21 @@ const OrderWizard: React.FC<OrderWizardProps> = ({ isOpen, onClose, selectedRequ
             await axios.post("http://localhost:8888/service-commande/api/commandes", orderData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
+            await axios.put(
+                `http://localhost:8888/service-notification/api/notifications/${selectedRequest._id}`,
+                {
+                    statut: "LUE",
+                    niveau: "PROCESSED_REPLENISHMENT",
+                    type: selectedRequest.type
+                }, // 👈 هادا البارامتر الثاني (الـ Data) يسالي هنا
+                {
+                    headers: { Authorization: `Bearer ${token}` }
+                }  // 👈 هادا البارامتر الثالث (الـ Config) بوحدو معزول
+            );
 
+            console.log("✅ MongoDB Notification synced and set to LUE successfully.");
+
+            console.log("✅ MongoDB Notification synced and set to LUE successfully.");
             onSuccess(selectedRequest._id);
             onClose();
             alert(`Primary request routed to ${selectedFournisseur.prenom}! Fallback pipeline armed. 🔥`);

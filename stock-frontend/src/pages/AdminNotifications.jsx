@@ -7,7 +7,7 @@ import './AdminNotifications.css';
 const AdminNotifications = ({ notifications, refresh, loading, setTotalCount }) => {
 
     const stockAlerts = notifications.filter(n => n.niveau === 'ERROR' || n.niveau === 'REPLENISHMENT_ORDER');
-    const purchaseRequests = notifications.filter(n => n.type === 'NEW_ORDER_REQUEST' || n.type === 'QUOTE_RECEIVED');
+    const purchaseRequests = notifications.filter(n => n.type === 'NEW_ORDER_REQUEST' || n.type === 'QUOTE_RECEIVED' || n.type === 'PLAN_B_ROUTED');
     const logistics = notifications.filter(n => n.type === 'WAITING_CONFIRMATION' || n.type === 'AWAITING_RECEPTION' || n.type === 'ORDER_SHIPPED');
     const finalized = notifications.filter(n => n.type === 'CONFIRMED');
     useEffect(() => {

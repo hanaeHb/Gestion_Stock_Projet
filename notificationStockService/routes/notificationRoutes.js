@@ -174,7 +174,7 @@ router.post("/", authMiddleware, hasRole("ADMIN"), notificationController.create
  *     security:
  *       - bearerAuth: []
  */
-router.put("/:id", authMiddleware, hasRole("ADMIN"), notificationController.update);
+router.put("/:id", authMiddleware, notificationController.update);
 
 /**
  * @swagger
@@ -185,7 +185,7 @@ router.put("/:id", authMiddleware, hasRole("ADMIN"), notificationController.upda
  *     security:
  *       - bearerAuth: []
  */
-router.delete("/:id", authMiddleware, hasRole("ADMIN"), notificationController.delete);
+router.delete("/:id", authMiddleware, notificationController.delete);
 
 module.exports = router;
 

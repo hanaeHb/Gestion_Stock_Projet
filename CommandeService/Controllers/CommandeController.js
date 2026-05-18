@@ -26,7 +26,7 @@ exports.getCommandeById = async (req, res) => {
 };
 
 exports.createCommande = async (req, res) => {
-    const { id_fournisseur, total, emailFournisseur, items, id_request, status, categoryId } = req.body;
+    const { id_fournisseur, fournisseur_name, total, emailFournisseur, items, id_request, status, categoryId } = req.body;
 
     try {
 
@@ -51,12 +51,13 @@ exports.createCommande = async (req, res) => {
                 value: JSON.stringify({
                     orderId: newOrder.id_commande,
                     email: emailFournisseur,
+                    fournisseur: fournisseur_name,
                     fournisseurId: id_fournisseur,
                     product: pName,
                     productId: pId,
                     categoryId: finalCategoryId,
                     quantity: qty,
-                    message: `Procurement Manager requested a price for ${qty} units of ${pName}`
+                    message: `Procurement Manager requested a price for ${qty} units of ${pName} from ${emailFournisseur}`
                 })
             }]
         });

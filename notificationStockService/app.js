@@ -262,7 +262,6 @@ const runKafkaConsumer = async () => {
 
           console.log(`🎯 [Step 1.5 - Direct hit]: Using Category ID: ${resolvedCategoryId}`);
 
-          // --- STEP 2: FETCH SUPPLIERS BY RESOLVED CATEGORY ---
           try {
             const resSuppliers = await axios.get(
                 `http://localhost:8888/service-fournisseur/api/fournisseurs/category/${resolvedCategoryId}`
@@ -274,7 +273,6 @@ const runKafkaConsumer = async () => {
             return;
           }
 
-          // --- STEP 3: FETCH AI PREDICTIONS ---
           try {
 
             const resAi = await axios.get(
@@ -288,14 +286,12 @@ const runKafkaConsumer = async () => {
             aiRankings = [];
           }
 
-          // --- STEP 4: SORT SUPPLIERS ACCORDING TO RANKINGS ---
           const sortedSuppliers = [...targetFournisseurs].sort((a, b) => {
             const scoreA = aiRankings.find(r => Number(r.id_fournisseur) === Number(a.id_fournisseur))?.ai_score || 0;
             const scoreB = aiRankings.find(r => Number(r.id_fournisseur) === Number(b.id_fournisseur))?.ai_score || 0;
             return scoreB - scoreA;
           });
 
-          // --- STEP 5: CALCULATE PLAN B RE-ROUTING ---
           const currentSupplierIndex = sortedSuppliers.findIndex(f => {
             const fullName = `${f.prenom || ''} ${f.nom || ''}`.trim().toLowerCase();
             const eventName = String(event.sName || '').trim().toLowerCase();
@@ -304,7 +300,6 @@ const runKafkaConsumer = async () => {
                 f.email === event.emailFournisseur;
           });
 
-          // Select dynamic fallback backup target index sequential rules
           let nextSupplier = null;
           if (currentSupplierIndex === -1 && sortedSuppliers.length > 0) {
             nextSupplier = sortedSuppliers[0];
@@ -335,11 +330,24 @@ const runKafkaConsumer = async () => {
             };
 
             try {
-              // Register target order inside database logic gateway proxy execution node
               await axios.post("http://localhost:5001/api/commandes", newOrderData, {
               });
               console.log(`🚀 [Step 6 - Commande Service]: Fallback order registered successfully in Database.`);
               const realQty = event.quantite ? Number(event.quantite) : 1;
+              await Notification.create({
+                message: `🤖 [Plan B Executed]: The system automated a fallback route to supplier "${nextSupplier.prenom} ${nextSupplier.nom}" (ID: ${nextSupplier.id_fournisseur}) for ${backupQty}x "${event.productName || "MacBook Pro M3"}" following the refusal from ${event.sName}.`,
+                orderId: newOrderData.id_commande,
+                fournisseurId: nextSupplier.id_fournisseur,
+                niveau: "PLAN_B_ACTIVATED",
+                productId: event.productId,
+                categoryId: String(resolvedCategoryId),
+                productName: event.productName || "MacBook Pro M3",
+                requestedQty: backupQty,
+                statut: "NON_LUE",
+                dateAlerte: new Date(),
+                type: "PLAN_B_ROUTED"
+              });
+              console.log(`📢 [Admin Alert Saved]: Plan B execution notified to management team.`);
 
             } catch (err) {
               console.error(`❌ [CRITICAL ERROR - PLAN B DISTRIBUTION]: Fallback execution chain failed.`);

@@ -116,7 +116,8 @@ exports.markAsRead = async (req, res) => {
 
 exports.update = async (req, res) => {
     try {
-        const { message, niveau } = req.body;
+        const { message, niveau, type, statut } = req.body;
+
         const notification = await Notification.findById(req.params.id);
         if (!notification) return res.status(404).json({ message: "Notification not found" });
 
@@ -128,6 +129,7 @@ exports.update = async (req, res) => {
         await notification.save();
         res.json({ message: "Notification mise à jour", notification });
     } catch (error) {
+        console.error("❌ Error in update controller:", error.message);
         res.status(500).json({ message: "Erreur update notification", error: error.message });
     }
 };

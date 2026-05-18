@@ -213,6 +213,7 @@ export default function ProcurementManager() {
     const [allNotifications, setAllNotifications] = useState([]);
     const quoteNotifications = allNotifications.filter(n => n.type === "QUOTE_RECEIVED");
     const refusedQuotes = allNotifications.filter(n => n.type === "QUOTE_REFUSED_BY_SUPPLIER");
+    const planB = allNotifications.filter(n => n.type === "PLAN_B_ROUTED");
     const handleConfirmReception = async (notif) => {
         try {
             const token = localStorage.getItem("token");
@@ -548,34 +549,48 @@ export default function ProcurementManager() {
 
 
                             <section className="admin-notif-group">
-                                <div className="group-header" style={{ borderBottom: '3px solid #2ecc71' }}>
+                                <div className="group-header" style={{borderBottom: '3px solid #2ecc71'}}>
                                     <FaFileInvoiceDollar style={{color: '#2ecc71', fontSize: '1.2rem'}}/>
-                                    <h3>Supplier Quotes</h3>
+                                    <h3>Supplier Quotes & Automation</h3>
                                     <span className="count-badge" style={{background: '#2ecc71'}}>
-                                    {quoteNotifications.length + refusedQuotes.length}
-                                </span>
+                                        {quoteNotifications.length + refusedQuotes.length + planB.length}
+                                    </span>
                                 </div>
                                 <div className="notif-scroll-area">
 
-                                    {[...quoteNotifications, ...refusedQuotes].sort((a, b) => new Date(b.dateAlerte).getTime() - new Date(a.dateAlerte).getTime()).map(notif => {
+                                    {[...quoteNotifications, ...refusedQuotes, ...planB].sort((a, b) => new Date(b.dateAlerte).getTime() - new Date(a.dateAlerte).getTime()).map(notif => {
                                         const isRefused = notif.type === "QUOTE_REFUSED_BY_SUPPLIER";
+                                        const isPlanB = notif.type === "PLAN_B_ROUTED";
+
+                                        let itemBorderClass = 'accepted-border';
+                                        if (isRefused) itemBorderClass = 'refused-border';
+                                        if (isPlanB) itemBorderClass = 'planb-border';
                                         return (
                                             <div
                                                 key={notif._id}
-                                                className={`admin-notif-item ${isRefused ? 'refused-border' : 'accepted-border'}`}
+                                                className={`admin-notif-item ${itemBorderClass}`}
                                                 onClick={() => setActiveSection("quotes")}
                                             >
                                                 <div className="notif-content">
                                                     <p className="msg">
-                                                        <strong style={{color: isRefused ? '#ef4444' : '#2ecc71'}}>
-                                                            {isRefused ? "🚫 Rejected:" : "✅ Offer Received:"}
+                                                        <strong style={{
+                                                            color: isRefused ? '#ef4444' : isPlanB ? '#f39c12' : '#2ecc71'
+                                                        }}>
+                                                            {isRefused ? "🚫 Rejected:" : isPlanB ? "🤖 Auto Plan B:" : "✅ Offer Received:"}
                                                         </strong>
                                                         {" "}{notif.message}
                                                     </p>
 
                                                     <div className="meta-tags">
-                                                        <span className={`tag ${isRefused ? 'tag-red' : 'tag-green'}`}>
-                                                            {isRefused ? "Supplier refused offer" : "Pending Quote"}
+                                                        <span className={`tag ${isRefused ? 'tag-red' : isPlanB ? 'tag-orange' : 'tag-green'}`}
+                                                              style={isPlanB ? {
+                                                                  background: '#f39c12',
+                                                                  color: '#fff',
+                                                                  padding: '2px 6px',
+                                                                  borderRadius: '4px',
+                                                                  fontSize: '0.75rem'
+                                                              } : {}}>
+                                                            {isRefused ? "Supplier refused offer" : isPlanB ? "Pipeline Fallback Executed" : "Pending Quote"}
                                                         </span>
                                                     </div>
                                                     <span
@@ -585,7 +600,7 @@ export default function ProcurementManager() {
                                         );
                                     })}
 
-                                    {quoteNotifications.length === 0 && refusedQuotes.length === 0 && (
+                                    {quoteNotifications.length === 0 && refusedQuotes.length === 0 && planB.length === 0 && (
                                         <div className="empty-msg">No activity from suppliers yet.</div>
                                     )}
                                 </div>
@@ -876,6 +891,7 @@ export default function ProcurementManager() {
                         selectedRequest={currentRequest}
                         onSuccess={(id) => {
                             setReplenishmentRequests(prev => prev.filter(r => r._id !== id));
+                            setAllNotifications(prev => prev.filter(n => n._id !== id));
                             alert("Commande traitée avec succès !");
                         }}
                     />
