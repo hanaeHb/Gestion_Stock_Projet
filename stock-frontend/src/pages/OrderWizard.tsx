@@ -70,7 +70,6 @@ const OrderWizard: React.FC<OrderWizardProps> = ({ isOpen, onClose, selectedRequ
         try {
             const token = localStorage.getItem("token");
 
-
             const orderData = {
                 id_fournisseur: selectedFournisseur.id_fournisseur,
                 emailFournisseur: selectedFournisseur.email,
@@ -78,6 +77,7 @@ const OrderWizard: React.FC<OrderWizardProps> = ({ isOpen, onClose, selectedRequ
                 items: [{
                     id_produit: selectedRequest.productId,
                     productName: selectedRequest.productName,
+                    categoryId: selectedRequest.categoryId,
                     quantite: selectedRequest.requestedQty,
                     prix_unitaire: null
                 }],
@@ -129,6 +129,7 @@ const OrderWizard: React.FC<OrderWizardProps> = ({ isOpen, onClose, selectedRequ
                                 <p><strong>ProductId:</strong> {selectedRequest.productId}</p>
                                 <p><strong>Product:</strong> {selectedRequest.productName}</p>
                                 <p><strong>Quantity:</strong> {selectedRequest.requestedQty} units</p>
+                                <p><strong>Category:</strong> {selectedRequest.categoryId} </p>
                             </div>
                             <button className="btn-prama" onClick={() => setStep(2)}>Continue</button>
                         </div>

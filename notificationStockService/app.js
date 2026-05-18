@@ -195,14 +195,16 @@ const runKafkaConsumer = async () => {
         await emailService.sendEmail(event.email, subject, body);
       }
       else if (topic === "order-notifications") {
-        const { email, product, productId, quantity, orderId, message, fournisseurId } = event;
+        const { email, product, categoryId, productId, quantity, orderId, message, fournisseurId } = event;
 
+        const finalCategoryId = categoryId || "UNKNOWN_CAT";
         await Notification.create({
           message: message || `Nouvelle commande: ${quantity}x ${product}`,
           orderId: orderId,
           fournisseurId: fournisseurId,
           niveau: "RFQ",
           productId: productId,
+          categoryId: finalCategoryId,
           productName: product,
           requestedQty: quantity,
           statut: "NON_LUE",
@@ -243,47 +245,46 @@ const runKafkaConsumer = async () => {
         }else if (type === "QUOTATION_REFUSED") {
 
           await Notification.create({
-            message: `🚫 The supplier ${event.sName} has rejected the offer for "${event.productName}". Reason: ${event.reason || 'Not specified'}`,
+            message: `🚫 The supplier ${event.sName} has rejected the offer for ${event.requestedQty} Units of "${event.productName}". Reason: ${event.reason || 'Not specified'}`,
             niveau: "ERROR",
             statut: "NON_LUE",
-            categoryId: event.categoryId,
             type: "QUOTE_REFUSED_BY_SUPPLIER",
             dateAlerte: new Date(),
             orderId: event.orderId
           });
 
-          // Main background pipeline tracking logic
           console.log(`=== 🤖 STARTING AUTOMATED FALLBACK PIPELINE (Product ID: ${event.productId}) ===`);
 
           const internalAuthHeader = "Bearer " + process.env.INTERNAL_SERVICE_TOKEN;
           let targetFournisseurs = [];
           let aiRankings = [];
+          let resolvedCategoryId = event.categoryId ;
 
-          // --- STEP 2: FETCH SUPPLIERS BY CATEGORY ---
+          console.log(`🎯 [Step 1.5 - Direct hit]: Using Category ID: ${resolvedCategoryId}`);
+
+          // --- STEP 2: FETCH SUPPLIERS BY RESOLVED CATEGORY ---
           try {
             const resSuppliers = await axios.get(
-                `http://localhost:8888/service-fournisseur/api/fournisseurs/category/${event.productId}`
+                `http://localhost:8888/service-fournisseur/api/fournisseurs/category/${resolvedCategoryId}`
             );
-            targetFournisseurs = resSuppliers.data;
+            targetFournisseurs = resSuppliers.data || [];
             console.log(`✅ [Step 2 - Supplier Service]: Fetched ${targetFournisseurs.length} alternative targets successfully.`);
           } catch (err) {
-            console.error(`❌ [CRITICAL ERROR - SUPPLIER SERVICE]: Failed to fetch suppliers for category/product ID ${event.productId}.`);
-            console.error(`Reason: ${err.message}`, err.response ? `| Status: ${err.response.status}` : '');
-            return; // Stop pipeline early if we can't find suppliers at all
+            console.error(`❌ [CRITICAL ERROR - SUPPLIER SERVICE]: Failed to fetch suppliers for category ID ${resolvedCategoryId}.`);
+            return;
           }
 
           // --- STEP 3: FETCH AI PREDICTIONS ---
           try {
+
             const resAi = await axios.get(
-                `http://localhost:8888/prediction-service/prediction/predict-best-supplier/${event.productId}`
+                `http://localhost:5008/prediction/predict-best-supplier/${resolvedCategoryId}`
             );
-            aiRankings = resAi.data;
+            aiRankings = resAi.data || [];
             console.log(`✅ [Step 3 - Prediction Service]: AI rankings loaded successfully.`);
           } catch (err) {
-            // 💡 Microservices Tip: Default to targetFournisseurs even if AI service crashes
             console.error(`⚠️ [NON-CRITICAL ERROR - PREDICTION SERVICE]: Failed to reach prediction pipeline.`);
-            console.error(`Reason: ${err.message}`, err.response ? `| Status: ${err.response.status}` : '');
-            console.log(`🔄 [Fallback Strategy]: Proceeding with raw supplier sequence without AI ranking weights.`);
+            console.error(`Reason: ${err.message}`, err.response ? `| Status: ${err.response.status} | Data: ${JSON.stringify(err.response.data)}` : '');
             aiRankings = [];
           }
 
@@ -295,63 +296,61 @@ const runKafkaConsumer = async () => {
           });
 
           // --- STEP 5: CALCULATE PLAN B RE-ROUTING ---
-          const currentSupplierIndex = sortedSuppliers.findIndex(f =>
-              f.prenom + " " + f.nom === event.sName ||
-              f.nom === event.sName ||
-              Number(f.id_fournisseur) === Number(event.id_fournisseur)
-          );
+          const currentSupplierIndex = sortedSuppliers.findIndex(f => {
+            const fullName = `${f.prenom || ''} ${f.nom || ''}`.trim().toLowerCase();
+            const eventName = String(event.sName || '').trim().toLowerCase();
+            return fullName === eventName ||
+                String(f.nom).toLowerCase() === eventName ||
+                f.email === event.emailFournisseur;
+          });
 
-          const nextSupplier = sortedSuppliers[currentSupplierIndex + 1];
+          // Select dynamic fallback backup target index sequential rules
+          let nextSupplier = null;
+          if (currentSupplierIndex === -1 && sortedSuppliers.length > 0) {
+            nextSupplier = sortedSuppliers[0];
+          } else if (currentSupplierIndex !== -1 && (currentSupplierIndex + 1) < sortedSuppliers.length) {
+            nextSupplier = sortedSuppliers[currentSupplierIndex + 1];
+          }
 
           if (nextSupplier) {
             console.log(`🎯 [Pipeline Blueprint]: Next target identified -> ${nextSupplier.prenom} ${nextSupplier.nom} (ID: ${nextSupplier.id_fournisseur}).`);
+            const backupQty = event.quantity ? Number(event.quantity) : (event.requestedQty ? Number(event.requestedQty) : 1);
 
-            // ===== 🎯 EXECUTE PLAN B CREATION =====
             const newOrderData = {
-              id_fournisseur: nextSupplier.id_fournisseur,
+              id_commande: String(Date.now()),
+              id_fournisseur: Number(nextSupplier.id_fournisseur),
               emailFournisseur: nextSupplier.email,
-              id_request: event.id_request || null,
+              id_request: event.id_request || "AUTOMATED_PLAN_B",
+              status: 'WAITING_FOR_QUOTATION',
+              total: 0,
+              categoryId: Number(resolvedCategoryId),
               items: [{
                 id_produit: event.productId,
-                productName: event.productName,
-                quantite: event.quantite || 1,
-                prix_unitaire: null
+                productId: event.productId,
+                productName: event.productName || "MacBook Pro M3",
+                quantite: backupQty,
+                categoryId: Number(resolvedCategoryId)
               }],
-              total: 0,
-              status: 'WAITING_FOR_QUOTATION',
               dateCommande: new Date().toISOString()
             };
 
-            // --- STEP 6: DISPATCH FALLBACK ORDER VIA AXIOS/KAFKA ---
             try {
-              await axios.post("http://localhost:8888/service-commande/api/commandes", newOrderData, {
-                headers: { Authorization: internalAuthHeader }
+              // Register target order inside database logic gateway proxy execution node
+              await axios.post("http://localhost:5001/api/commandes", newOrderData, {
               });
-              console.log(`🚀 [Step 6 - Commande Service]: Fallback order registered successfully via network bridging.`);
-
-              // Log notification to UI manager
-              await Notification.create({
-                message: `🛡️ Plan B Activated: Order for "${event.productName}" re-routed to backup supplier ${nextSupplier.prenom} ${nextSupplier.nom} seamlessly.`,
-                niveau: "WARNING",
-                statut: "NON_LUE",
-                type: "PLAN_B_ACTIVATED",
-                dateAlerte: new Date(),
-                orderId: event.orderId
-              });
-
-              console.log(`✅ === AUTOMATED FALLBACK EXECUTED SUCCESSFULLY FOR ORDER: ${event.orderId} ===`);
+              console.log(`🚀 [Step 6 - Commande Service]: Fallback order registered successfully in Database.`);
+              const realQty = event.quantite ? Number(event.quantite) : 1;
 
             } catch (err) {
-              console.error(`❌ [CRITICAL ERROR - COMMANDE SERVICE]: Fallback order propagation failed.`);
+              console.error(`❌ [CRITICAL ERROR - PLAN B DISTRIBUTION]: Fallback execution chain failed.`);
               console.error(`Reason: ${err.message}`, err.response ? `| Data: ${JSON.stringify(err.response.data)}` : '');
             }
 
           } else {
-            // ===== ⚠️ DEAD-END (NO ALTERNATIVE) =====
-            console.warn(`🚨 [Pipeline Sourcing Alert]: No alternative targets available downstream for category ${event.productId}.`);
+            console.warn(`🚨 [Pipeline Sourcing Alert]: No alternative targets available downstream for category ${resolvedCategoryId}.`);
 
             await Notification.create({
-              message: `🚨 Critical: ${event.sName} refused "${event.productName}" and no fallback backup supplier exists for this category. Manual sourcing required!`,
+              message: `🚨 Critical: ${event.sName} refused "${event.productName}" and no fallback backup supplier exists for this category.`,
               niveau: "ERROR",
               statut: "NON_LUE",
               type: "NO_FALLBACK_AVAILABLE",

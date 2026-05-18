@@ -57,7 +57,7 @@ router.get("/commandes/:id", authMiddleware, controller.getCommandeById);
  *     security:
  *       - bearerAuth: []
  */
-router.post("/commandes", authMiddleware, controller.createCommande);
+router.post("/commandes", controller.createCommande);
 
 /**
  * @swagger

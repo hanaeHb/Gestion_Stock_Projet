@@ -25,11 +25,11 @@ exports.getCommandeById = async (req, res) => {
     }
 };
 
-// Créer une nouvelle commande
 exports.createCommande = async (req, res) => {
-    const { id_fournisseur, total, emailFournisseur, items, id_request, status } = req.body;
+    const { id_fournisseur, total, emailFournisseur, items, id_request, status, categoryId } = req.body;
 
     try {
+
         const result = await db.query(
             "INSERT INTO commandes(id_fournisseur, total, status, id_request) VALUES($1, $2, $3, $4) RETURNING *",
             [id_fournisseur, total, status, id_request]
@@ -41,6 +41,10 @@ exports.createCommande = async (req, res) => {
         const qty = firstItem.quantite || 0;
         const pId = firstItem.id_produit || firstItem.productId;
 
+        const finalCategoryId = categoryId || firstItem.categoryId || firstItem.id_category;
+
+        console.log(`🚀 Dispatching Order Event to Kafka with Category ID: ${finalCategoryId}`);
+
         await producer.send({
             topic: 'order-notifications',
             messages: [{
@@ -50,6 +54,7 @@ exports.createCommande = async (req, res) => {
                     fournisseurId: id_fournisseur,
                     product: pName,
                     productId: pId,
+                    categoryId: finalCategoryId,
                     quantity: qty,
                     message: `Procurement Manager requested a price for ${qty} units of ${pName}`
                 })
@@ -58,11 +63,10 @@ exports.createCommande = async (req, res) => {
 
         res.status(201).json(newOrder);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Erreur" });
+        console.error("❌ Error in createCommande database/event mapping pipeline:", err);
+        res.status(500).json({ message: "Erreur internal engine propagation" });
     }
 };
-
 // controllers/commandeController.js
 
 const PDFDocument = require('pdfkit');

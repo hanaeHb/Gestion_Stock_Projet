@@ -54,6 +54,7 @@ const OrderItemCard = ({ order, profile }: { order: any, profile: any }) => {
                 id_commande: order.orderId || order._id,
                 id_produit: order.productId ,
                 pName: order.productName,
+                categoryId: order.categoryId,
                 id_supplier: profile?.userId?.toString(),
                 sName: `${profile?.prenom} ${profile?.nom}`,
                 supplierEmail: profile?.email,
@@ -92,6 +93,7 @@ const OrderItemCard = ({ order, profile }: { order: any, profile: any }) => {
                 productId: order.productId,
                 productName: order.productName,
                 categoryId: order.categoryId,
+                requestedQty: order.requestedQty,
                 supplierName: `${profile?.prenom} ${profile?.nom}`,
                 reason: reason
             }, {
@@ -113,6 +115,7 @@ const OrderItemCard = ({ order, profile }: { order: any, profile: any }) => {
             <div className="order-main-info">
                 <div className="order-header-flex">
                     <h3>{order.productName || "Product Request"}</h3>
+                    <h3>{order.categoryId || "categoryId Request"}</h3>
                     <span className="qty-badge">
                          {order.requestedQty || "0"} <small>UNITS</small>
                     </span>
@@ -337,7 +340,7 @@ export default function Fournisseur() {
     }, [activeSection]);
 
     const orderRequests = allNotifications.filter(n =>
-        n.niveau === "RFQ" &&
+        n.niveau === "RFQ" && n.statut === "NON_LUE" &&
         n.fournisseurId?.toString() === profile?.idFournisseur?.toString()
     );
 

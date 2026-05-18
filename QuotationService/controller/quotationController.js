@@ -9,7 +9,7 @@ const producer = kafka.producer();
 
 exports.createQuotation = async (req, res) => {
     try {
-        const { id_commande, id_produit, pName, sku, pId, id_supplier, sName, supplierEmail, quantite, prix_unitaire } = req.body;
+        const { id_commande, id_produit, categoryId, pName, sku, pId, id_supplier, sName, supplierEmail, quantite, prix_unitaire } = req.body;
 
         if (!id_commande || !id_produit || !quantite || !prix_unitaire) {
             return res.status(400).json({ error: "Champs obligatoires manquants" });
@@ -20,6 +20,7 @@ exports.createQuotation = async (req, res) => {
             id_produit,
             pName: pName || "Produit",
             pId:  id_produit,
+            categoryId: categoryId,
             sku: sku,
             id_supplier,
             sName: sName,
@@ -40,6 +41,7 @@ exports.createQuotation = async (req, res) => {
                     type: 'QUOTATION_SUBMITTED',
                     orderId: id_commande,
                     pId:  id_produit,
+                    categoryId: categoryId,
                     sku: sku,
                     price: prix_unitaire,
                     productName: pName,
@@ -58,7 +60,8 @@ exports.createQuotation = async (req, res) => {
 };
 exports.refuseQuotation = async (req, res) => {
     try {
-        const { orderId, productId, productName, categoryId, supplierName, reason } = req.body;
+        const { orderId, productId, productName, categoryId, quantite, supplierName, reason } = req.body;
+        const finalQty = quantite || req.body.requestedQty || 1;
 
         console.log(`🚫 Refusal received for Order ${orderId} from ${supplierName}`);
 
@@ -71,6 +74,7 @@ exports.refuseQuotation = async (req, res) => {
                     orderId: orderId,
                     productId: productId,
                     categoryId: categoryId,
+                    requestedQty: finalQty,
                     productName: productName,
                     sName: supplierName,
                     reason: reason
