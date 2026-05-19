@@ -35,7 +35,7 @@ interface FournisseurResponse {
     message: string;
     fournisseur: Profile;
 }
-const OrderItemCard = ({ order, profile }: { order: any, profile: any }) => {
+const OrderItemCard = ({ order, profile, onActionSuccess }: { order: any, profile: any, onActionSuccess: (id: string) => void  }) => {
     const [decision, setDecision] = useState<"pending" | "accepted" | "refused">("pending");
     const [reason, setReason] = useState("");
     const [price, setPrice] = useState("");
@@ -67,7 +67,13 @@ const OrderItemCard = ({ order, profile }: { order: any, profile: any }) => {
             });
 
             if (res.status === 201) {
+                await axios.put(`http://localhost:8888/service-notification/api/notifications/${order._id}`, {
+                    statut: "LUE",
+                    niveau: "RFQ",
+                    type: order.type
+                }, { headers: { Authorization: `Bearer ${token}` } });
                 alert("🚀 Quote submitted successfully!");
+                onActionSuccess(order._id);
                 setDecision("pending");
                 setPrice("");
             }
@@ -100,7 +106,13 @@ const OrderItemCard = ({ order, profile }: { order: any, profile: any }) => {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
+            await axios.put(`http://localhost:8888/service-notification/api/notifications/${order._id}`, {
+                statut: "LUE",
+                niveau: "RFQ",
+                type: order.type
+            }, { headers: { Authorization: `Bearer ${token}` } });
             alert("Refusal sent successfully. ✖");
+            onActionSuccess(order._id);
             setDecision("pending");
             setReason("");
         } catch (err) {
@@ -115,7 +127,6 @@ const OrderItemCard = ({ order, profile }: { order: any, profile: any }) => {
             <div className="order-main-info">
                 <div className="order-header-flex">
                     <h3>{order.productName || "Product Request"}</h3>
-                    <h3>{order.categoryId || "categoryId Request"}</h3>
                     <span className="qty-badge">
                          {order.requestedQty || "0"} <small>UNITS</small>
                     </span>
@@ -702,7 +713,9 @@ export default function Fournisseur() {
                             {orderRequests.length > 0 ? (
                                 <>
                                     {orderRequests.slice(0, visibleOrdersCount).map((order) => (
-                                        <OrderItemCard key={order._id} order={order} profile={profile}/>
+                                        <OrderItemCard key={order._id} order={order} profile={profile} onActionSuccess={(id) => {
+                                            setAllNotifications(prev => prev.filter(n => n._id !== id));
+                                        }}/>
                                     ))}
                                     {orderRequests.length > 2 && (
                                         <div className="view-actions-container">

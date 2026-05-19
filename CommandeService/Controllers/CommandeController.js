@@ -57,7 +57,7 @@ exports.createCommande = async (req, res) => {
                     productId: pId,
                     categoryId: finalCategoryId,
                     quantity: qty,
-                    message: `Procurement Manager requested a price for ${qty} units of ${pName} from ${emailFournisseur}`
+                    message: `Procurement Manager requested a price quote for ${qty} units of ${pName} from ${emailFournisseur}`
                 })
             }]
         });
