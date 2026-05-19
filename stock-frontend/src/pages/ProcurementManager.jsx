@@ -214,6 +214,7 @@ export default function ProcurementManager() {
     const quoteNotifications = allNotifications.filter(n => n.type === "QUOTE_RECEIVED");
     const refusedQuotes = allNotifications.filter(n => n.type === "QUOTE_REFUSED_BY_SUPPLIER");
     const planB = allNotifications.filter(n => n.type === "PLAN_B_ROUTED");
+    const noFallback = allNotifications.filter(n => n.type === "NO_FALLBACK_AVAILABLE");
     const handleConfirmReception = async (notif) => {
         try {
             const token = localStorage.getItem("token");
@@ -553,18 +554,22 @@ export default function ProcurementManager() {
                                     <FaFileInvoiceDollar style={{color: '#2ecc71', fontSize: '1.2rem'}}/>
                                     <h3>Supplier Quotes & Automation</h3>
                                     <span className="count-badge" style={{background: '#2ecc71'}}>
-                                        {quoteNotifications.length + refusedQuotes.length + planB.length}
+                                        {quoteNotifications.length + refusedQuotes.length + planB.length + noFallback.length}
                                     </span>
                                 </div>
                                 <div className="notif-scroll-area">
 
-                                    {[...quoteNotifications, ...refusedQuotes, ...planB].sort((a, b) => new Date(b.dateAlerte).getTime() - new Date(a.dateAlerte).getTime()).map(notif => {
+                                    {[...quoteNotifications, ...refusedQuotes, ...planB, ...noFallback].sort((a, b) => new Date(b.dateAlerte).getTime() - new Date(a.dateAlerte).getTime()).map(notif => {
                                         const isRefused = notif.type === "QUOTE_REFUSED_BY_SUPPLIER";
                                         const isPlanB = notif.type === "PLAN_B_ROUTED";
+                                        const isNoFallback = notif.type === "NO_FALLBACK_AVAILABLE";
 
                                         let itemBorderClass = 'accepted-border';
                                         if (isRefused) itemBorderClass = 'refused-border';
                                         if (isPlanB) itemBorderClass = 'planb-border';
+                                        if (isNoFallback) {
+                                            itemBorderClass = 'critical-border';
+                                        }
                                         return (
                                             <div
                                                 key={notif._id}
@@ -574,23 +579,35 @@ export default function ProcurementManager() {
                                                 <div className="notif-content">
                                                     <p className="msg">
                                                         <strong style={{
-                                                            color: isRefused ? '#ef4444' : isPlanB ? '#f39c12' : '#2ecc71'
+                                                            color: isNoFallback ? '#dc2626' : isRefused ? '#ef4444' : isPlanB ? '#f39c12' : '#2ecc71'
                                                         }}>
-                                                            {isRefused ? "🚫 Rejected:" : isPlanB ? "🤖 Auto Plan B:" : "✅ Offer Received:"}
+                                                            {isNoFallback ? "🚨 CRITICAL ERROR:" : isRefused ? "🚫 Rejected:" : isPlanB ? "🤖 Auto Plan B:" : "✅ Offer Received:"}
                                                         </strong>
                                                         {" "}{notif.message}
                                                     </p>
 
                                                     <div className="meta-tags">
-                                                        <span className={`tag ${isRefused ? 'tag-red' : isPlanB ? 'tag-orange' : 'tag-green'}`}
-                                                              style={isPlanB ? {
-                                                                  background: '#f39c12',
-                                                                  color: '#fff',
-                                                                  padding: '2px 6px',
-                                                                  borderRadius: '4px',
-                                                                  fontSize: '0.75rem'
-                                                              } : {}}>
-                                                            {isRefused ? "Supplier refused offer" : isPlanB ? "Pipeline Fallback Executed" : "Pending Quote"}
+                                                        <span
+                                                            className={`tag ${isNoFallback ? 'tag-critical' : isRefused ? 'tag-red' : isPlanB ? 'tag-orange' : 'tag-green'}`}
+                                                            style={
+                                                                isNoFallback ? {
+                                                                        background: '#dc2626',
+                                                                        color: '#fff',
+                                                                        padding: '2px 6px',
+                                                                        borderRadius: '4px',
+                                                                        fontSize: '0.75rem',
+                                                                        fontWeight: 'bold'
+                                                                    } :
+                                                                    isPlanB ? {
+                                                                        background: '#f39c12',
+                                                                        color: '#fff',
+                                                                        padding: '2px 6px',
+                                                                        borderRadius: '4px',
+                                                                        fontSize: '0.75rem'
+                                                                    } : {}
+                                                            }
+                                                        >
+                                                            {isNoFallback ? "No Sourcing Fallback" : isRefused ? "Supplier refused offer" : isPlanB ? "Pipeline Fallback Executed" : "Pending Quote"}
                                                         </span>
                                                     </div>
                                                     <span
@@ -600,7 +617,7 @@ export default function ProcurementManager() {
                                         );
                                     })}
 
-                                    {quoteNotifications.length === 0 && refusedQuotes.length === 0 && planB.length === 0 && (
+                                    {quoteNotifications.length === 0 && refusedQuotes.length === 0 && planB.length === 0 && noFallback.length === 0 && (
                                         <div className="empty-msg">No activity from suppliers yet.</div>
                                     )}
                                 </div>
@@ -895,7 +912,6 @@ export default function ProcurementManager() {
                             alert("Commande traitée avec succès !");
                         }}
                     />
-
 
                     {activeSection === "settings" && (
                         <div className="panel large">

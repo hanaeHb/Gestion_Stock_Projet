@@ -245,7 +245,7 @@ const runKafkaConsumer = async () => {
         }else if (type === "QUOTATION_REFUSED") {
 
           await Notification.create({
-            message: `🚫 The supplier ${event.sName} has rejected the offer for ${event.requestedQty} Units of "${event.productName}". Reason: ${event.reason || 'Not specified'}`,
+            message: `The supplier ${event.sName} has rejected the offer for ${event.requestedQty} Units of "${event.productName}". Reason: ${event.reason || 'Not specified'}`,
             niveau: "ERROR",
             statut: "NON_LUE",
             type: "QUOTE_REFUSED_BY_SUPPLIER",
@@ -358,7 +358,7 @@ const runKafkaConsumer = async () => {
             console.warn(`🚨 [Pipeline Sourcing Alert]: No alternative targets available downstream for category ${resolvedCategoryId}.`);
 
             await Notification.create({
-              message: `🚨 Critical: ${event.sName} refused "${event.productName}" and no fallback backup supplier exists for this category.`,
+              message: ` ${event.sName} refused "${event.productName}" and no fallback backup supplier exists for this category.`,
               niveau: "ERROR",
               statut: "NON_LUE",
               type: "NO_FALLBACK_AVAILABLE",
