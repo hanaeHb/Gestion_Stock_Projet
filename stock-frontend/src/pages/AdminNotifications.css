@@ -139,3 +139,63 @@
 .refresh-circle-btn svg {
     font-size: 1.2rem;
 }
+/* --- الألوان الديناميكية للـ Status Pills والـ Borders --- */
+
+.notif-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px dashed #f0f0f0;
+}
+
+.status-pill {
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-weight: 600;
+}
+
+
+.badge-error-red { background: #ffeaa7; color: #d63031; }
+
+
+
+.badge-restock-orange { background: #ffeaa7; color: #e17055; }
+
+
+
+.badge-critical-crimson { background: #ffcae1; color: #b30000; font-weight: bold; }
+
+
+.badge-rfq-blue { background: #dfe6e9; color: #0984e3; }
+
+
+.badge-quote-green { background: #effff4; color: #2ecc71; }
+
+/* 🟪 Auto Plan B */
+.badge-planb-purple { background: #f3e5f5; color: #9c27b0; }
+.dynamic-border-badge-planb-purple { border-left: 4px solid #9c27b0 !important; }
+
+/* 🟨 Waiting Confirmation */
+.badge-log-yellow { background: #fffde7; color: #f57f17; }
+.dynamic-border-badge-log-yellow { border-left: 4px solid #f57f17 !important; }
+
+/* 🟩 Logistics In Transit */
+.badge-log-cyan { background: #e0f7fa; color: #00838f; }
+.dynamic-border-badge-log-cyan { border-left: 4px solid #00838f !important; }
+
+/* 🟦 Logistics Shipped */
+.badge-log-indigo { background: #e8eaf6; color: #283593; }
+.dynamic-border-badge-log-indigo { border-left: 4px solid #283593 !important; }
+
+/* 🟩 Success Emerald */
+.badge-success-emerald { background: #e8f5e9; color: #2e7d32; }
+.dynamic-border-badge-success-emerald { border-left: 4px solid #2e7d32 !important; }
+
+/* Default fallback style */
+.badge-default { background: #f5f5f5; color: #666; }
+
+/* 🚫 Supplier Refused Offer */
+.badge-rejected-grey { background: #ffeaea; color: #7f8c8d; font-weight: bold; }

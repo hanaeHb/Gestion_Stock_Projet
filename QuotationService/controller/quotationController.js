@@ -123,7 +123,6 @@ exports.getSupplierStats = async (req, res) => {
 
         const result = stats[0] || { totalQuotes: 0, acceptedQuotes: 0, refusedQuotes: 0, totalRevenue: 0 };
 
-        // حساب نسبة القبول
         const acceptanceRate = result.totalQuotes > 0
             ? ((result.acceptedQuotes / result.totalQuotes) * 100).toFixed(1)
             : 0;

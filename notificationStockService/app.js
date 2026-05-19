@@ -229,12 +229,13 @@ const runKafkaConsumer = async () => {
               { orderId: orderId, niveau: "RFQ" },
               {
                 statut: "LUE",
-                message: `Réponse envoyée pour ${productName}: ${price} DH`
+                type: "QUOTE_RECEIV",
+                message: `New quote received for ${productName} (Price: ${price} DH)`
               }
           );
 
           await Notification.create({
-            message: `Nouveau devis reçu pour ${productName} (Prix: ${price} DH)`,
+            message: `New quote received for ${productName} (Price: ${price} DH)`,
             niveau: "SUCCESS",
             statut: "NON_LUE",
             type: "QUOTE_RECEIVED",

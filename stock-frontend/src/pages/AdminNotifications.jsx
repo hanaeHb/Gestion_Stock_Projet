@@ -6,7 +6,7 @@ import './AdminNotifications.css';
 
 const AdminNotifications = ({ notifications, refresh, loading, setTotalCount }) => {
 
-    const stockAlerts = notifications.filter(n => n.niveau === 'ERROR' || n.niveau === 'REPLENISHMENT_ORDER');
+    const stockAlerts = notifications.filter(n => n.niveau === 'ERROR');
     const purchaseRequests = notifications.filter(n => n.type === 'NEW_ORDER_REQUEST' || n.type === 'QUOTE_RECEIVED' || n.type === 'PLAN_B_ROUTED');
     const logistics = notifications.filter(n => n.type === 'WAITING_CONFIRMATION' || n.type === 'AWAITING_RECEPTION' || n.type === 'ORDER_SHIPPED');
     const finalized = notifications.filter(n => n.type === 'CONFIRMED');
@@ -14,6 +14,31 @@ const AdminNotifications = ({ notifications, refresh, loading, setTotalCount }) 
         const total = stockAlerts.length + purchaseRequests.length + logistics.length + finalized.length;
         setTotalCount(total);
     }, [notifications]);
+    const getNotificationBadgeDetails = (type, niveau) => {
+        const key = type || niveau;
+
+        const configs = {
+            // Inventory & Errors
+            'STOCK_ALERT': { label: '🚨 Critical Restock', className: 'badge-restock-orange' },
+            'NO_FALLBACK_AVAILABLE': { label: '🛑 No Fallback Sourcing', className: 'badge-critical-crimson' },
+            'QUOTE_REFUSED_BY_SUPPLIER': { label: '🚫 Offer Rejected', className: 'badge-rejected-grey' },
+
+            // RFQ & Sourcing
+            'NEW_ORDER_REQUEST': { label: '📦 New Request', className: 'badge-rfq-blue' },
+            'QUOTE_RECEIVED': { label: '💰 Offer Received', className: 'badge-quote-green' },
+            'PLAN_B_ROUTED': { label: '🤖 Auto Plan B', className: 'badge-planb-purple' },
+
+            // Logistics
+            'WAITING_CONFIRMATION': { label: '⏳ Waiting Conf.', className: 'badge-log-yellow' },
+            'AWAITING_RECEPTION': { label: '🚚 In Transit', className: 'badge-log-cyan' },
+            'ORDER_SHIPPED': { label: '📦 Shipped', className: 'badge-log-indigo' },
+
+            // Finalized
+            'CONFIRMED': { label: '✅ Completed', className: 'badge-success-emerald' }
+        };
+
+        return configs[key] || { label: key, className: 'badge-default' };
+    };
     const renderGroup = (title, icon, data, color) => (
         <section className="admin-notif-group glass-panel">
             <div className="group-header" style={{ borderBottom: `3px solid ${color}` }}>
@@ -22,31 +47,37 @@ const AdminNotifications = ({ notifications, refresh, loading, setTotalCount }) 
                 <span className="count-badge" style={{ background: color }}>{data.length}</span>
             </div>
             <div className="notif-scroll-area">
-                {data.length > 0 ? data.map(n => (
-                    <div key={n._id} className="admin-notif-item">
-                        <div className="notif-content">
-                            <p className="msg">{n.message}</p>
-                            <div className="meta-tags">
-                                {n.productName && <span className="tag product">{n.productName}</span>}
-                                {n.quantite && <span className="tag qty">{n.quantite} Qty</span>}
-                                {n.total_ligne && <span className="tag price">{n.total_ligne} DH</span>}
-                                {n.sName && <span className="tag supplier">👤 {n.sName}</span>}
+                {data.length > 0 ? data.map(n => {
+                    const badgeMeta = getNotificationBadgeDetails(n.type, n.niveau);
+
+                    return (
+                        <div key={n._id} className={`admin-notif-item dynamic-border-${badgeMeta.className}`}>
+                            <div className="notif-content">
+                                <p className="msg">{n.message}</p>
+                                <div className="meta-tags">
+                                    {n.productName && <span className="tag product">{n.productName}</span>}
+                                    {n.quantite && <span className="tag qty">{n.quantite} Qty</span>}
+                                    {n.total_ligne && <span className="tag price">{n.total_ligne} DH</span>}
+                                    {n.sName && <span className="tag supplier">👤 {n.sName}</span>}
+                                </div>
+                            </div>
+                            <div className="notif-footer">
+                                <span className={`status-pill ${badgeMeta.className}`}>
+                                    {badgeMeta.label}
+                                </span>
+                                <span className="time">{new Date(n.dateAlerte).toLocaleString()}</span>
                             </div>
                         </div>
-                        <div className="notif-footer">
-                            <span className="status-pill">{n.type || n.niveau}</span>
-                            <span className="time">{new Date(n.dateAlerte).toLocaleString()}</span>
-                        </div>
-                    </div>
-                )) : <p className="empty-msg">No activity recorded yet.</p>}
+                    );
+                }) : <p className="empty-msg">No activity recorded yet.</p>}
             </div>
         </section>
     );
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{opacity: 0, y: 10}}
+            animate={{opacity: 1, y: 0}}
             className="admin-notifs-page"
         >
             <div className="admin-notifs-header">
@@ -61,9 +92,9 @@ const AdminNotifications = ({ notifications, refresh, loading, setTotalCount }) 
 
             <div className="admin-notifs-grid">
                 {renderGroup("Stock & Inventory", <FaExclamationTriangle/>, stockAlerts, "#ffb3b3")}
-                {renderGroup("Purchasing (RFQ)", <FaShoppingBag />, purchaseRequests, "#ffe0b3")}
-                {renderGroup("Logistics & Shipping", <FaTruck />, logistics, "#b3e0ff")}
-                {renderGroup("Completed Operations", <FaCheckCircle />, finalized, "#c2f0c2")}
+                {renderGroup("Purchasing (RFQ)", <FaShoppingBag/>, purchaseRequests, "#ffe0b3")}
+                {renderGroup("Logistics & Shipping", <FaTruck/>, logistics, "#b3e0ff")}
+                {renderGroup("Completed Operations", <FaCheckCircle/>, finalized, "#c2f0c2")}
             </div>
         </motion.div>
     );
