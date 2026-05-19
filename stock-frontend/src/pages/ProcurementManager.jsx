@@ -143,11 +143,13 @@ export default function ProcurementManager() {
                 const quotes = data.filter(n => n.type === "QUOTE_RECEIVED");
                 const shipments = data.filter(n => n.type === "WAITING_CONFIRMATION");
                 const refusedQuotes = data.filter(n => n.type === "QUOTE_REFUSED_BY_SUPPLIER");
+                const noFallback = data.filter(n => n.type === "NO_FALLBACK_AVAILABLE");
+                const planB = data.filter(n => n.type === "PLAN_B_ROUTED");
 
                 setPendingFournisseurs(pending);
                 setReplenishmentRequests(restock);
 
-                const totalNotifs = pending.length + restock.length + quotes.length + shipments.length + refusedQuotes.length;
+                const totalNotifs = pending.length + restock.length + quotes.length + shipments.length + refusedQuotes.length + noFallback.length + planB.length;
                 setNotificationCount(totalNotifs);
 
                 setLoading(false);
@@ -339,10 +341,14 @@ export default function ProcurementManager() {
                     const aiRes = await axios.get(`http://localhost:8888/prediction-service/prediction/predict-restock/${stock.produitId}`, { headers });
 
                     let bestSup = null;
+                    let allSups = [];
+
                     if (cid) {
                         const supplierRes = await axios.get(`http://localhost:8888/prediction-service/prediction/predict-best-supplier/${cid}`, { headers });
+
                         if (supplierRes.data && supplierRes.data.length > 0) {
                             bestSup = supplierRes.data[0];
+                            allSups = supplierRes.data;
                         }
                     }
 
@@ -350,11 +356,12 @@ export default function ProcurementManager() {
                         ...stock,
                         nomProduit: prodRes.data.nom,
                         prediction: aiRes.data,
-                        bestSupplier: bestSup
+                        bestSupplier: bestSup,
+                        allSuppliers: allSups
                     };
                 } catch (e) {
                     console.error("Error for product:", stock.produitId, e);
-                    return { ...stock, nomProduit: "Unknown", prediction: null, bestSupplier: null };
+                    return { ...stock, nomProduit: "Unknown", prediction: null, bestSupplier: null, allSuppliers: [] };
                 }
             }));
             setReports(detailedData);
@@ -720,69 +727,126 @@ export default function ProcurementManager() {
                         </section>
                         <div className="dashboard-content fade-in">
 
-                            <div className="dashboard-controls">
-                                <div className="control-left">
-                                    <h3>Strategic Overview</h3>
-                                    <p>Showing {indexOfFirstCard + 1}-{Math.min(indexOfLastCard, reports.length)} of {reports.length} products</p>
+                            <div className="dashboard-controls-wrapper">
+
+                                <div className="dashboard-controls">
+                                    <div className="control-left">
+                                        <h3>Strategic Overview</h3>
+                                        <p>Showing {indexOfFirstCard + 1}-{Math.min(indexOfLastCard, reports.length)} of {reports.length} products</p>
+                                    </div>
+                                    <div className="control-right">
+                                        <button className="btn-refresh" onClick={handleRefresh} disabled={isRefreshing}>
+                                            {isRefreshing ? "Refreshing..." : "Refresh Data"}
+                                        </button>
+                                        <button className="btn-download-all" onClick={generateGlobalPDF}>
+                                            <FaFilePdf/> Download Full Report
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className="control-right">
-                                    <button className="btn-refresh" onClick={handleRefresh} disabled={isRefreshing}>
-                                        {isRefreshing ? "Refreshing..." : "Refresh Data"}
-                                    </button>
-                                    <button className="btn-download-all" onClick={generateGlobalPDF}>
-                                        <FaFilePdf/> Download Full Report
-                                    </button>
+
+
+                                <div className="ai-metrics-legend-box">
+                                    <div className="legend-item">
+                                        <span className="legend-dot forecast-dot"></span>
+                                        <div className="legend-text">
+                                            <span className="legend-label">AI Forecast:</span>
+                                            <span className="legend-desc">Predicted market demand volume for the next period.</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="legend-vertical-line"></div>
+
+                                    <div className="legend-item">
+                                        <span className="legend-dot reorder-dot"></span>
+                                        <div className="legend-text">
+                                            <span className="legend-label">Recommended Reorder:</span>
+                                            <span className="legend-desc">Exact action quantity needed now (Forecast balanced minus Current Stock).</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
                             <div className="reports-grid-compact">
-                                {currentReports.map((item) => (
-                                    <div key={item.produitId} className="report-card-small">
-                                        <div className="card-top">
-                                            <div className="title-group">
-                                                <h4>{item.nomProduit}</h4>
-                                                <span className="ref-text">Ref: {item.produitId}</span>
-                                            </div>
-                                            <span
-                                                className={`mini-badge ${item.quantiteDisponible <= item.seuilCritique ? 'crit' : 'ok'}`}>
-                                            {item.quantiteDisponible <= item.seuilCritique ? 'Urgent' : 'Optimal'}
-                                        </span>
-                                        </div>
+                                {currentReports.map((item) => {
 
-                                        <div className="card-mid">
-                                            <div className="mini-stat">
-                                                <label>Stock</label>
-                                                <span>{item.quantiteDisponible}</span>
-                                            </div>
-                                            <div className="mini-stat">
-                                                <label>AI Forecast</label>
+                                    const otherSuppliers = item.allSuppliers
+                                        ? item.allSuppliers
+                                            .filter(s => s.name !== item.bestSupplier?.name)
+                                            .sort((a, b) => (b.ai_score || 0) - (a.ai_score || 0))
+                                        : [];
+
+                                    return (
+                                        <div key={item.produitId} className="report-card-small">
+                                            <div className="card-top">
+                                                <div className="title-group">
+                                                    <h4>{item.nomProduit}</h4>
+                                                    <span className="ref-text">Ref: {item.produitId}</span>
+                                                </div>
                                                 <span
-                                                    className="peach-text">+{item.prediction?.predicted_demand || 0}</span>
+                                                    className={`mini-badge ${item.quantiteDisponible <= item.seuilCritique ? 'crit' : 'ok'}`}>
+                                                    {item.quantiteDisponible <= item.seuilCritique ? 'Urgent' : 'Optimal'}
+                                                </span>
                                             </div>
+
+                                            <div className="card-mid">
+                                                <div className="mini-stat">
+                                                    <label>Stock</label>
+                                                    <span>{item.quantiteDisponible}</span>
+                                                </div>
+                                                <div className="mini-stat">
+                                                    <label>AI Forecast</label>
+                                                    <span
+                                                        className="teach-text">+{item.prediction?.predicted_demand || 0}</span>
+                                                </div>
+                                                <div className="mini-stat">
+                                                    <label>Recommended Reorder</label>
+                                                    <span
+                                                        className="peach-text">+{item.prediction?.recommended_quantity || 0}</span>
+                                                </div>
+                                            </div>
+
+
+                                            <div className="ai-supplier-mini">
+                                                <div className="supplier-info-header">
+                                                    <p><span className="best-label">⭐ Best supplier:</span>
+                                                        <strong>{item.bestSupplier?.name || "Searching..."}</strong></p>
+                                                    <span
+                                                        className="ai-score-number">{item.bestSupplier?.ai_score || 0}%</span>
+                                                </div>
+                                                <div className="score-bar-bg">
+                                                    <div className="score-bar-fill"
+                                                         style={{width: `${item.bestSupplier?.ai_score || 0}%`}}></div>
+                                                </div>
+                                            </div>
+
+                                            <div className="other-suppliers-wrapper">
+                                                <label className="fallback-title">Alternative Sourcing Pipeline:</label>
+                                                <div className="other-suppliers-list">
+                                                    {otherSuppliers.length > 0 ? (
+                                                        otherSuppliers.map((sup, index) => (
+                                                            <div key={index} className="other-supplier-item">
+                                                                <span className="other-sup-name">👤 {sup.name}</span>
+                                                                <span
+                                                                    className="other-sup-score">{sup.ai_score || 0}%</span>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+
+                                                        <p className="no-other-suppliers">⚠️ No other suppliers
+                                                            available for this product</p>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <button className="btn-mini-pdf" onClick={() => generateSinglePDF(item)}>
+                                                <FaFilePdf/> PDF
+                                            </button>
                                         </div>
-
-                                        <div className="ai-supplier-mini">
-                                            <div className="supplier-info-header">
-                                                <p><strong>{item.bestSupplier?.name || "Searching..."}</strong></p>
-
-                                                <span
-                                                    className="ai-score-number">{item.bestSupplier?.ai_score || 0}%</span>
-                                            </div>
-                                            <div className="score-bar-bg">
-                                                <div className="score-bar-fill"
-                                                     style={{width: `${item.bestSupplier?.ai_score || 0}%`}}></div>
-                                            </div>
-                                        </div>
-
-                                        <button className="btn-mini-pdf" onClick={() => generateSinglePDF(item)}>
-                                            <FaFilePdf/> PDF
-                                        </button>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
 
                             <div className="catalog-pagination">
-
                                 <button
                                     className="pagi-nav-btn"
                                     disabled={currentPage === 1}
@@ -814,80 +878,80 @@ export default function ProcurementManager() {
                         </div>
                     </div>
                     </>
-                    )}
-                    {activeSection === "restock_orders" && (
-                        <div className="restock-modern-container fade-in">
-                            <header className="restock-header-modern">
-                                <div className="category-modern-header">
-                                    <div className="header-text">
-                                        <h1>Critical Replenishment</h1>
-                                        <p>High-priority orders waiting for your approval</p>
-                                    </div>
+                )}
+                {activeSection === "restock_orders" && (
+                    <div className="restock-modern-container fade-in">
+                        <header className="restock-header-modern">
+                            <div className="category-modern-header">
+                                <div className="header-text">
+                                    <h1>Critical Replenishment</h1>
+                                    <p>High-priority orders waiting for your approval</p>
                                 </div>
-                                <div className="header-badge">
-                                    <span className="pulse-dot"></span>
-                                    {replenishmentRequests.length} Requests Pending
+                            </div>
+                            <div className="header-badge">
+                                <span className="pulse-dot"></span>
+                                {replenishmentRequests.length} Requests Pending
+                            </div>
+                        </header>
+
+                        <div className="restock-grid">
+                            {replenishmentRequests.length === 0 ? (
+                                <div className="empty-state-card">
+                                    <FaInbox size={50}/>
+                                    <p>Great job! No pending requests at the moment.</p>
                                 </div>
-                            </header>
-
-                            <div className="restock-grid">
-                                {replenishmentRequests.length === 0 ? (
-                                    <div className="empty-state-card">
-                                        <FaInbox size={50}/>
-                                        <p>Great job! No pending requests at the moment.</p>
-                                    </div>
-                                ) : (
-                                    replenishmentRequests.map((req) => (
-                                        <div key={req._id} className="restock-card-modern">
-                                            <div className="card-status-line"></div>
-                                            <div className="card-body">
-                                                <div className="product-info-row">
-                                                    <div className="p-avatar">
-                                                        {req.productImage ? (
-                                                            <img
-                                                                src={req.productImage}
-                                                                alt={req.productName}
-                                                                className="product-card-img"
-                                                                onError={(e) => {
-                                                                    e.currentTarget.style.display = 'none';
-                                                                    e.currentTarget.parentElement.innerText = req.productName.charAt(0).toUpperCase();
-                                                                }}
-                                                            />
-                                                        ) : (
-                                                            req.productName.charAt(0).toUpperCase()
-                                                        )}
-                                                    </div>
-                                                    <div className="p-details">
-                                                        <h3>{req.productName}</h3>
-                                                        <span className="p-id">SKU: {req.sku}</span>
-                                                    </div>
-                                                    <div className="p-category">
-                                                        <span className="cat-badge">{req.category || "General"}</span>
-                                                    </div>
+                            ) : (
+                                replenishmentRequests.map((req) => (
+                                    <div key={req._id} className="restock-card-modern">
+                                        <div className="card-status-line"></div>
+                                        <div className="card-body">
+                                            <div className="product-info-row">
+                                                <div className="p-avatar">
+                                                    {req.productImage ? (
+                                                        <img
+                                                            src={req.productImage}
+                                                            alt={req.productName}
+                                                            className="product-card-img"
+                                                            onError={(e) => {
+                                                                e.currentTarget.style.display = 'none';
+                                                                e.currentTarget.parentElement.innerText = req.productName.charAt(0).toUpperCase();
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        req.productName.charAt(0).toUpperCase()
+                                                    )}
                                                 </div>
-
-                                                <div className="stats-row">
-                                                    <div className="stat-box">
-                                                        <span className="stat-label">Quantity</span>
-                                                        <span
-                                                            className="stat-value highlight">{req.requestedQty} Units</span>
-                                                    </div>
-                                                    <div className="stat-box">
-                                                        <span className="stat-label">Requested By</span>
-                                                        <span className="stat-value">{req.fromManager}</span>
-                                                    </div>
-                                                    <div className="stat-box">
-                                                        <span className="stat-label">Request Date</span>
-                                                        <span
-                                                            className="stat-value">{new Date(req.dateAlerte || Date.now()).toLocaleDateString()}</span>
-                                                    </div>
+                                                <div className="p-details">
+                                                    <h3>{req.productName}</h3>
+                                                    <span className="p-id">SKU: {req.sku}</span>
                                                 </div>
+                                                <div className="p-category">
+                                                    <span className="cat-badge">{req.category || "General"}</span>
+                                                </div>
+                                            </div>
 
-                                                <div className="card-actions">
-                                                    <button
-                                                        className="btn-order-premium"
-                                                        onClick={() => {
-                                                            setCurrentRequest(req);
+                                            <div className="stats-row">
+                                                <div className="stat-box">
+                                                    <span className="stat-label">Quantity</span>
+                                                    <span
+                                                        className="stat-value highlight">{req.requestedQty} Units</span>
+                                                </div>
+                                                <div className="stat-box">
+                                                    <span className="stat-label">Requested By</span>
+                                                    <span className="stat-value">{req.fromManager}</span>
+                                                </div>
+                                                <div className="stat-box">
+                                                    <span className="stat-label">Request Date</span>
+                                                    <span
+                                                        className="stat-value">{new Date(req.dateAlerte || Date.now()).toLocaleDateString()}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="card-actions">
+                                                <button
+                                                    className="btn-order-premium"
+                                                    onClick={() => {
+                                                        setCurrentRequest(req);
                                                             setIsWizardOpen(true);
                                                         }}
                                                     >
