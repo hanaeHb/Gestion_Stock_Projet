@@ -251,62 +251,302 @@ export default function ProcurementManager() {
 
     const [isRefreshing, setIsRefreshing] = useState(false);
     const cardsPerPage = 6;
-    const generateSinglePDF = (item) => {
-        const doc = new jsPDF();
+    const loadLogoAsBase64 = () => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.src = "/images/logoostock.jpeg";
+            img.crossOrigin = "Anonymous";
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext("2d");
+                if (ctx) {
+                    ctx.drawImage(img, 0, 0);
+                    resolve(canvas.toDataURL("image/jpeg"));
+                } else {
+                    resolve(null);
+                }
+            };
+            img.onerror = () => resolve(null);
+        });
+    };
+    const generateSinglePDF = async (item) => {
 
-        // Header
-        doc.setFontSize(20);
-        doc.setTextColor(30, 41, 59);
-        doc.text("Inventory Intelligence Report", 20, 20);
+        const logoBase64 = await loadLogoAsBase64();
+        const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-        doc.setFontSize(10);
-        doc.setTextColor(100);
-        doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, 30);
-        doc.line(20, 35, 190, 35);
+        doc.setFillColor(255, 255, 255);
+        doc.rect(0, 0, 210, 297, "F");
 
-        // Content
+        if (logoBase64) {
+
+            const canvasGO = document.createElement("canvas");
+            canvasGO.width = 110;
+            canvasGO.height = 100;
+            const ctxGO = canvasGO.getContext("2d");
+
+            if (ctxGO) {
+               const gradient = ctxGO.createLinearGradient(0, 0, 110, 100);
+                gradient.addColorStop(0, "#ff9a9e");
+                gradient.addColorStop(1, "#730d19");
+
+                ctxGO.fillStyle = gradient;
+
+                const radius = 20;
+                ctxGO.beginPath();
+                ctxGO.moveTo(radius, 0);
+                ctxGO.lineTo(110 - radius, 0);
+                ctxGO.quadraticCurveTo(110, 0, 110, radius);
+                ctxGO.lineTo(110, 100 - radius);
+                ctxGO.quadraticCurveTo(110, 100, 110 - radius, 100);
+                ctxGO.lineTo(radius, 100);
+                ctxGO.quadraticCurveTo(0, 100, 0, 100 - radius);
+                ctxGO.lineTo(0, radius);
+                ctxGO.quadraticCurveTo(0, 0, radius, 0);
+                ctxGO.closePath();
+                ctxGO.fill();
+
+                const goGradientBase64 = canvasGO.toDataURL("image/png");
+
+                doc.addImage(goGradientBase64, "PNG", 15, 12, 11, 10, undefined, 'FAST');
+            } else {
+                doc.setFillColor(114, 15, 42);
+                doc.roundedRect(15, 12, 11, 10, 2, 2, "F");
+            }
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(255, 255, 255);
+            doc.text("GO", 20.5, 18.5, { align: "center" });
+
+            doc.addImage(logoBase64, "JPEG", 28, 12, 25, 10, undefined, 'FAST');
+        }
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(22);
+        doc.setTextColor(114, 15, 42);
+        doc.text("Inventory Intelligence Report", 15, 36);
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9.5);
+        doc.setTextColor(179, 161, 186);
+        doc.text(`AI Optimization Engine • Generated on: ${new Date().toLocaleString()}`, 15, 45);
+
+        doc.setFillColor(255, 255, 255);
+        doc.setDrawColor(250, 208, 196);
+        doc.setLineWidth(0.4);
+        doc.roundedRect(15, 50, 180, 18, 4, 4, "FD");
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8.5);
+        doc.setTextColor(149, 117, 205);
+        doc.text("PRODUCT SCOPE", 22, 57);
+
+        doc.setFont("helvetica", "bold");
         doc.setFontSize(14);
-        doc.text(`Product: ${item.nomProduit}`, 20, 50);
+        doc.setTextColor(114, 15, 42);
+        doc.text(`${item.nomProduit || "N/A"}`, 22, 64);
 
-        const data = [
-            ["Current Stock", `${item.quantiteDisponible} units`],
-            ["AI Forecasted Demand", `${item.prediction?.predicted_demand || 0}`],
-            ["Recommended Reorder", `${item.prediction?.recommended_quantity || 0}`],
-            ["Best Supplier Match", `${item.bestSupplier?.name || "N/A"}`],
-            ["AI Reliability Score", `${item.bestSupplier?.ai_score || 0}%`]
+        const tableData = [
+            ["Current Stock Level", `${item.quantiteDisponible} Units`],
+            ["AI Forecasted Demand", `+${item.prediction?.predicted_demand || 0} Units`],
+            ["Recommended Reorder", `+${item.prediction?.recommended_quantity || 0} Units`],
+            ["Strategic Best Supplier", `${item.bestSupplier?.name || "Searching..."}`],
+            ["AI Trust Match Score", `${item.bestSupplier?.ai_score || 0}%`]
         ];
 
         autoTable(doc, {
-            startY: 60,
-            head: [['Metric', 'Analysis Value']],
-            body: data,
+            startY: 76,
+            margin: { left: 15, right: 15 },
+            head: [['Inventory Optimization Metric', 'Analysis Value']],
+            body: tableData,
             theme: 'striped',
-            headStyles: { fillColor: [30, 41, 59] }
+            styles: {
+                font: 'helvetica',
+                fontSize: 9.5,
+                cellPadding: 5,
+                textColor: [71, 85, 105],
+                lineColor: [248, 240, 238]
+            },
+            headStyles: {
+                fillColor: [114, 15, 42],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                fontSize: 10.5,
+                cellPadding: 6
+            },
+            alternateRowStyles: {
+                fillColor: [255, 251, 249]
+            },
+            columnStyles: {
+                0: { fontStyle: 'bold', width: 75, textColor: [114, 15, 42] },
+                1: { halign: 'left' }
+            },
+            didParseCell: function (data) {
+                if (data.section === 'body' && data.column.index === 1) {
+                    if (data.row.index === 0 && item.quantiteDisponible <= (item.seuilCritique || 10)) {
+                        data.cell.styles.textColor = [239, 68, 68];
+                        data.cell.styles.fontStyle = 'bold';
+                    }
+                    if (data.row.index === 1) {
+                        data.cell.styles.textColor = [14, 116, 244];
+                        data.cell.styles.fontStyle = 'bold';
+                    }
+                    if (data.row.index === 2) {
+                        data.cell.styles.textColor = [225, 112, 85];
+                        data.cell.styles.fontStyle = 'bold';
+                    }
+                    if (data.row.index === 4) {
+                        data.cell.styles.textColor = [149, 117, 205];
+                        data.cell.styles.fontStyle = 'bold';
+                    }
+
+                }
+            }
         });
 
-        doc.save(`Report_${item.nomProduit}.pdf`);
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(8);
+        doc.setTextColor(179, 161, 186);
+        doc.text("StockFlow Intelligence System • Generated Automatically", 15, 285);
+
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(114, 15, 42);
+        doc.text(`Page ${pageCount}`, 195, 285, { align: "right" });
+
+
+        doc.save(`Report_${item.nomProduit.replace(/\s+/g, '_')}.pdf`);
     };
-    const generateGlobalPDF = () => {
-        const doc = new jsPDF();
-        doc.setFontSize(18);
-        doc.text("Global Inventory Intelligence Report", 14, 15);
+    const generateGlobalPDF = async () => {
+
+        const logoBase64 = await loadLogoAsBase64();
+        const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+        doc.setFillColor(255, 255, 255);
+        doc.rect(0, 0, 210, 297, "F");
+
+        if (logoBase64) {
+
+            const canvasGO = document.createElement("canvas");
+            canvasGO.width = 110;
+            canvasGO.height = 100;
+            const ctxGO = canvasGO.getContext("2d");
+
+            if (ctxGO) {
+                const gradient = ctxGO.createLinearGradient(0, 0, 110, 100);
+                gradient.addColorStop(0, "#ff9a9e");
+                gradient.addColorStop(1, "#730d19");
+
+                ctxGO.fillStyle = gradient;
+
+                const radius = 20;
+                ctxGO.beginPath();
+                ctxGO.moveTo(radius, 0);
+                ctxGO.lineTo(110 - radius, 0);
+                ctxGO.quadraticCurveTo(110, 0, 110, radius);
+                ctxGO.lineTo(110, 100 - radius);
+                ctxGO.quadraticCurveTo(110, 100, 110 - radius, 100);
+                ctxGO.lineTo(radius, 100);
+                ctxGO.quadraticCurveTo(0, 100, 0, 100 - radius);
+                ctxGO.lineTo(0, radius);
+                ctxGO.quadraticCurveTo(0, 0, radius, 0);
+                ctxGO.closePath();
+                ctxGO.fill();
+
+                const goGradientBase64 = canvasGO.toDataURL("image/png");
+
+                doc.addImage(goGradientBase64, "PNG", 15, 12, 11, 10, undefined, 'FAST');
+            } else {
+                doc.setFillColor(114, 15, 42);
+                doc.roundedRect(15, 12, 11, 10, 2, 2, "F");
+            }
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(255, 255, 255);
+            doc.text("GO", 20.5, 18.5, { align: "center" });
+
+            doc.addImage(logoBase64, "JPEG", 28, 12, 25, 10, undefined, 'FAST');
+        }
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(22);
+        doc.setTextColor(114, 15, 42);
+        doc.text("Global Inventory Intelligence Report", 14, 34);
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9.5);
+        doc.setTextColor(179, 161, 186);
+        doc.text(`Consolidated Sourcing Pipeline • Generated: ${new Date().toLocaleDateString()}`, 14, 41);
 
         const tableRows = reports.map(item => [
-            item.produitId,
-            item.nomProduit,
-            item.quantiteDisponible,
-            item.prediction?.predicted_demand || 0,
-            item.bestSupplier?.name || "N/A"
+            item.produitId?.toString() || "N/A",
+            item.nomProduit || "Unknown",
+            `${item.quantiteDisponible} Units`,
+            `+${item.prediction?.predicted_demand || 0} Units`,
+            item.bestSupplier?.name || "Searching..."
         ]);
 
         autoTable(doc, {
-            head: [['ID', 'Product', 'Stock', 'AI Demand', 'Supplier']],
+            head: [['ID', 'Product Name', 'Stock Level', 'AI Forecast', 'Strategic Supplier']],
             body: tableRows,
-            startY: 25,
-            theme: 'grid',
-            headStyles: { fillColor: [149, 117, 205] }
+            startY: 48,
+            margin: { left: 14, right: 14 },
+            theme: 'plain',
+            styles: {
+                font: 'helvetica',
+                fontSize: 9.5,
+                cellPadding: 5.5,
+                textColor: [71, 85, 105],
+                borderBottomWidth: 0.3,
+                borderBottomColor: [248, 240, 238]
+            },
+            headStyles: {
+                fillColor: [114, 15, 42],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                fontSize: 10.5,
+                cellPadding: 6
+            },
+
+            didParseCell: function (data) {
+                if (data.section === 'body') {
+                    if (data.row.index % 2 === 1) {
+                        data.cell.styles.fillColor = [255, 251, 249];
+                    } else {
+                        data.cell.styles.fillColor = [255, 255, 255];
+                    }
+
+                    if (data.column.index === 2) {
+                        const stockVal = parseInt(data.cell.text[0]);
+                        if (stockVal <= 10) {
+                            data.cell.styles.textColor = [255, 100, 100];
+                            data.cell.styles.fontStyle = 'bold';
+                        }
+                    }
+                    if (data.column.index === 3) {
+                        data.cell.styles.textColor = [14, 116, 244];
+                        data.cell.styles.fontStyle = 'bold';
+                    }
+                    if (data.column.index === 4) {
+                        data.cell.styles.textColor = [149, 117, 205];
+                    }
+                }
+            }
         });
-        doc.save("Full_Inventory_Report.pdf");
+
+
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(8);
+        doc.setTextColor(130, 120, 140);
+        doc.text("Automated Replenishment Dashboard System • StockFlow Intelligence", 14, 287);
+
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(255, 90, 120);
+        doc.text(`Page ${pageCount}`, 195, 287, { align: "right" });
+
+        doc.save("Full_Inventory_Intelligence_Report.pdf");
     };
 
     // --- 2. Refresh Logic ---
