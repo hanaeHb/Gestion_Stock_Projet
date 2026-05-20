@@ -16,6 +16,7 @@ import axios from "axios";
 import CreateProduitForm from "./CreateProduitForm";
 import { motion, AnimatePresence } from "framer-motion";
 import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import InventoryAnalytics from "./InventoryAnalytics"
 interface Profile {
     userId?: number;
     nom?: string;
@@ -876,23 +877,10 @@ export default function InventoryManager() {
 
                 {/* Analytics */}
                 {activeSection === "analytics" && (
-                    <div className="panel large">
-                        <h3>Stock Analytics</h3>
-                        <ul className="bars">
-                            <li>
-                                <span>Stock Growth</span>
-                                <div className="bar">
-                                    <div style={{width: "75%"}}/>
-                                </div>
-                            </li>
-                            <li>
-                                <span>Sales Performance</span>
-                                <div className="bar">
-                                    <div style={{width: "60%"}}/>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
+                    <InventoryAnalytics
+                        products={products}
+                        categories={categories}
+                    />
                 )}
 
                 {/* Settings */}
