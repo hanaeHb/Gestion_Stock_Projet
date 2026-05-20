@@ -1,0 +1,242 @@
+
+
+.prediction-container {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    font-family: "Berlin Sans FB Demi", sans-serif;
+}
+
+.prediction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+    padding-bottom: 20px;
+}
+
+.prediction-header h1 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #000000;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.prediction-header p {
+    font-size: 0.95rem;
+    color: #000000;
+    margin: 6px 0 0 0;
+}
+
+.ai-engine-badge {
+    background: linear-gradient(135deg, #ff9a9e, #730d19);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.prediction-glass-card {
+    background: white;
+    border: 2px solid rgba(115, 13, 25, 0.08);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.chart-full-width {
+    width: 100%;
+}
+
+.prediction-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+@media (max-width: 900px) {
+    .prediction-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.card-header-with-icon h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    color: #730d19;
+    margin: 0;
+}
+
+.custom-chart-legend {
+    font-size: 0.85rem;
+    display: flex;
+    gap: 14px;
+    margin-top: 28px;
+    color: #000000;
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.legend-dot.last-year { background-color: #730d19; }
+.legend-dot.this-year { background-color: #15803d; }
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-group label {
+    font-size: 0.9rem;
+    color: rgba(115, 13, 25, 0.63);
+    font-weight: 600;
+}
+
+.input-group select {
+    padding: 12px;
+    border: 2px solid rgba(115, 13, 25, 0.15);
+    border-radius: 8px;
+    font-family: "Berlin Sans FB Demi";
+    color: #730d19;
+    background-color: #fffbfa;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.input-group select:focus {
+    border-color: #ff9a9e;
+}
+
+.prediction-results-box {
+    background-color: #fff;
+    border: 1px dashed #ff9a9e;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1rem;
+    color: #000000;
+}
+
+.stock-badge-qty{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1rem;
+    color: #f81630;
+}
+
+.metric-row strong {
+    color: #ff8c69;
+}
+
+.highlight-burgundy {
+    border-top: 1px solid rgba(255, 154, 158, 0.3);
+    padding-top: 10px;
+    margin-top: 4px;
+}
+
+.big-recommendation {
+    font-size: 1.4rem;
+    color: #0984e3 !important;
+}
+
+.status-alert-bar {
+    padding: 10px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+.active-alert { background-color: #ffeaea; color: #730d19; }
+.safe-alert { background-color: #eaffea; color: #1e730d; }
+
+.supplier-rank-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #fffbfa;
+    border: 1px solid rgba(115, 13, 25, 0.1);
+    border-radius: 8px;
+    margin-top: 8px;
+}
+
+.supplier-rank-card.first-pick {
+    background: linear-gradient(135deg, #fff0f1 0%, #eaffea 100%);
+    border-color: #1e730d;
+}
+
+.sup-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.rank-number {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #730d19;
+}
+
+.sup-info h4 {
+    margin: 0;
+    color: #000000;
+    font-size: 0.95rem;
+}
+
+.badge-tag {
+    font-size: 0.7rem;
+    background: #730d19;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.sup-score {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+}
+
+.sup-score span { font-size: 0.75rem; color: #e36469; }
+.sup-score strong { font-size: 1.1rem; color: #299842; }
+
+.loader-text {
+    font-size: 0.85rem;
+    color: #e36469;
+    font-style: italic;
+    text-align: center;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+.spin-icon {
+    animation: spin 3s linear infinite;
+}

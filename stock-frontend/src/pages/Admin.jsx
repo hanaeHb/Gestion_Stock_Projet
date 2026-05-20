@@ -16,7 +16,7 @@ import {
     FaPhone,
     FaBoxes,
     FaTruckLoading, FaCalendarAlt, FaShieldAlt, FaIdCard,
-    FaDownload, FaArrowLeft,FaArrowRight
+    FaDownload, FaArrowLeft,FaArrowRight, FaRobot
 } from "react-icons/fa";
 import { BiCategory } from "react-icons/bi";
 import { TbCategory } from "react-icons/tb";
@@ -33,6 +33,7 @@ import {motion} from "framer-motion";
 import BudgetManagement from "./BudgetManagement";
 import AnalyticsDashboard from "./AnalyticsDashboard";
 import AdminNotifications from "./AdminNotifications";
+import PredictionDashboard from "./PredictionDashboard";
 export default function Admin() {
     const [activeSection, setActiveSection] = useState("dashboard");
     const [showForm, setShowForm] = useState(false);
@@ -591,6 +592,10 @@ export default function Admin() {
                         onClick={() => setActiveSection("budget")}>
                         <FiTrendingUp/>
                     </li>
+                    <li className={activeSection === "prediction" ? "active" : ""}
+                        onClick={() => setActiveSection("prediction")}>
+                        <FaRobot/>
+                    </li>
                 </ul>
 
                 <ul className="bottom-menu">
@@ -777,6 +782,13 @@ export default function Admin() {
                             budgets={allBudgets}
                         />
                     </motion.div>
+                )}
+
+                {activeSection === "prediction" && (
+                    <PredictionDashboard
+                        products={products}
+                        categories={categories}
+                    />
                 )}
 
                 {/* ===================== fournisseurs ===================== */}
