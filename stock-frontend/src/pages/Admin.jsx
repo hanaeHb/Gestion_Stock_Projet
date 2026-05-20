@@ -18,6 +18,8 @@ import {
     FaTruckLoading, FaCalendarAlt, FaShieldAlt, FaIdCard,
     FaDownload, FaArrowLeft,FaArrowRight, FaRobot
 } from "react-icons/fa";
+import { ResponsiveContainer, BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Cell } from "recharts";
+import { FaTruckMoving } from "react-icons/fa";
 import { BiCategory } from "react-icons/bi";
 import { TbCategory } from "react-icons/tb";
 import { HiViewGridAdd } from "react-icons/hi";
@@ -764,6 +766,85 @@ export default function Admin() {
                                     </div>
                                 </section>
 
+                            </div>
+
+                            <div className="charts-row" style={{marginTop: "30px"}}>
+                                <section className="role-chart-section full-width-chart-section">
+                                    <div className="chart-header-with-meta">
+                                        <div>
+                                            <h3><FaTruckMoving
+                                                style={{color: '#a88ec4', marginRight: '8px'}}/> Suppliers Status
+                                                Pipeline</h3>
+                                            <p style={{fontSize: '0.85rem', color: '#a395b0', margin: '4px 0 0 0'}}>
+                                                Real-time registration funnel metrics (Pending Verification vs Validated
+                                                Profiles).
+                                            </p>
+                                        </div>
+                                        <div className="mini-meta-stats">
+                                            <span
+                                                className="meta-badge pending-badge">Pending: <strong>{pendingFournisseurs.length}</strong></span>
+                                            <span
+                                                className="meta-badge validated-badge">Validated: <strong>{validatedFournisseurs.length}</strong></span>
+                                        </div>
+                                    </div>
+
+                                    <div style={{width: "100%", height: "280px", marginTop: "20px"}}>
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart
+                                                data={[
+                                                    {
+                                                        name: "Pending Approvals",
+                                                        count: pendingFournisseurs.length,
+                                                        fill: "#fff2f3",
+                                                        stroke: "#d6454b"
+                                                    },
+                                                    {
+                                                        name: "Validated On-boarded",
+                                                        count: validatedFournisseurs.length,
+                                                        fill: "#f1faf5",
+                                                        stroke: "#1ea061"
+                                                    },
+                                                    {
+                                                        name: "Total In System",
+                                                        count: pendingFournisseurs.length + validatedFournisseurs.length,
+                                                        fill: "#f6f1fa",
+                                                        stroke: "#8a6bb0"
+                                                    }
+                                                ]}
+                                                margin={{top: 20, right: 30, left: 0, bottom: 5}}
+                                                barSize={45}
+                                            >
+                                                <CartesianGrid stroke="#f3eff7" vertical={false}/>
+                                                <XAxis dataKey="name" fontSize={12} tick={{fill: "#554466"}}
+                                                       axisLine={false} tickLine={false}/>
+                                                <YAxis fontSize={12} tick={{fill: "#776688"}} axisLine={false}
+                                                       tickLine={false}/>
+                                                <Tooltip
+                                                    cursor={{fill: 'rgba(240, 234, 247, 0.4)'}}
+                                                    contentStyle={{
+                                                        borderRadius: "12px",
+                                                        border: "1px solid #ece7f2",
+                                                        backgroundColor: "#ffffff",
+                                                        fontFamily: "Berlin Sans FB Demi"
+                                                    }}
+                                                />
+                                                <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+                                                    {
+                                                        [1, 2, 3].map((entry, index) => {
+                                                            const colors = [
+                                                                {f: "#fff2f3", s: "#d6454b"}, // Pending -> Soft Rose
+                                                                {f: "#f1faf5", s: "#1ea061"}, // Validated -> Soft Mint
+                                                                {f: "#f6f1fa", s: "#8a6bb0"}  // Total -> Soft Mauve
+                                                            ];
+                                                            return <Cell key={`cell-${index}`} fill={colors[index].f}
+                                                                         stroke={colors[index].s} strokeWidth={1.5}/>;
+                                                        })
+                                                    }
+                                                </Bar>
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </section>
                             </div>
                         </div>
                     </>

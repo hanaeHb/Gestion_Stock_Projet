@@ -2440,3 +2440,55 @@ input:checked + .fs-slider:before { transform: translateX(22px); }
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+/* 🚚 تحسينات صف مبيان الموردين الجديد */
+.chart-header-with-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.full-width-chart-section {
+    grid-column: span 2; /* باش ياخد المساحة كاملة العرض ويجي متناسق */
+    background: #ffffff;
+    border: 1px solid #ece7f2;
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.mini-meta-stats {
+    display: flex;
+    gap: 12px;
+}
+
+.meta-badge {
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* البادج د الموردين المعلقين - وردي بارد */
+.meta-badge.pending-badge {
+    background-color: #fff2f3;
+    color: #d6454b;
+    border: 1px solid #fce4e5;
+}
+
+/* البادج د الموردين المقبولين - خضر نعناعي بارد */
+.meta-badge.validated-badge {
+    background-color: #eefbf4;
+    color: #1ea061;
+    border: 1px solid #dcf7e9;
+}
+
+@media (max-width: 900px) {
+    .chart-header-with-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .full-width-chart-section {
+        grid-column: span 1;
+    }
+}
