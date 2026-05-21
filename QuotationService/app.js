@@ -21,9 +21,6 @@ app.get('/metrics', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Service running on port ${PORT}`);
-});
 // --- 1. Middlewares ---
 app.use(express.json());
 

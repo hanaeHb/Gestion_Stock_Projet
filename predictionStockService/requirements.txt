@@ -7,5 +7,5 @@ scikit-learn
 
 psycopg2-binary
 mysql-connector-python
-
+prometheus-flask-exporter
 py-eureka-client
