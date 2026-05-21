@@ -372,6 +372,7 @@ const runKafkaConsumer = async () => {
         }
         else if (type === "QUOTATION_ACCEPTED") {
           const finalProductId = event.pId || event.productId || event.id_produit;
+          const supplierIdFromEvent = event.fournisseurId || event.id_supplier;
           await Notification.create({
             message: `The offer for product "${productName}" has been accepted. Please remember to confirm receipt once the goods have been delivered.`,
             orderId: orderId,
@@ -382,6 +383,7 @@ const runKafkaConsumer = async () => {
             quantite: event.quantity,
             total_ligne: event.total_ligne,
             sName: event.sName,
+            fournisseurId: supplierIdFromEvent,
             statut: "NON_LUE",
             type: "QUOTE_FINALIZED",
             dateAlerte: new Date()
@@ -395,6 +397,7 @@ const runKafkaConsumer = async () => {
             quantite: event.quantity,
             total_ligne: event.total_ligne,
             sName: event.sName,
+            fournisseurId: supplierIdFromEvent,
             niveau: "INFO",
             statut: "NON_LUE",
             type: "AWAITING_RECEPTION",

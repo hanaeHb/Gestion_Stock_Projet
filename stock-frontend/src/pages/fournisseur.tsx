@@ -55,7 +55,7 @@ const OrderItemCard = ({ order, profile, onActionSuccess }: { order: any, profil
                 id_produit: order.productId ,
                 pName: order.productName,
                 categoryId: order.categoryId,
-                id_supplier: profile?.userId?.toString(),
+                id_supplier: profile?.idFournisseur?.toString(),
                 sName: `${profile?.prenom} ${profile?.nom}`,
                 supplierEmail: profile?.email,
                 quantite: order.requestedQty || 1,

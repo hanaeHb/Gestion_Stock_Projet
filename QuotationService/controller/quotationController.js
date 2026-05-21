@@ -158,7 +158,8 @@ exports.updateQuotationStatus = async (req, res) => {
                         supplierEmail: updated.supplierEmail,
                         quantity: updated.quantite,
                         total_ligne: updated.total_ligne,
-                        sName: updated.sName
+                        sName: updated.sName,
+                        fournisseurId: updated.id_supplier,
                     })
                 }]
             });
