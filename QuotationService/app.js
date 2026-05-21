@@ -3,9 +3,27 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Eureka = require('eureka-js-client').Eureka;
 const quotationRoutes = require('./routes/quotationRoutes');
+
+const client = require('prom-client');
 const app = express();
 const PORT = process.env.PORT || 5005;
 
+const collectDefaultMetrics = client.collectDefaultMetrics;
+collectDefaultMetrics({ register: client.register });
+
+
+app.get('/metrics', async (req, res) => {
+  try {
+    res.set('Content-Type', client.register.contentType);
+    res.end(await client.register.metrics());
+  } catch (ex) {
+    res.status(500).end(ex);
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 Service running on port ${PORT}`);
+});
 // --- 1. Middlewares ---
 app.use(express.json());
 

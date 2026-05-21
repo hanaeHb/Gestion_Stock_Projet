@@ -8,6 +8,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 import os
 import socket
+from prometheus_flask_exporter import PrometheusMetrics
 from db import (
     get_sales_history,
     get_current_stock,
@@ -16,7 +17,10 @@ from db import (
 )
 
 app = Flask(__name__)
+metrics = PrometheusMetrics(app)
 
+
+metrics.info('app_info', 'Prediction Service info', version='1.0.0')
 #EUREKA_SERVER = "http://localhost:8761/eureka/"
 SERVICE_NAME = "PREDICTION-SERVICE"
 SERVICE_PORT = 5008
@@ -145,4 +149,4 @@ def predict_best_supplier(category_id):
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5008, debug=True)
+    app.run(host='0.0.0.0', port=5008, debug=False)

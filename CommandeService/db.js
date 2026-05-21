@@ -1,12 +1,13 @@
 const { Pool } = require("pg");
 
-const pool = new Pool({
-    host: "localhost",
-    user: "postgres",
-    password: "hanae",
-    database: "commande_system",
-    port: 5432
-});
+
+    const pool = new Pool({
+        host: process.env.DB_HOST || "host.docker.internal",
+        port: process.env.DB_PORT || 5432,
+        user: process.env.DB_USER || "postgres",
+        password: process.env.DB_PASSWORD || "hanae",
+        database: process.env.DB_NAME || "commande_system"
+    });
 
 pool.connect((err) => {
     if (err) console.error("❌ Database connection error", err.stack);

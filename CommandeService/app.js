@@ -7,9 +7,29 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const { connectKafka } = require('./kafkaConfig');
 const path = require('path');
+const clien = require('prom-client');
 
 const app = express();
 const PORT = 5001;
+
+// 1. تفعيل الـ Metrics الافتراضية بالطريقة الصحيحة والحديثة
+clien.collectDefaultMetrics();
+
+// 2. الـ Endpoint مصلحة بالـ Try/Catch والـ Await
+app.get('/metrics', async (req, res) => {
+  try {
+    res.set('Content-Type', clien.register.contentType);
+
+    // 🌟 كنجيبو الداتا ف متغير وعاد كنصيفطوها
+    const metricsData = await clien.register.metrics();
+    res.end(metricsData);
+
+  } catch (error) {
+    // 🔥 هاد السطر هو اللي غايطبع ليكِ الخطأ ف الـ Console د كوبرنيتيز يلا وقع مشكل!
+    console.error("🚨 Prometheus Metrics Error:", error);
+    res.status(500).send(error.message);
+  }
+});
 
 // Eureka Client
 const client = new Eureka({

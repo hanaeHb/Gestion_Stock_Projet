@@ -1,0 +1,134 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s     
+      evaluation_interval: 15s
+
+    scrape_configs:
+
+      
+      - job_name: 'securitystock-service'
+        metrics_path: '/actuator/prometheus'
+        scrape_interval: 5s
+        static_configs:
+          - targets: ['securitystock-service:8098']
+            labels:
+              application: 'securitystock-service'
+
+      - job_name: 'userstock-service'
+        metrics_path: '/actuator/prometheus'
+        scrape_interval: 5s
+        static_configs:
+          - targets: ['userstock-service:8060']
+            labels:
+              application: 'userstock-service'
+
+      - job_name: 'produit-service'
+        metrics_path: '/actuator/prometheus'
+        scrape_interval: 5s
+        static_configs:
+          - targets: ['produit-service:8062']
+            labels:
+              application: 'produit-service'
+
+      - job_name: 'budget-service'
+        metrics_path: '/actuator/prometheus'
+        scrape_interval: 5s
+        static_configs:
+          - targets: ['budget-service:8064']
+            labels:
+              application: 'budget-service'
+
+      # ================= 🐍 Python & Flask Microservices =================
+
+      - job_name: 'prediction-service'
+        metrics_path: '/metrics'
+        scrape_interval: 5s
+        static_configs:
+          - targets: ['prediction-service:5008']
+            labels:
+              application: 'prediction-service'
+
+      # ================= 🚀 Node.js / Express Microservices =================
+
+      - job_name: 'service-notification'
+        metrics_path: '/metrics'   
+        scrape_interval: 5s
+        static_configs:
+          - targets: ['service-notification:5003']
+            labels:
+              application: 'service-notification'
+
+      - job_name: 'quotation-service'
+        metrics_path: '/metrics'
+        scrape_interval: 5s
+        static_configs:
+          - targets: ['quotation-service:5005']
+            labels:
+              application: 'quotation-service'
+              
+      - job_name: 'service-commande'
+        metrics_path: '/metrics'  
+        scrape_interval: 5s
+        static_configs:
+          - targets: ['service-commande:5001']
+            labels:
+              application: 'service-commande'
+    
+      - job_name: 'service-fournisseur'
+        metrics_path: '/metrics'
+        scrape_interval: 5s
+        static_configs:
+           - targets: ['service-fournisseur:5000']
+             labels:
+              application: 'service-fournisseur'
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-service
+  template:
+    metadata:
+      labels:
+        app: prometheus-service
+    spec:
+      containers:
+        - name: prometheus
+          image: prom/prometheus:latest
+
+          args:
+            - "--config.file=/etc/custom-prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/prometheus"
+          ports:
+            - containerPort: 9090
+          volumeMounts:
+            - name: prometheus-config-volume
+              mountPath: /etc/custom-prometheus
+
+      volumes:
+        - name: prometheus-config-volume
+          configMap:
+            name: prometheus-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-service
+spec:
+  selector:
+    app: prometheus-service
+  ports:
+    - protocol: TCP
+      port: 5050
+      targetPort: 9090
+  type: LoadBalancer

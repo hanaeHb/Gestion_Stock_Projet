@@ -10,11 +10,25 @@ const swaggerJsdoc = require('swagger-jsdoc');
 const connectDB = require('./db');
 const { Kafka } = require('kafkajs');
 const Notification = require('./models/Notification');
-const emailService = require('./Service/emailService');
+const emailService = require('./Service/emailService');7
+const clien = require('prom-client');
+
 const app = express();
 const PORT = 5003;
 
-// Eureka
+const collectDefaultMetrics = clien.collectDefaultMetrics;
+collectDefaultMetrics({ register: clien.register });
+
+app.get('/metrics', async (req, res) => {
+  try {
+    res.set('Content-Type', clien.register.contentType);
+    res.end(await clien.register.metrics());
+  } catch (ex) {
+    res.status(500).end(ex);
+  }
+});
+
+
 const client = new Eureka({
   instance: {
     app: 'service-notification',
