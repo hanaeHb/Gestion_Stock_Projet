@@ -25,7 +25,7 @@ import { TbCategory } from "react-icons/tb";
 import { HiViewGridAdd } from "react-icons/hi";
 import { FaTruck } from "react-icons/fa";
 import "./CreateProduitForm";
-import { FiDollarSign, FiCalendar, FiCheckCircle, FiTrendingUp } from 'react-icons/fi';
+import { FiDollarSign, FiCalendar, FiCheckCircle, FiTrendingUp, FiActivity } from 'react-icons/fi';
 import { FiGrid, FiCreditCard} from "react-icons/fi";
 import UsersRoleChart from "./UsersRoleChart";
 import UsersStatusChart from "./UsersStatusChart";
@@ -598,12 +598,27 @@ export default function Admin() {
                         onClick={() => setActiveSection("prediction")}>
                         <FaRobot/>
                     </li>
+                    <li className={activeSection === "grafana" ? "active" : ""}
+                        onClick={() => setActiveSection("grafana")}>
+                        <svg
+                            viewBox="0 0 50 50"
+                            width="1em"
+                            height="1em"
+                            fill="currentColor"
+                            style={{ fontSize: '1.5rem', transition: 'transform 0.3s' }}
+                            className="grafana-sidebar-icon"
+                        >
+                            <path
+                                d="M38.2 21.1c-.1-.5-.3-1-.6-1.4l-3-3.6c.4-.6.8-1.3 1-2.1l4.5-.9c.5-.1.9-.4 1.1-.9.2-.5.1-1.1-.2-1.5l-3-3.6c-.4-.4-.9-.6-1.5-.5l-4.5.9c-.6-.5-1.3-.9-2.1-1.2l-.9-4.5c-.1-.5-.5-.9-1-.1-.5-.2-1.1-.1-1.5.2l-3.6 3c-.7-.2-1.4-.3-2.1-.3s-1.4.1-2.1.3l-3.6-3c-.4-.3-1-.4-1.5-.2-.5.2-.8.6-1 .1l-.9 4.5c-.8.3-1.5.7-2.1 1.2l-4.5-.9c-.5-.1-1.1.1-1.5.5l-3 3.6c-.3.4-.4 1-.2 1.5.2.5.6.8 1.1.9l4.5.9c.2.8.6 1.5 1 2.1l-3 3.6c-.3.4-.4 1-.2 1.5.1.4.4.7.8.9l.4.1c1-.3 1.9-.9 2.6-1.7l3.9-4.6c.9-.4 1.9-.6 2.9-.6.9 0 1.9.2 2.8.5L31 23.3c.5.9.7 2 .6 3-.1 1-.5 2-1.1 2.8l-4.6 3.9c-.8.5-1.7.7-2.6.7-.5 0-1-.1-1.5-.2-.4-.1-.9 0-1.2.3-.3.3-.5.7-.5 1.1v4.4c1.1.2 2.2.3 3.3.3 4.2 0 8.3-1.4 11.6-4l3.9-4.6c.5-.9.7-2 .6-3-.1-1-.5-2-1.1-2.8l-2.6-3.1c1-.3 1.9-.9 2.6-1.7l3.9-4.6c.3-.4.4-1 .2-1.5z"    >
+                            </path>
+                        </svg>
+                    </li>
                 </ul>
 
                 <ul className="bottom-menu">
                     <li className={activeSection === "settings" ? "active" : ""}
                         onClick={() => setActiveSection("settings")}>
-                    <FaCog/>
+                        <FaCog/>
                     </li>
                     <li onClick={() => {
                         localStorage.removeItem("token");

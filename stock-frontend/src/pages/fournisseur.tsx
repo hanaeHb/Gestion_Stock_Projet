@@ -10,7 +10,7 @@ import {
     FaBoxes,
     FaUserTie,
     FaTags,
-    FaTasks, FaCheckCircle, FaSyncAlt, FaCheck, FaBoxOpen, FaPlus
+    FaTasks, FaCheckCircle, FaSyncAlt, FaCheck, FaBoxOpen, FaPlus, FaTruckMoving
 } from "react-icons/fa";
 import { FaCamera, FaEnvelope, FaPhone, FaIdCard, FaBriefcase, FaCalendarAlt, FaStore } from "react-icons/fa";
 import { FiGrid } from "react-icons/fi";
@@ -579,73 +579,45 @@ export default function Fournisseur() {
                                 </div>
                             </section>
 
-                            <section className="admin-notif-group">
-                                <div className="group-header" style={{ borderBottom: `3px solid #ef4444` }}>
-                                    <FaBoxes style={{ color: '#ef4444', fontSize: '1.4rem' }} />
-                                    <h3>Stock Alerts</h3>
-                                    <span className="count-badge" style={{ background: '#ef4444' }}>0</span>
-                                </div>
-                                <div className="notif-scroll-area">
-                                    <p className="empty">All inventory levels are normal.</p>
-                                </div>
-                            </section>
-
                         </div>
                     </motion.div>
                 )}
 
                 <AnimatePresence>
                     {isModalOpen && (
-                        <div className="modal-overlay" style={{
-                            position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-                            background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
-                        }}>
+                        <div className="ship-md-overlay">
                             <motion.div
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.8 }}
-                                className="ship-modal-content"
-                                style={{
-                                    background: 'white', padding: '30px', borderRadius: '15px',
-                                    width: '400px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)'
-                                }}
+                                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                                transition={{ duration: 0.25, ease: "easeOut" }}
+                                className="ship-md-content-box"
                             >
-                                <h3 style={{ marginBottom: '10px', color: '#333' }}>🚚 Shipping Confirmation</h3>
-                                <p style={{ fontSize: '0.9rem', color: '#666' }}>
-                                    Setting arrival time for: <strong>{selectedNotif?.productName} of {selectedNotif.productId}</strong>
+                                <div className="ship-md-icon-wrapper">
+                                    <FaTruckMoving />
+                                </div>
+
+                                <h3 className="ship-md-title">Shipping Confirmation</h3>
+                                <p className="ship-md-subtitle">
+                                    Setting arrival time for: <strong>{selectedNotif?.productName}</strong>
                                 </p>
 
-                                <div style={{ margin: '20px 0' }}>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', fontWeight: 'bold' }}>
-                                        Estimated Delivery Date/Time:
-                                    </label>
+                                <div className="ship-md-field-group">
+                                    <label className="ship-md-label">Estimated Delivery Date/Time</label>
                                     <input
                                         type="text"
+                                        className="ship-md-input"
                                         placeholder="e.g., 2 hours, Tomorrow at 10 AM..."
                                         value={deliveryTime}
                                         onChange={(e) => setDeliveryTime(e.target.value)}
-                                        style={{
-                                            width: '100%', padding: '12px', borderRadius: '8px',
-                                            border: '1px solid #ddd', outline: 'none'
-                                        }}
                                     />
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                                    <button
-                                        onClick={() => setIsModalOpen(false)}
-                                        style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer', background: '#eee' }}
-                                    >
+                                <div className="ship-md-actions-row">
+                                    <button className="ship-md-btn-cancel" onClick={() => setIsModalOpen(false)}>
                                         Cancel
                                     </button>
-                                    <button
-                                        onClick={handleFinalShipment}
-                                        style={{
-                                            padding: '10px 20px', borderRadius: '8px', border: 'none',
-                                            cursor: 'pointer', background: '#4facfe', color: 'white', fontWeight: 'bold'
-                                        }}
-                                    >
+                                    <button className="ship-md-btn-confirm" onClick={handleFinalShipment}>
                                         Confirm & Generate Invoice
                                     </button>
                                 </div>

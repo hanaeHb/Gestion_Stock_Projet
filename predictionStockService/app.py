@@ -6,7 +6,8 @@ import random
 from datetime import datetime
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
-
+import os
+import socket
 from db import (
     get_sales_history,
     get_current_stock,
@@ -16,19 +17,30 @@ from db import (
 
 app = Flask(__name__)
 
-EUREKA_SERVER = "http://localhost:8761/eureka/"
+#EUREKA_SERVER = "http://localhost:8761/eureka/"
 SERVICE_NAME = "PREDICTION-SERVICE"
 SERVICE_PORT = 5008
 
+EUREKA_SERVER = "http://discovery-service:8761/eureka/"
+
 def register_with_eureka():
     try:
+        pod_ip = socket.gethostbyname(socket.gethostname())
+
+
+        custom_instance_id = f"{pod_ip}:{SERVICE_NAME.lower()}:{SERVICE_PORT}"
+
         eureka_client.init(
             eureka_server=EUREKA_SERVER,
             app_name=SERVICE_NAME,
             instance_port=SERVICE_PORT,
-            instance_host="localhost"
+            instance_host=pod_ip,
+            instance_id=custom_instance_id,
+
+            status_page_url=f"http://{pod_ip}:{SERVICE_PORT}/info",
+            health_check_url=f"http://{pod_ip}:{SERVICE_PORT}/health"
         )
-        print("✅ Registered with Eureka")
+        print(f"✅ Registered with Eureka using Custom Instance ID: {custom_instance_id}")
     except Exception as e:
         print(f"❌ Eureka connection failed: {e}")
 
@@ -36,17 +48,17 @@ register_with_eureka()
 
 
 @app.route('/prediction/predict-restock/<int:product_id>', methods=['GET'])
-def predict_restock_dynamic(product_id): # 🌟 بدلنا الاسم باش ما يتكررش
+def predict_restock_dynamic(product_id):
     try:
         df = get_sales_history(product_id)
         if df is None or df.empty:
             return jsonify({"status": "error", "message": "No sales data found"}), 404
 
-        # ترتيب الداتا وتحويل التاريخ
+
         df = df.sort_values('sale_date')
         df['sale_date'] = pd.to_datetime(df['sale_date'])
 
-        # 📊 تجميع الداتا ديناميكياً حسب الشهور (العام الحالي ضد العام الفائت)
+
         df['month'] = df['sale_date'].dt.strftime('%b')
         df['year'] = df['sale_date'].dt.year
 
@@ -57,9 +69,9 @@ def predict_restock_dynamic(product_id): # 🌟 بدلنا الاسم باش م�
         chart_data = []
 
         for m in months_list:
-            # مبيعات العام الفائت (Fake Data Generated)
+
             ly_sales = df[(df['month'] == m) & (df['year'] == last_year)]['quantity_sold'].sum()
-            # مبيعات العام الحالي (Live)
+
             ty_sales = df[(df['month'] == m) & (df['year'] == current_year)]['quantity_sold'].sum()
 
             chart_data.append({
@@ -68,13 +80,13 @@ def predict_restock_dynamic(product_id): # 🌟 بدلنا الاسم باش م�
                 "ThisYear": int(ty_sales) if ty_sales > 0 or months_list.index(m) <= datetime.now().month - 1 else None
             })
 
-        # 📈 حساب التنبؤ بالـ Linear Regression (7 أيام القادمة)
+
         df['day_index'] = range(len(df))
         model = LinearRegression().fit(df[['day_index']].values, df['quantity_sold'].values)
         next_days = np.array([[len(df) + i] for i in range(7)])
         predicted_demand = int(max(model.predict(next_days).sum(), 0) * 1.2)
 
-        # جلب الستوك الحالي وحساب الكمية الموصى بها
+
         stock_info = get_current_stock(product_id)
         current_qty = int(stock_info['quantite_disponible']) if stock_info is not None else 0
         final_recommendation = max(0, predicted_demand - current_qty)
@@ -84,7 +96,7 @@ def predict_restock_dynamic(product_id): # 🌟 بدلنا الاسم باش م�
             "predicted_demand": predicted_demand,
             "current_stock": current_qty,
             "recommended_quantity": final_recommendation,
-            "dynamic_chart": chart_data, # 🚀 الداتا الديناميكية للمبيان الـ Line Chart
+            "dynamic_chart": chart_data,
             "status": "success"
         })
     except Exception as e:
@@ -133,4 +145,4 @@ def predict_best_supplier(category_id):
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(port=SERVICE_PORT, debug=True)
+    app.run(host='0.0.0.0', port=5008, debug=True)

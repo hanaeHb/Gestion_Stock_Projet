@@ -15,7 +15,7 @@ const app = express();
 const PORT = 5003;
 
 // Eureka
-/*const client = new Eureka({
+const client = new Eureka({
   instance: {
     app: 'service-notification',
     hostName: 'service-notification',
@@ -34,9 +34,9 @@ const PORT = 5003;
     port: 8761,
     servicePath: '/eureka/apps/',
   },
-});*/
+});
 
-const client = new Eureka({
+/*const client = new Eureka({
   instance: {
     app: 'service-notification',
     hostName: 'localhost',      // Trje3 localhost
@@ -60,7 +60,7 @@ const client = new Eureka({
     port: 8761,
     servicePath: '/eureka/apps/',
   },
-});
+});*/
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

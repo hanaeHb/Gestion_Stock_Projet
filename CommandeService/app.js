@@ -12,7 +12,7 @@ const app = express();
 const PORT = 5001;
 
 // Eureka Client
-/*const client = new Eureka({
+const client = new Eureka({
   instance: {
     app: 'service-commande',
     hostName: 'service-commande',
@@ -35,9 +35,9 @@ const PORT = 5001;
     port: 8761,
     servicePath: '/eureka/apps/',
   },
-});*/
+});
 
-const client = new Eureka({
+/*const client = new Eureka({
   instance: {
     app: 'SERVICE-COMMANDE',
     hostName: 'localhost', // Trje3 localhost f blast s-miya d l-pod
@@ -61,7 +61,7 @@ const client = new Eureka({
     port: 8761,
     servicePath: '/eureka/apps/',
   },
-});
+});*/
 // Middleware
 app.use(bodyParser.json());
 

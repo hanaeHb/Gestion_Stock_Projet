@@ -18,6 +18,27 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/quotation_d
 const eurekaClient = new Eureka({
   instance: {
     app: 'QUOTATION-SERVICE',
+    hostName: 'quotation-service',
+    ipAddr: 'quotation-service',
+    statusPageUrl: `http://quotation-service:${PORT}/info`,
+    healthCheckUrl: `http://quotation-service:${PORT}/health`,
+    port: { '$': PORT, '@enabled': 'true' },
+    vipAddress: 'quotation-service',
+    dataCenterInfo: {
+      '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
+      name: 'MyOwn'
+    },
+  },
+  eureka: {
+    host: 'discovery-service',
+    port: 8761,
+    servicePath: '/eureka/apps/',
+  },
+});
+
+/* eurekaClient = new Eureka({
+  instance: {
+    app: 'QUOTATION-SERVICE',
     hostName: process.env.HOSTNAME || 'localhost',
     ipAddr: '127.0.0.1',
     port: { '$': PORT, '@enabled': 'true' },
@@ -32,7 +53,8 @@ const eurekaClient = new Eureka({
     port: 8761,
     servicePath: '/eureka/apps/',
   },
-});
+});*/
+
 
 app.use('/api/quotations', quotationRoutes);
 
