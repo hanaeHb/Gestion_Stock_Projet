@@ -23,7 +23,10 @@ spec:
               value: "admin"
             - name: GF_SECURITY_ADMIN_PASSWORD
               value: "admin"
-
+            - name: GF_SECURITY_ALLOW_EMBEDDING
+              value: "true"
+            - name: GF_AUTH_ANONYMOUS_ENABLED
+              value: "true"
             # ===== Configuration SMTP Gmail =====
             - name: GF_SMTP_ENABLED # active l’envoi d’emails
               value: "true"
