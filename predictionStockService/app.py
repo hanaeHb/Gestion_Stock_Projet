@@ -8,6 +8,12 @@ from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 import os
 import socket
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.zipkin.json import ZipkinExporter
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
+
 from prometheus_flask_exporter import PrometheusMetrics
 from db import (
     get_sales_history,
@@ -17,6 +23,24 @@ from db import (
 )
 
 app = Flask(__name__)
+# 1. Configurer l-Tracer Provider
+provider = TracerProvider()
+trace.set_tracer_provider(provider)
+
+# 2. Configurer l-Exporter Zipkin (Kayshuf l-Service Zipkin f Kubernetes)
+zipkin_exporter = ZipkinExporter(
+    # 'zipkin' huwa l-izme dyal l-Service f Kubernetes, u 9411 huwa l-port
+    endpoint="http://zipkin:9411/api/v2/spans",
+    local_node_info={"service_name": "prediction-service"} # zmit l-service dyalk
+)
+
+# 3. Ajouter l-Processor l l-provider
+span_processor = BatchSpanProcessor(zipkin_exporter)
+provider.add_span_processor(span_processor)
+
+# 4. Activer l-instrumentation automatique pour Flask
+FlaskInstrumentor().instrument_app(app)
+
 metrics = PrometheusMetrics(app)
 
 

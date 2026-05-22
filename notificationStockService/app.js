@@ -118,7 +118,7 @@ app.use('/api/notifications', notificationRoutes);
 
 const kafka = new Kafka({
   clientId: "notification-service",
-  brokers: ["localhost:9092"]
+  brokers: [process.env.KAFKA_BROKERS || "kafka:9092"]
 });
 
 const consumer = kafka.consumer({ groupId: "notification-group" });

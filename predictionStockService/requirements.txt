@@ -4,7 +4,10 @@ pandas
 numpy
 
 scikit-learn
-
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-instrumentation-flask
+opentelemetry-exporter-zipkin
 psycopg2-binary
 mysql-connector-python
 prometheus-flask-exporter
