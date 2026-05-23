@@ -1,35 +1,43 @@
 // tracing.js
-const { NodeTracerProvider } = require('@opentelemetry/sdk-trace-node');
+const { NodeSDK } = require('@opentelemetry/sdk-node');
 const { BatchSpanProcessor } = require('@opentelemetry/sdk-trace-base');
 const { ZipkinExporter } = require('@opentelemetry/exporter-zipkin');
-const { registerInstrumentations } = require('@opentelemetry/instrumentation');
 const { HttpInstrumentation } = require('@opentelemetry/instrumentation-http');
 const { ExpressInstrumentation } = require('@opentelemetry/instrumentation-express');
-const { MongooseInstrumentation } = require('@opentelemetry/instrumentation-mongoose'); // Optionnel: ila bghiti t-tracker hta les requêtes m3a MongoDB
+const { MongooseInstrumentation } = require('@opentelemetry/instrumentation-mongoose'); // <--- T-GADDAT HNA
 
-// 1. Configurer l'exportateur Zipkin li khdam f Kubernetes (Port 9411)
+// 1. Configurer l'exportateur Zipkin
 const zipkinExporter = new ZipkinExporter({
     url: 'http://zipkin:9411/api/v2/spans',
-    serviceName: 'quotation-service' // Smiya li ghadi tban lik f Zipkin UI
+    serviceName: 'quotation-service'
 });
 
-// 2. Initialisation du Tracer Provider
-const provider = new NodeTracerProvider();
-
-// 3. Ajouter le processeur de spans (Batch pour la performance)
-provider.addSpanProcessor(new BatchSpanProcessor(zipkinExporter));
-
-// 4. Enregistrer le provider globalement
-provider.register();
-
-// 5. Activer l'instrumentation automatique pour HTTP, Express et Mongoose
-registerInstrumentations({
+// 2. Initialiser le SDK complet avec l'exportateur et les instrumentations
+const sdk = new NodeSDK({
+    serviceName: 'quotation-service',
+    traceExporter: zipkinExporter,
+    spanProcessor: new BatchSpanProcessor(zipkinExporter),
     instrumentations: [
         new HttpInstrumentation(),
         new ExpressInstrumentation(),
-        new MongooseInstrumentation(), // Ghadi t-trace-i hta l-waqt lli kakhdo MongoDB f l-queries
+        new MongooseInstrumentation({ // <--- T-GADDAT HNA
+            enhancedDatabaseReporting: true,
+        }),
     ],
-    tracerProvider: provider,
 });
 
-console.log("🚀 OpenTelemetry Tracing initialisé avec succès !");
+// 3. Démarrer le SDK
+try {
+    sdk.start();
+    console.log("🚀 OpenTelemetry SDK Tracing initialisé avec succès !");
+} catch (error) {
+    console.error("❌ Erreur lors de l'initialisation du Tracing:", error);
+}
+
+// Gérer la fermeture propre de l'application
+process.on('SIGTERM', () => {
+    sdk.shutdown()
+        .then(() => console.log('Tracing terminé'))
+        .catch((error) => console.log('Erreur de fermeture du tracing', error))
+        .finally(() => process.exit(0));
+});
