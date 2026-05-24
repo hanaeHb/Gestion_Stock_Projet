@@ -9,23 +9,21 @@ const { connectKafka } = require('./kafkaConfig');
 const path = require('path');
 const clien = require('prom-client');
 
+const logger = require('./logger');
 const app = express();
 const PORT = 5001;
 
-// 1. تفعيل الـ Metrics الافتراضية بالطريقة الصحيحة والحديثة
 clien.collectDefaultMetrics();
 
-// 2. الـ Endpoint مصلحة بالـ Try/Catch والـ Await
 app.get('/metrics', async (req, res) => {
   try {
     res.set('Content-Type', clien.register.contentType);
 
-    // 🌟 كنجيبو الداتا ف متغير وعاد كنصيفطوها
+
     const metricsData = await clien.register.metrics();
     res.end(metricsData);
 
   } catch (error) {
-    // 🔥 هاد السطر هو اللي غايطبع ليكِ الخطأ ف الـ Console د كوبرنيتيز يلا وقع مشكل!
     console.error("🚨 Prometheus Metrics Error:", error);
     res.status(500).send(error.message);
   }
@@ -87,7 +85,6 @@ app.use(bodyParser.json());
 
 app.use('/invoices', express.static(path.join(__dirname, 'public/invoices')));
 
-// 3. Health Check endpoint
 app.get('/health', (req, res) => {
   res.send({ status: 'UP' });
 });
@@ -113,15 +110,20 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api', commandeRoutes);
 
 app.listen(PORT, async () => {
-  console.log(`Commande microservice running on port ${PORT}`);
+  logger.info(`Commande microservice running on port ${PORT}`);
 
-  await connectKafka();
+  try {
+    await connectKafka();
+    logger.info("Kafka connected successfully ✅");
+  } catch (kafkaError) {
+    logger.error(`Error connecting to Kafka: ${kafkaError.message}`);
+  }
 
   client.start((error) => {
     if (error) {
-      console.log('Error starting Eureka client for Commande Service:', error);
+      logger.error(`Error starting Eureka client for Commande Service: ${error.message}`);
     } else {
-      console.log('Commande service registered with Eureka successfully! ✅');
+      logger.info('Commande service registered with Eureka successfully! ✅');
     }
   });
 });

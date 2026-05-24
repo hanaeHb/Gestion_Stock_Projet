@@ -8,7 +8,8 @@ from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 import os
 import socket
-
+import logging
+from logger import logger
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -27,21 +28,16 @@ from db import (
 app = Flask(__name__)
 resource = Resource.create(attributes={"service.name": "prediction-service"})
 
-# --- 2. Configurer le Tracer Provider avec la Resource ---
 provider = TracerProvider(resource=resource)
 trace.set_tracer_provider(provider)
 
-# --- 3. Configurer l'Exporter Zipkin (CORRIGÉ : sans local_node_info) ---
 zipkin_exporter = ZipkinExporter(
-    # 'zipkin' est le nom du Service DNS dans Kubernetes sur le port 9411
     endpoint="http://zipkin:9411/api/v2/spans"
 )
 
-# --- 4. Ajouter le Processeur de spans au provider ---
 span_processor = BatchSpanProcessor(zipkin_exporter)
 provider.add_span_processor(span_processor)
 
-# --- 5. Activer l'instrumentation automatique pour Flask ---
 FlaskInstrumentor().instrument_app(app)
 
 metrics = PrometheusMetrics(app)
@@ -80,9 +76,11 @@ register_with_eureka()
 
 @app.route('/prediction/predict-restock/<int:product_id>', methods=['GET'])
 def predict_restock_dynamic(product_id):
+    logger.info(f"Démarrage de la prédiction de restock pour le produit ID: {product_id}")
     try:
         df = get_sales_history(product_id)
         if df is None or df.empty:
+            logger.warn(f"Aucune donnée de vente trouvée pour le produit ID: {product_id}")
             return jsonify({"status": "error", "message": "No sales data found"}), 404
 
 
@@ -122,6 +120,7 @@ def predict_restock_dynamic(product_id):
         current_qty = int(stock_info['quantite_disponible']) if stock_info is not None else 0
         final_recommendation = max(0, predicted_demand - current_qty)
 
+        logger.info(f"Prédiction réussie pour le produit {product_id}. Quantité recommandée: {final_recommendation}")
         return jsonify({
             "product_id": product_id,
             "predicted_demand": predicted_demand,
@@ -131,15 +130,18 @@ def predict_restock_dynamic(product_id):
             "status": "success"
         })
     except Exception as e:
+        logger.error(f"Erreur lors de la prédiction du produit {product_id}: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
 @app.route('/prediction/predict-best-supplier/<int:category_id>', methods=['GET'])
 def predict_best_supplier(category_id):
+    logger.info(f"Recherche du meilleur fournisseur par l'IA pour la catégorie: {category_id}")
     try:
         df_history = get_supplier_history_df()
 
         if df_history is None or df_history.empty:
+            logger.warn(f"Historique des fournisseurs vide pour la catégorie: {category_id}")
             return jsonify({"status": "error", "message": "No historical data"}), 404
 
         df_history['performance_score'] = (df_history['quality_score'] * 10) - (df_history['delivery_time_days'] * 2)
@@ -170,10 +172,13 @@ def predict_best_supplier(category_id):
 
         ranked = sorted(results, key=lambda x: x['ai_score'], reverse=True)
         conn.close()
+        logger.info(f"Algorithme Random Forest exécuté. {len(ranked)} fournisseurs classés.")
         return jsonify(ranked)
 
     except Exception as e:
+        logger.error(f"Erreur lors du calcul du meilleur fournisseur: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
+    logger.info("Démarrage du Flask Application sur le port 5008...")
     app.run(host='0.0.0.0', port=5008, debug=False)

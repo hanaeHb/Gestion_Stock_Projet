@@ -5,6 +5,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 const hasRole = require("../middleware/hasRole");
 const Notification = require("../models/Notification");
 const { hasAnyRole } = require("../middleware/hasAnyRole");
+const logger = require("../logger");
 /**
  * @swagger
  * tags:
@@ -15,6 +16,7 @@ const { hasAnyRole } = require("../middleware/hasAnyRole");
 
 // Route /pending
 router.get("/pending", authMiddleware, hasRole("Procurement Manager", "ADMIN"), async (req, res) => {
+    logger.info("[Procurement/ADMIN] Récupération des fournisseurs en attente (PENDING)");
     try {
         const notifications = await Notification.find({
             niveau: "INFO",
@@ -43,10 +45,12 @@ router.get("/pending", authMiddleware, hasRole("Procurement Manager", "ADMIN"), 
         res.json(pendingFournisseurs);
 
     } catch (err) {
+        logger.error(`Erreur fetching pending fournisseurs: ${err.message}`);
         res.status(500).json({ message: "Erreur fetching pending fournisseurs", error: err.message });
     }
 });
 router.get("/stock-alerts", authMiddleware,hasRole("Inventory Manager"), async (req, res) => {
+    logger.info("[Inventory Manager] Récupération des alertes de stock critique");
     try {
         const alerts = await Notification.find({
             niveau: "ERROR",
@@ -56,6 +60,7 @@ router.get("/stock-alerts", authMiddleware,hasRole("Inventory Manager"), async (
 
         res.json(alerts);
     } catch (err) {
+        logger.error(`Erreur fetching stock alerts: ${err.message}`);
         res.status(500).json({ message: "Erreur fetching stock alerts", error: err.message });
     }
 });
@@ -64,6 +69,7 @@ router.get(
     authMiddleware,
     hasRole("ADMIN", "Procurement Manager"),
     async (req, res) => {
+        logger.info("Récupération des fournisseurs validés");
         try {
 
             const notifications = await Notification.find({
@@ -92,6 +98,7 @@ router.get(
             res.json(validatedFournisseurs);
 
         } catch (err) {
+            logger.error(`Erreur fetching validated fournisseurs: ${err.message}`);
             res.status(500).json({
                 message: "Erreur fetching validated fournisseurs",
                 error: err.message
@@ -100,24 +107,28 @@ router.get(
     }
 );
 
-router.put(
-    "/:id/mark-as-read",
-    authMiddleware,
-    hasRole("Inventory Manager"),
-    notificationController.markAsRead
-);
-router.put("/:id/status", authMiddleware, hasRole("Procurement Manager"), notificationController.updateStatus);
+router.put("/:id/mark-as-read", authMiddleware, hasRole("Inventory Manager"), (req, res, next) => {
+    logger.info(`Marquer la notification ID: ${req.params.id} comme lue`);
+    next();
+}, notificationController.markAsRead);
 
-router.patch('/:id/confirm-arrival', authMiddleware, hasRole("Procurement Manager"), notificationController.confirmArrival);
+router.put("/:id/status", authMiddleware, hasRole("Procurement Manager"), (req, res, next) => {
+    logger.info(`Mise à jour du statut d'une demande/notif ID: ${req.params.id}`);
+    next();
+}, notificationController.updateStatus);
 
-router.post(
-    "/create-request",
-    authMiddleware,
-    hasRole("Inventory Manager"),
-    notificationController.createReplenishmentRequest
-);
+router.patch('/:id/confirm-arrival', authMiddleware, hasRole("Procurement Manager"), (req, res, next) => {
+    logger.info(`Confirmation d'arrivée de marchandise pour la notif ID: ${req.params.id}`);
+    next();
+}, notificationController.confirmArrival);
+
+router.post("/create-request", authMiddleware, hasRole("Inventory Manager"), (req, res, next) => {
+    logger.info("Création manuelle d'une demande de réapprovisionnement par Inventory Manager");
+    next();
+}, notificationController.createReplenishmentRequest);
 
 router.get("/replenishment-requests", authMiddleware, hasRole("Procurement Manager"), async (req, res) => {
+    logger.info("[Procurement Manager] Consultation des demandes de réapprovisionnement actives");
     try {
         const requests = await Notification.find({
             niveau: "REPLENISHMENT_ORDER",
@@ -126,6 +137,7 @@ router.get("/replenishment-requests", authMiddleware, hasRole("Procurement Manag
 
         res.json(requests);
     } catch (err) {
+        logger.error(`Erreur fetching replenishment requests: ${err.message}`);
         res.status(500).json({ message: "Erreur fetching requests", error: err.message });
     }
 });

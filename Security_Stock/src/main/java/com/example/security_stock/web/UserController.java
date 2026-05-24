@@ -34,6 +34,9 @@ import com.example.security_stock.entities.Role;
 import com.example.security_stock.entities.PermissionEntity;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -48,6 +51,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/v1/users")
 @Tag(name = "Users", description = "API pour la gestion des utilisateurs")
 public class UserController {
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
@@ -77,11 +81,14 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<UserResponseDTO> creatUser(@RequestBody UserRequestDTO request) {
+        log.info("[ADMIN] Tentative de création d'un utilisateur avec l'email: {}", request.getEmail());
         UserResponseDTO response = userService.createUser(request);
 
         if (!response.isActive()) {
+            log.warn("[ADMIN] Conflit lors de la création de l'utilisateur: {}", request.getEmail());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
+        log.info("✅ Utilisateur créé avec succès: ID {}", response.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -151,7 +158,7 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> updateUserStatus(@PathVariable Integer id, @RequestBody Map<String, Boolean> request) {
         Boolean active = request.get("active");
         if (active == null) return ResponseEntity.badRequest().build();
-
+        log.info("🔄 Modification du statut de l'utilisateur ID: {} -> active={}", id, active);
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
         user.setActive(active);
         User updatedUser = userRepository.save(user);
@@ -177,12 +184,15 @@ public class UserController {
     // --- REGISTER CLIENT ---
     @PostMapping("/register")
     public ResponseEntity<?> registerUserClient(@ModelAttribute UserRequestDTO request) throws IOException {
+        log.info("📝 Nouvelle inscription fournisseur (Register) via formulaire pour l'email: {}", request.getEmail());
         try {
             request.setRole(Set.of("Fournisseur"));
             MultipartFile cvFile = request.getCv();
             UserResponseDTO response = userService.createFour(request, cvFile);
+            log.info("✅ Inscription fournisseur réussie, compte en attente de validation. ID: {}", response.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
+            log.error("❌ Conflit lors de l'auto-inscription du fournisseur: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", e.getMessage()));
         }
     }
@@ -190,6 +200,7 @@ public class UserController {
     // --- LOGIN ---
     @PostMapping("/login")
     public ResponseEntity<UserResponseDTO> login(@RequestBody UserRequestDTO request) {
+        log.info("🔐 Tentative de connexion pour l'email: {}", request.getEmail());
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
@@ -241,10 +252,11 @@ public class UserController {
             response.setRefreshToken(refreshToken.getToken());
             response.setTokenType("Bearer");
             response.setTokenExpiresIn(3600);
-
+            log.info("🔑 Connexion réussie ! Token généré pour l'utilisateur ID: {}", user.getId());
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
+            log.error("❌ Échec de connexion pour l'email: {} - Raison: {}", request.getEmail(), e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }

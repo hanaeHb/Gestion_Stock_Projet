@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.produitstock_service.dto.ProduitRequestDTO;
 import org.example.produitstock_service.dto.ProduitResponseDTO;
 import org.example.produitstock_service.dto.RestockRequestDTO;
@@ -19,6 +20,7 @@ import java.util.List;
 
 @Tag(name = "Produits", description = "API pour la gestion du catalogue des produits")
 @RestController
+@Slf4j
 @RequestMapping("/v1/produits")
 public class ProduitController {
     public ProduitController(ProduitService produitService) {
@@ -31,13 +33,17 @@ public class ProduitController {
     @PreAuthorize("hasAnyRole('ADMIN', 'INVENTORY_MANAGER')")
     @PostMapping("/create")
     public ResponseEntity<ProduitResponseDTO> create(@Valid @RequestBody ProduitRequestDTO request) {
-        return new ResponseEntity<>(produitService.createProduit(request), HttpStatus.CREATED);
+        log.info("[Catalog] Tentative d'ajout du produit: {} (SKU: {})", request.getNom(), request.getSku());
+        ProduitResponseDTO response = produitService.createProduit(request);
+        log.info("✅ [Catalog] Produit créé avec succès. ID assigned: {}", response.getId());
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @Operation(summary = "Modifier les informations d'un produit")
     @PreAuthorize("hasAnyRole('ADMIN', 'INVENTORY_MANAGER')")
     @PutMapping("/{id}")
     public ResponseEntity<ProduitResponseDTO> update(@PathVariable Long id, @Valid @RequestBody ProduitRequestDTO request) {
+        log.info("[Catalog] Modification du produit ID: {}", id);
         return ResponseEntity.ok(produitService.updateProduit(id, request));
     }
 
@@ -73,7 +79,10 @@ public class ProduitController {
     @PreAuthorize("hasRole('INVENTORY_MANAGER')")
     @PostMapping("/request-restock")
     public ResponseEntity<Void> requestRestock(@RequestBody RestockRequestDTO request) {
+        log.info("🚀 [Kafka Pipeline] Émission d'une demande de réapprovisionnement pour le produit ID: {}, Quantité: {}",
+                request.productId(), request.requestedQty());
         produitService.sendRestockRequest(request);
+        log.info("✅ [Kafka Pipeline] Événement de réapprovisionnement envoyé au broker Kafka.");
         return ResponseEntity.ok().build();
     }
 
@@ -81,6 +90,7 @@ public class ProduitController {
     @PatchMapping("/{id}/toggle-status")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> toggleStatus(@PathVariable Long id) {
+        log.warn("[ADMIN] Changement du statut actif/inactif (Soft Delete) pour le produit ID: {}", id);
         produitService.toggleProduitStatus(id);
         return ResponseEntity.noContent().build();
     }

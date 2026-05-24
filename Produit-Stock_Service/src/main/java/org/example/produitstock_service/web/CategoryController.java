@@ -3,6 +3,7 @@ package org.example.produitstock_service.web;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.example.produitstock_service.dto.CategoryRequestDTO;
 import org.example.produitstock_service.dto.CategoryResponseDTO;
 import org.example.produitstock_service.service.CategoryService;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @Tag(name = "Catégories", description = "API pour la gestion des catégories de produits")
 @RestController
+@Slf4j
 @RequestMapping("/v1/categories")
 public class CategoryController {
     private  CategoryService categoryService;
@@ -41,6 +43,7 @@ public class CategoryController {
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CategoryResponseDTO> create(@Valid @RequestBody CategoryRequestDTO request) {
+        log.info("[ADMIN] Création d'une nouvelle catégorie de produits: {}", request.getNom());
         return new ResponseEntity<>(categoryService.createCategory(request), HttpStatus.CREATED);
     }
 

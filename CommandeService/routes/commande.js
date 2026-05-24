@@ -3,7 +3,7 @@ const router = express.Router();
 const controller = require("../Controllers/CommandeController");
 const authMiddleware = require("../middleware/authMiddleware");
 const hasRole = require("../middleware/hasRole");
-
+const logger = require("../logger");
 /**
  * @swagger
  * components:
@@ -20,9 +20,16 @@ const hasRole = require("../middleware/hasRole");
  *   name: Commandes
  *   description: Gestion des commandes
  */
-router.patch("/commandes/:id/ship", authMiddleware, hasRole("Fournisseur"), controller.fournisseurShipOrder);
+router.patch("/commandes/:id/ship", authMiddleware, hasRole("Fournisseur"), (req, res, next) => {
+    logger.info(`[Fournisseur] Expédition de la commande ID: ${req.params.id}`);
+    next();
+}, controller.fournisseurShipOrder);
 
-router.post("/commandes/:id/confirm-reception", authMiddleware, controller.confirmReception);
+router.post("/commandes/:id/confirm-reception", authMiddleware, (req, res, next) => {
+    logger.info(`Confirmation de la réception pour la commande ID: ${req.params.id}`);
+    next();
+}, controller.confirmReception);
+
 /**
  * @swagger
  * /api/commandes:
@@ -35,8 +42,10 @@ router.post("/commandes/:id/confirm-reception", authMiddleware, controller.confi
  *       200:
  *         description: Liste des commandes
  */
-router.get("/commandes", authMiddleware, controller.getAllCommandes);
-
+router.get("/commandes", authMiddleware, (req, res, next) => {
+    logger.info("Récupération de toutes les commandes");
+    next();
+}, controller.getAllCommandes);
 /**
  * @swagger
  * /api/commandes/{id}:
@@ -46,8 +55,10 @@ router.get("/commandes", authMiddleware, controller.getAllCommandes);
  *     security:
  *       - bearerAuth: []
  */
-router.get("/commandes/:id", authMiddleware, controller.getCommandeById);
-
+router.get("/commandes/:id", authMiddleware, (req, res, next) => {
+    logger.info(`Récupération de la commande ID: ${req.params.id}`);
+    next();
+}, controller.getCommandeById);
 /**
  * @swagger
  * /api/commandes:
@@ -57,8 +68,10 @@ router.get("/commandes/:id", authMiddleware, controller.getCommandeById);
  *     security:
  *       - bearerAuth: []
  */
-router.post("/commandes", controller.createCommande);
-
+router.post("/commandes", (req, res, next) => {
+    logger.info("Création d'une nouvelle commande");
+    next();
+}, controller.createCommande);
 /**
  * @swagger
  * /api/commandes/{id}/valider:
@@ -68,8 +81,10 @@ router.post("/commandes", controller.createCommande);
  *     security:
  *       - bearerAuth: []
  */
-router.put("/commandes/:id/valider", authMiddleware, hasRole("ADMIN"), controller.validerCommande);
-
+router.put("/commandes/:id/valider", authMiddleware, hasRole("ADMIN"), (req, res, next) => {
+    logger.info(`[ADMIN] Validation de la commande ID: ${req.params.id}`);
+    next();
+}, controller.validerCommande);
 /**
  * @swagger
  * /api/commandes/{id}/annuler:
@@ -79,8 +94,10 @@ router.put("/commandes/:id/valider", authMiddleware, hasRole("ADMIN"), controlle
  *     security:
  *       - bearerAuth: []
  */
-router.put("/commandes/:id/annuler", authMiddleware, hasRole("ADMIN"), controller.annulerCommande);
-
+router.put("/commandes/:id/annuler", authMiddleware, hasRole("ADMIN"), (req, res, next) => {
+    logger.info(`[ADMIN] Annulation de la commande ID: ${req.params.id}`);
+    next();
+}, controller.annulerCommande);
 /**
  * @swagger
  * /api/ligne-commande:
@@ -90,8 +107,10 @@ router.put("/commandes/:id/annuler", authMiddleware, hasRole("ADMIN"), controlle
  *     security:
  *       - bearerAuth: []
  */
-router.post("/ligne-commande", authMiddleware, controller.addLigneCommande);
-
+router.post("/ligne-commande", authMiddleware, (req, res, next) => {
+    logger.info("Ajout d'une ligne de commande");
+    next();
+}, controller.addLigneCommande);
 /**
  * @swagger
  * /api/ligne-commande/{id}:
@@ -101,6 +120,8 @@ router.post("/ligne-commande", authMiddleware, controller.addLigneCommande);
  *     security:
  *       - bearerAuth: []
  */
-router.delete("/ligne-commande/:id", authMiddleware, hasRole("ADMIN"), controller.deleteLigneCommande);
-
+router.delete("/ligne-commande/:id", authMiddleware, hasRole("ADMIN"), (req, res, next) => {
+    logger.info(`[ADMIN] Suppression de la ligne de commande ID: ${req.params.id}`);
+    next();
+}, controller.deleteLigneCommande);
 module.exports = router;

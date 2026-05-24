@@ -13,7 +13,7 @@
                 <loggerName/>
                 <threadName/>
                 <logLevel/>
-                <customFields>{"service_name":"BudgetStock"}</customFields>
+                <customFields>{"service_name":"Budget_Stock"}</customFields>
             </providers>
         </encoder>
     </appender>

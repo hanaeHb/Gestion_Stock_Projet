@@ -4,8 +4,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Eureka = require('eureka-js-client').Eureka;
 const quotationRoutes = require('./routes/quotationRoutes');
-
 const client = require('prom-client');
+const logger = require('./logger');
 const app = express();
 const PORT = process.env.PORT || 5005;
 
@@ -18,6 +18,7 @@ app.get('/metrics', async (req, res) => {
     res.set('Content-Type', client.register.contentType);
     res.end(await client.register.metrics());
   } catch (ex) {
+    logger.error(`Prometheus Metrics Error f Quotation: ${ex.message || ex}`);
     res.status(500).end(ex);
   }
 });
@@ -27,8 +28,8 @@ app.use(express.json());
 
 // --- 2. MongoDB Connection ---
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/quotation_db')
-    .then(() => console.log('✅ Connected to MongoDB'))
-    .catch(err => console.error('❌ MongoDB Connection Error:', err));
+    .then(() => logger.info('✅ Connected to MongoDB (Quotation DB)'))
+    .catch(err => logger.error(`❌ MongoDB Connection Error: ${err.message}`));
 
 // --- 3. Eureka Client Setup ---
 const eurekaClient = new Eureka({
@@ -80,13 +81,13 @@ app.get('/api/quotations/test', (req, res) => {
 
 // --- 5. Start Server ---
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  logger.info(`🚀 Quotation microservice running on port ${PORT}`);
 
   eurekaClient.start((error) => {
     if (error) {
-      console.log('❌ Eureka Registration Failed:', error);
+      logger.error(`❌ Eureka Registration Failed: ${error.message}`);
     } else {
-      console.log('✅ QUOTATION-SERVICE registered with Eureka');
+      logger.info('✅ QUOTATION-SERVICE registered with Eureka successfully!');
     }
   });
 });

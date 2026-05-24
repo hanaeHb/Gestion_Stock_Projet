@@ -1,8 +1,9 @@
 flask
 
+Flask
 pandas
 numpy
-
+python-logstash-async
 scikit-learn
 opentelemetry-api
 opentelemetry-sdk

@@ -14,14 +14,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.List;
 
 @Tag(name = "Roles", description = "API pour la gestion des rôles et permissions")
 @RestController
 @RequestMapping("/v1/roles")
 public class RoleController {
-
+    private static final Logger log = LoggerFactory.getLogger(RoleController.class);
     private final RoleService roleService;
 
     public RoleController(RoleService roleService) {
@@ -41,6 +42,7 @@ public class RoleController {
     public ResponseEntity<Role> createRole(
             @Parameter(description = "Nom du rôle", required = true, example = "ADMIN")
             @RequestParam String name) {
+        log.info("[ADMIN] Création d'un nouveau rôle global: {}", name);
         Role role = roleService.createRole(name);
         return ResponseEntity.status(HttpStatus.CREATED).body(role);
     }
@@ -69,7 +71,7 @@ public class RoleController {
     public ResponseEntity<String> assignPermissionToRole(
             @PathVariable String roleName,
             @RequestParam String permissionName) {
-
+        log.info("[ADMIN] Assignation de la permission [{}] au rôle [{}]", permissionName, roleName);
         roleService.assignPermissionToRole(roleName, permissionName);
         return ResponseEntity.ok("Permission assignée avec succès");
     }
@@ -85,7 +87,7 @@ public class RoleController {
     public ResponseEntity<String> removePermissionFromRole(
             @PathVariable String roleName,
             @PathVariable String permissionName) {
-
+        log.warn("[ADMIN] Révocation de la permission [{}] du rôle [{}]", permissionName, roleName);
         roleService.removePermissionFromRole(roleName, permissionName);
         return ResponseEntity.ok("Permission supprimée avec succès");
     }

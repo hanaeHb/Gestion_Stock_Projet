@@ -3,6 +3,7 @@ package org.example.produitstock_service.web;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.produitstock_service.dto.StockResponseDTO;
 import org.example.produitstock_service.service.StockService;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import java.util.List;
 
 @Tag(name = "Stocks", description = "API pour le suivi des niveaux de stock")
 @RestController
+@Slf4j
 @RequestMapping("/v1/stocks")
 public class StockController {
     public StockController(StockService stockService) {
@@ -25,6 +27,7 @@ public class StockController {
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER','GESTIONNAIRE_DE_STOCK','RESPONSABLE_DES_ACHATS')")
     @GetMapping("/produit/{produitId}")
     public ResponseEntity<StockResponseDTO> getStockByProduit(@PathVariable Long produitId) {
+        log.warn("⚠️ [Inventory Alert] Consultation des niveaux de stock critiques et des alertes de rupture !");
         return ResponseEntity.ok(stockService.getStockByProduitId(produitId));
     }
 
@@ -39,6 +42,7 @@ public class StockController {
     @PreAuthorize("hasRole('GESTIONNAIRE_DE_STOCK')")
     @PatchMapping("/produit/{produitId}/emplacement")
     public ResponseEntity<Void> updateEmplacement(@PathVariable Long produitId, @RequestParam String emplacement) {
+        log.info("[Inventory] Changement d'emplacement pour le produit ID: {} -> Nouvel emplacement: {}", produitId, emplacement);
         stockService.updateEmplacement(produitId, emplacement);
         return ResponseEntity.ok().build();
     }

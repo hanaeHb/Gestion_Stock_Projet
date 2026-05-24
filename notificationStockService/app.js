@@ -12,6 +12,7 @@ const { Kafka } = require('kafkajs');
 const Notification = require('./models/Notification');
 const emailService = require('./Service/emailService');7
 const clien = require('prom-client');
+const logger = require('./logger');
 
 const app = express();
 const PORT = 5003;
@@ -24,6 +25,7 @@ app.get('/metrics', async (req, res) => {
     res.set('Content-Type', clien.register.contentType);
     res.end(await clien.register.metrics());
   } catch (ex) {
+    logger.error(`Prometheus Metrics Error f Notification: ${ex.message || ex}`);
     res.status(500).end(ex);
   }
 });
@@ -124,6 +126,7 @@ const kafka = new Kafka({
 const consumer = kafka.consumer({ groupId: "notification-group" });
 
 const runKafkaConsumer = async () => {
+  logger.info("Kafka Consumer connecté avec succès.");
   await consumer.connect();
   await consumer.subscribe({ topic: "low-stock-alert", fromBeginning: false });
   await consumer.subscribe({ topic: "fournisseur-registered", fromBeginning: false });
@@ -137,7 +140,7 @@ const runKafkaConsumer = async () => {
     eachMessage: async ({ topic, message }) => {
       const event = JSON.parse(message.value.toString());
       console.log("📩 Kafka Event:", event);
-      
+      logger.info(`Événement Kafka reçu sur le topic [${topic}]`);
       if (topic === "low-stock-alert") {
         await Notification.create({
           message: `⚠️ Alerte Stock: Le produit "${event.nom}" a atteint son seuil critique (${event.quantiteActuelle} restants). Veuillez informer le responsable d'achat.`,
@@ -146,6 +149,7 @@ const runKafkaConsumer = async () => {
           type: "STOCK_ALERT",
           dateAlerte: new Date()
         });
+        logger.info(`✅ Alerte stock enregistrée pour le produit: ${event.nom}`);
         console.log("✅ Alerte stock enregistrée");
       }
       
@@ -166,6 +170,7 @@ const runKafkaConsumer = async () => {
         });
 
         await newRequest.save();
+        logger.info(`Replenishment Request for ${event.category} saved to DB! ✅`);
         console.log(`Replenishment Request for ${event.category} saved to DB! ✅`);
       }
 
@@ -191,6 +196,7 @@ const runKafkaConsumer = async () => {
             "Account Pending Verification",
             "Your account is currently under review. We will notify you once it has been approved."
         );
+        logger.info(`📧 Email d'attente envoyé au fournisseur: ${event.email}`);
       }
 
       if (topic === "fournisseur-validated") {
@@ -207,6 +213,7 @@ const runKafkaConsumer = async () => {
             : `Votre compte fournisseur a été refusé. Pour plus d'informations, contactez l'administrateur.`;
 
         await emailService.sendEmail(event.email, subject, body);
+        logger.info(`📧 Email de statut [${event.status}] envoyé à: ${event.email}`);
       }
       else if (topic === "order-notifications") {
         const { email, product, categoryId, productId, quantity, orderId, message, fournisseurId } = event;
@@ -232,7 +239,7 @@ const runKafkaConsumer = async () => {
             `Hello, the manager requested a price for ${quantity} units of ${product}. 
                      Please log in to submit your price : http://localhost:3000/login`
         );
-
+        logger.info(`✅ Notification & Email RFQ envoyés au fournisseur: ${email}`);
         console.log(`✅ Notification & Email sent to supplier: ${email}`);
       }
       else if (topic === "quotation-updates") {
@@ -255,7 +262,7 @@ const runKafkaConsumer = async () => {
             type: "QUOTE_RECEIVED",
             dateAlerte: new Date()
           });
-
+          logger.info(`✅ Devis soumis reçu pour la commande ID: ${orderId}`);
           console.log(`✅ Notification updated & Manager notified for Order: ${orderId}`);
         }else if (type === "QUOTATION_REFUSED") {
 
@@ -267,7 +274,7 @@ const runKafkaConsumer = async () => {
             dateAlerte: new Date(),
             orderId: event.orderId
           });
-
+          logger.warn(`=== 🤖 AUTOMATED FALLBACK PIPELINE ACTIVATED (Product ID: ${event.productId}) ===`);
           console.log(`=== 🤖 STARTING AUTOMATED FALLBACK PIPELINE (Product ID: ${event.productId}) ===`);
 
           const internalAuthHeader = "Bearer " + process.env.INTERNAL_SERVICE_TOKEN;
@@ -282,8 +289,10 @@ const runKafkaConsumer = async () => {
                 `http://localhost:8888/service-fournisseur/api/fournisseurs/category/${resolvedCategoryId}`
             );
             targetFournisseurs = resSuppliers.data || [];
+            logger.info(`[Plan B] ${targetFournisseurs.length} fournisseurs alternatifs récupérés.`);
             console.log(`✅ [Step 2 - Supplier Service]: Fetched ${targetFournisseurs.length} alternative targets successfully.`);
           } catch (err) {
+            logger.error(`❌ [CRITICAL ERROR - PLAN B]: Impossible de contacter service-fournisseur.`);
             console.error(`❌ [CRITICAL ERROR - SUPPLIER SERVICE]: Failed to fetch suppliers for category ID ${resolvedCategoryId}.`);
             return;
           }
@@ -294,8 +303,10 @@ const runKafkaConsumer = async () => {
                 `http://localhost:5008/prediction/predict-best-supplier/${resolvedCategoryId}`
             );
             aiRankings = resAi.data || [];
+            logger.info(`[Plan B] Classement IA chargé depuis le service de prédiction Python.`);
             console.log(`✅ [Step 3 - Prediction Service]: AI rankings loaded successfully.`);
           } catch (err) {
+            logger.error(`⚠️ [NON-CRITICAL ERROR - PLAN B]: Le pipeline IA Python n'est pas joignable: ${err.message}`);
             console.error(`⚠️ [NON-CRITICAL ERROR - PREDICTION SERVICE]: Failed to reach prediction pipeline.`);
             console.error(`Reason: ${err.message}`, err.response ? `| Status: ${err.response.status} | Data: ${JSON.stringify(err.response.data)}` : '');
             aiRankings = [];
@@ -323,6 +334,7 @@ const runKafkaConsumer = async () => {
           }
 
           if (nextSupplier) {
+            logger.info(`🎯 [Plan B] Cible identifiée -> ${nextSupplier.prenom} ${nextSupplier.nom} (ID: ${nextSupplier.id_fournisseur}).`);
             console.log(`🎯 [Pipeline Blueprint]: Next target identified -> ${nextSupplier.prenom} ${nextSupplier.nom} (ID: ${nextSupplier.id_fournisseur}).`);
             const backupQty = event.quantity ? Number(event.quantity) : (event.requestedQty ? Number(event.requestedQty) : 1);
 
@@ -347,6 +359,7 @@ const runKafkaConsumer = async () => {
             try {
               await axios.post("http://localhost:5001/api/commandes", newOrderData, {
               });
+              logger.info(`🚀 [Plan B] Commande de secours enregistrée dans CommandeService.`);
               console.log(`🚀 [Step 6 - Commande Service]: Fallback order registered successfully in Database.`);
               const realQty = event.quantite ? Number(event.quantite) : 1;
               await Notification.create({
@@ -362,14 +375,17 @@ const runKafkaConsumer = async () => {
                 dateAlerte: new Date(),
                 type: "PLAN_B_ROUTED"
               });
+              logger.info(`📢 Alerte Plan B enregistrée dans la base de données.`);
               console.log(`📢 [Admin Alert Saved]: Plan B execution notified to management team.`);
 
             } catch (err) {
+              logger.error(`❌ [CRITICAL ERROR]: Échec de la distribution du Plan B: ${err.message}`);
               console.error(`❌ [CRITICAL ERROR - PLAN B DISTRIBUTION]: Fallback execution chain failed.`);
               console.error(`Reason: ${err.message}`, err.response ? `| Data: ${JSON.stringify(err.response.data)}` : '');
             }
 
           } else {
+            logger.warn(`🚨 [Plan B] Aucun fournisseur alternatif disponible pour la catégorie: ${resolvedCategoryId}`);
             console.warn(`🚨 [Pipeline Sourcing Alert]: No alternative targets available downstream for category ${resolvedCategoryId}.`);
 
             await Notification.create({
@@ -426,6 +442,7 @@ const runKafkaConsumer = async () => {
                              Please log in to generate the invoice: http://localhost:3000/login`
             );
           }
+          logger.info(`✅ Notification d'acceptation traitée pour la commande: ${orderId}`);
           console.log(`✅ Acceptance notification & email processed for Order: ${orderId}`);
         }
 
@@ -447,8 +464,8 @@ const runKafkaConsumer = async () => {
             type: "WAITING_CONFIRMATION",
             dateAlerte: new Date()
           });
+          logger.info(`📦 Statut mis à jour: Commande expédiée ID: ${event.orderId}`);
         }
-
         else if (type === "QUOTATION_REFUSED") {
           if (event.supplierEmail) {
             await emailService.sendEmail(
@@ -464,17 +481,15 @@ const runKafkaConsumer = async () => {
   });
 };
 
-runKafkaConsumer().catch(console.error);
+runKafkaConsumer().catch((err) => logger.error(`Erreur critique du Consumer Kafka: ${err.message}`));
 
-// 4. Start server & Register with Eureka
 app.listen(PORT, () => {
-  console.log(`Notification microservice running on port ${PORT}`);
-
+  logger.info(`Notification microservice running on port ${PORT}`);
   client.start((error) => {
     if (error) {
-      console.log('Error starting Eureka client:', error);
+      logger.error(`Error starting Eureka client for Notification: ${error.message}`);
     } else {
-      console.log('Notification service registered with Eureka! ✅');
+      logger.info('Notification service registered with Eureka successfully! ✅');
     }
   });
 });

@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.produitstock_service.dto.MouvementStockRequestDTO;
 import org.example.produitstock_service.dto.MouvementStockResponseDTO;
 import org.example.produitstock_service.dto.ReceptionRequestDTO;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @Tag(name = "Mouvements", description = "API pour l'historique des entrées et sorties")
 @RestController
+@Slf4j
 @RequestMapping("/v1/mouvements")
 public class MouvementStockController {
 
@@ -29,6 +31,8 @@ public class MouvementStockController {
     @PreAuthorize("hasAnyRole('ADMIN','Procurement Manager')")
     @PostMapping
     public ResponseEntity<MouvementStockResponseDTO> addMouvement(@Valid @RequestBody MouvementStockRequestDTO request) {
+        log.info("[Stock Movement] Enregistrement d'un mouvement de type: {} pour le produit ID: {}, Quantité: {}",
+                request.getType(), request.getProduitId(), request.getQuantite());
         return ResponseEntity.status(201).body(mouvementService.addMouvement(request));
     }
 
@@ -36,7 +40,9 @@ public class MouvementStockController {
     @PreAuthorize("hasRole('Procurement Manager')")
     @PostMapping("/confirm-reception")
     public ResponseEntity<String> confirmReception(@Valid @RequestBody ReceptionRequestDTO request) {
+        log.info("📦 [Procurement Pipeline] Début du traitement de réception pour la Commande ID: {}", request.getProduitId());
         mouvementService.processOrderReception(request);
+        log.info("✅ [Procurement Pipeline] Réception validée, stocks incrémentés et impact budget calculé pour la Commande ID: {}", request.getProduitId());
         return ResponseEntity.ok("Réception confirmée avec succès !");
     }
 
