@@ -9,7 +9,7 @@ const logger = winston.createLogger({
             format: winston.format.simple()
         }),
         new LogstashTransport({
-            host: 'logstash',
+            host: 'logstash-service',
             port: 5044
         })
     ]
