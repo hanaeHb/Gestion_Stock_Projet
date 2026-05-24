@@ -5,7 +5,7 @@ logger = logging.getLogger('predictionStockService')
 logger.setLevel(logging.INFO)
 
 logstash_handler = AsynchronousLogstashHandler(
-    host='logstash',
+    host='logstash-service',
     port=5044,
     database_path='logstash.db'
 )

@@ -3,7 +3,10 @@ const LogstashTransport = require('winston-logstash-transport').LogstashTranspor
 
 const logger = winston.createLogger({
     level: 'info',
-    defaultMeta: { service_name: 'CommandeService' },
+    defaultMeta: {
+        service_name: 'CommandeService',
+        app: 'service-commande'
+    },
     transports: [
         new winston.transports.Console({
             format: winston.format.simple()

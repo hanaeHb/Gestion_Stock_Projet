@@ -18,8 +18,7 @@ spec:
         - name: kibana-service
           image: kibana:8.15.4
           env:
-            # 🌟 هادا هو المتغير الوحيد للي كافـي وضـروري ف الـ نسخة 8.x
-            - name: ELASTICSEARCH_HOSTS
+            - name: ELASTICSEARCH_URL
               value: "http://elasticsearch-service:9200"
           ports:
             - containerPort: 5601
@@ -29,10 +28,11 @@ kind: Service
 metadata:
   name: kibana-service
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: kibana-service
   ports:
     - protocol: TCP
       port: 5601
       targetPort: 5601
+      nodePort: 31601

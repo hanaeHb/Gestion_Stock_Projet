@@ -4,12 +4,10 @@ metadata:
   name: logstash-config
 data:
   logstash.yml: |
-    # Configuration Logstash
     http.host: "0.0.0.0"
     path.config: /usr/share/logstash/pipeline/*
     xpack.monitoring.elasticsearch.hosts: [ "elasticsearch-service:9200" ]
 ---
-
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -22,15 +20,13 @@ data:
         codec => json
       }
     }
-
     output {
       elasticsearch {
         hosts => ["elasticsearch-service:9200"]
-        index => "springboot-%{app}"
+        index => "microservices-logs-all"
       }
     }
 ---
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -74,7 +70,6 @@ spec:
           configMap:
             name: logstash-pipeline
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
@@ -93,4 +88,4 @@ spec:
       protocol: TCP
       port: 9600
       targetPort: 9600
-  type: LoadBalancer
+  type: ClusterIP

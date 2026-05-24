@@ -3,13 +3,16 @@ const LogstashTransport = require('winston-logstash-transport').LogstashTranspor
 
 const logger = winston.createLogger({
     level: 'info',
-    defaultMeta: { service_name: 'QuotationService' },
+    defaultMeta: {
+        service_name: 'QuotationService',
+        app: 'quotation-service'
+    },
     transports: [
         new winston.transports.Console({
             format: winston.format.simple()
         }),
         new LogstashTransport({
-            host: 'logstash',
+            host: 'logstash-service',
             port: 5044
         })
     ]
