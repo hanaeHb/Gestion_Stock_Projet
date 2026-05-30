@@ -20,6 +20,11 @@ spec:
           image: openzipkin/zipkin:latest
           ports:
             - containerPort: 9411
+          env:
+            - name: STORAGE_TYPE
+              value: "elasticsearch"
+            - name: ES_HOSTS
+              value: "http://localhost:9200"
           resources:
             limits:
               memory: "512Mi"

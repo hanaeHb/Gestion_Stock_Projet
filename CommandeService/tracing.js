@@ -5,12 +5,11 @@ const { ZipkinExporter } = require('@opentelemetry/exporter-zipkin');
 const { registerInstrumentations } = require('@opentelemetry/instrumentation');
 const { HttpInstrumentation } = require('@opentelemetry/instrumentation-http');
 const { ExpressInstrumentation } = require('@opentelemetry/instrumentation-express');
-const { PgInstrumentation } = require('@opentelemetry/instrumentation-pg'); // <--- HADI DYAL POSTGRESQL
+const { PgInstrumentation } = require('@opentelemetry/instrumentation-pg');
 
-// 1. Configurer l'exportateur Zipkin li khdam f Kubernetes (Port 9411)
 const zipkinExporter = new ZipkinExporter({
-    url: 'http://zipkin:9411/api/v2/spans',
-    serviceName: 'quotation-service' // Smiya li ghadi tban lik f Zipkin UI
+    url: 'http://localhost:9411/api/v2/spans',
+    serviceName: 'service-commande'
 });
 
 // 2. Initialisation du Tracer Provider
@@ -27,9 +26,21 @@ registerInstrumentations({
     instrumentations: [
         new HttpInstrumentation(),
         new ExpressInstrumentation(),
-        new PgInstrumentation(), // Ghadi t-trace-i hta l-waqt lli kakhdo MongoDB f l-queries
+        new PgInstrumentation(),
     ],
     tracerProvider: provider,
 });
 
-console.log("🚀 OpenTelemetry Tracing initialisé avec succès !");
+try {
+    sdk.start();
+    console.log("🚀 OpenTelemetry SDK Tracing initialisé avec succès !");
+} catch (error) {
+    console.error("❌ Erreur lors de l'initialisation du Tracing:", error);
+}
+
+process.on('SIGTERM', () => {
+    sdk.shutdown()
+        .then(() => console.log('Tracing terminé'))
+        .catch((error) => console.log('Erreur de fermeture du tracing', error))
+        .finally(() => process.exit(0));
+});

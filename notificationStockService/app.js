@@ -143,7 +143,7 @@ const runKafkaConsumer = async () => {
       logger.info(`Événement Kafka reçu sur le topic [${topic}]`);
       if (topic === "low-stock-alert") {
         await Notification.create({
-          message: `⚠️ Alerte Stock: Le produit "${event.nom}" a atteint son seuil critique (${event.quantiteActuelle} restants). Veuillez informer le responsable d'achat.`,
+          message: `⚠️ Stock Alert: The product "${event.nom}" has reached its critical threshold (${event.quantiteActuelle} remaining).`,
           niveau: "ERROR",
           statut: "NON_LUE",
           type: "STOCK_ALERT",

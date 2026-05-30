@@ -32,7 +32,7 @@ provider = TracerProvider(resource=resource)
 trace.set_tracer_provider(provider)
 
 zipkin_exporter = ZipkinExporter(
-    endpoint="http://zipkin:9411/api/v2/spans"
+    endpoint="http://localhost:9411/api/v2/spans"
 )
 
 span_processor = BatchSpanProcessor(zipkin_exporter)

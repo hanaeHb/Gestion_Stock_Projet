@@ -1,15 +1,14 @@
-// tracing.js
 const { NodeSDK } = require('@opentelemetry/sdk-node');
 const { BatchSpanProcessor } = require('@opentelemetry/sdk-trace-base');
 const { ZipkinExporter } = require('@opentelemetry/exporter-zipkin');
 const { HttpInstrumentation } = require('@opentelemetry/instrumentation-http');
 const { ExpressInstrumentation } = require('@opentelemetry/instrumentation-express');
-const { MongooseInstrumentation } = require('@opentelemetry/instrumentation-mongoose'); // <--- T-GADDAT HNA
+const { MongooseInstrumentation } = require('@opentelemetry/instrumentation-mongoose');
 
 // 1. Configurer l'exportateur Zipkin
 const zipkinExporter = new ZipkinExporter({
-    url: 'http://zipkin:9411/api/v2/spans',
-    serviceName: 'quotation-service'
+    url: 'http://localhost:9411/api/v2/spans',
+    serviceName: 'service-notification'
 });
 
 // 2. Initialiser le SDK complet avec l'exportateur et les instrumentations
@@ -20,7 +19,7 @@ const sdk = new NodeSDK({
     instrumentations: [
         new HttpInstrumentation(),
         new ExpressInstrumentation(),
-        new MongooseInstrumentation({ // <--- T-GADDAT HNA
+        new MongooseInstrumentation({
             enhancedDatabaseReporting: true,
         }),
     ],
