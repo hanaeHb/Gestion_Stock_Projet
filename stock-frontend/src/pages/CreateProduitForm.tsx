@@ -200,12 +200,6 @@ const CreateProductForm: React.FC = () => {
                         </div>
 
                         <div className="field-box full-width">
-                            <label><FaMapMarkerAlt/> Warehouse Location (Emplacement)</label>
-                            <input name="emplacement" type="text" placeholder="e.g. Zone A / Shelf 4"
-                                   onChange={handleChange} required/>
-                        </div>
-
-                        <div className="field-box full-width">
                             <label>Technical Specifications</label>
                             <textarea name="description" placeholder="Product details..." rows={3}
                                       onChange={handleChange}></textarea>

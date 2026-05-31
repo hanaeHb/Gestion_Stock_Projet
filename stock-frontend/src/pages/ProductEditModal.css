@@ -1,0 +1,209 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.edit-modal-container {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 30px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 154, 158, 0.4); /* حدود وردية باستيل خفيفة */
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    border-bottom: 2px solid #fff0f1;
+}
+
+.modal-header h2 {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-weight: 800;
+    background: linear-gradient(to right, #000000, #ff9a9e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+    font-size: 1.4rem;
+    letter-spacing: -0.5px;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 5px;
+    transition: all 0.3s ease;
+}
+
+.close-modal:hover {
+    color: #730d19;
+    transform: rotate(90deg);
+}
+
+.edit-form {
+    padding: 30px;
+}
+
+.edit-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px 30px;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.field-group.full-width {
+    grid-column: span 2;
+}
+
+.field-group label {
+    color: #000000;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.field-group input,
+.field-group select,
+.field-group textarea {
+    background: #ffffff;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    padding: 12px 15px;
+    color: #333;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.field-group input:focus,
+.field-group select:focus,
+.field-group textarea:focus {
+    outline: none;
+    border-color: #ff9a9e;
+    background: #ffffff;
+    box-shadow: 0 0 10px rgba(255, 154, 158, 0.15);
+}
+
+.image-upload-zone {
+    border: 2px dashed #ff9a9e;
+    background: rgba(243, 205, 182, 0.13);
+    border-radius: 16px;
+    padding: 25px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.4s ease;
+}
+
+.image-upload-zone:hover {
+    border-color: #730d19;
+    background: linear-gradient(to bottom, rgba(243, 149, 83, 0.15), rgba(255, 154, 158, 0.3));
+    transform: translateY(-2px);
+}
+
+.image-preview {
+    position: relative;
+    display: inline-block;
+}
+
+.image-preview img {
+    max-width: 180px;
+    max-height: 130px;
+    border-radius: 12px;
+    object-fit: contain;
+}
+
+.remove-image {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: rgba(115, 13, 25, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    transition: background 0.3s;
+}
+
+.remove-image:hover {
+    background: #730d19;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 2px solid #fff0f1;
+}
+
+
+.btn-cancel {
+    background: #f8fafc;
+    border: 2px solid #cbd5e1;
+    color: #64748b;
+    padding: 12px 25px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-cancel:hover {
+    background: #f1f5f9;
+    color: #334155;
+    border-color: #94a3b8;
+}
+
+.btn-save {
+    background: linear-gradient(135deg, #ff9a9e, #730d19);
+    border: none;
+    color: #fff;
+    padding: 12px 30px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-save:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(115, 13, 25, 0.2);
+}
+
+.btn-save:disabled {
+    background: #cbd5e1;
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}

@@ -16,7 +16,10 @@ import axios from "axios";
 import CreateProduitForm from "./CreateProduitForm";
 import { motion, AnimatePresence } from "framer-motion";
 import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import InventoryAnalytics from "./InventoryAnalytics"
+import InventoryAnalytics from "./InventoryAnalytics";
+import ProductEditModal from './ProductEditModal';
+import ProductDetailModal from './ProductDetailModal';
+
 interface Profile {
     userId?: number;
     nom?: string;
@@ -37,7 +40,24 @@ interface ForecastProps {
     };
     productName: string;
 }
-
+interface Product {
+    id: string | number;
+    sku: string;
+    nom: string;
+    description?: string;
+    prixUnitaire: number;
+    categoryId?: string;
+    category?: {
+        id: string;
+        nom: string;
+    };
+    quantiteDisponible: number;
+    seuilCritique: number;
+    emplacement?: string;
+    active: boolean;
+    image?: string;
+    categorie?: string;
+}
 const AIRestockForecast: React.FC<ForecastProps> = ({ aiData, productName }) => {
 
     const chartData = [
@@ -77,6 +97,7 @@ const AIRestockForecast: React.FC<ForecastProps> = ({ aiData, productName }) => 
 export default function InventoryManager() {
     const [activeSection, setActiveSection] = useState<string>("dashboard");
     const [profile, setProfile] = useState<Profile | null>(null);
+
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -341,6 +362,31 @@ export default function InventoryManager() {
     const indexOfFirstAi = indexOfLastAi - itemsPerAiPage;
     const currentAiInsights = aiInsights.slice(indexOfFirstAi, indexOfLastAi);
     const totalAiPages = Math.ceil(aiInsights.length / itemsPerAiPage);
+
+
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showDetailModal, setShowDetailModal] = useState(false);
+    const [selectedProductForEdit, setSelectedProductForEdit] = useState(null);
+    const [selectedProductForDetail, setSelectedProductForDetail] = useState(null);
+
+    const handleEditProduct = (product: any) => {
+        setSelectedProductForEdit(product);
+        setShowEditModal(true);
+    };
+
+    const handleViewDetails = (product: any) => {
+        setSelectedProductForDetail(product);
+        setShowDetailModal(true);
+    };
+
+    const handleProductUpdate = (updatedProduct: any) => {
+        setProducts((prevProducts: any[]) =>
+            prevProducts.map((p: any) =>
+                p.id === updatedProduct.id ? updatedProduct : p
+            )
+        );
+        fetchProducts();
+    };
     return (
         <div className="manager-container">
 
@@ -648,7 +694,7 @@ export default function InventoryManager() {
                                     <th>Stock Level</th>
                                     <th>Status</th>
                                     <th>Actions</th>
-                                    <th>Edit Produtc</th>
+                                    <th>Produtc Actions</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -730,7 +776,18 @@ export default function InventoryManager() {
                                             </div>
                                         </td>
                                         <td>
-                                            <button className="btn-edit-small">Edit</button>
+                                            <button
+                                                className="btn-edit-small"
+                                                onClick={() => handleEditProduct(product)}
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                className="btn-detail-small"
+                                                onClick={() => handleViewDetails(product)}
+                                            >
+                                                Details
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
@@ -769,6 +826,24 @@ export default function InventoryManager() {
                     </motion.div>
                 )}
 
+                <ProductEditModal
+                    product={selectedProductForEdit}
+                    isOpen={showEditModal}
+                    onClose={() => {
+                        setShowEditModal(false);
+                        setSelectedProductForEdit(null);
+                    }}
+                    onUpdate={handleProductUpdate}
+                />
+
+                <ProductDetailModal
+                    product={selectedProductForDetail}
+                    isOpen={showDetailModal}
+                    onClose={() => {
+                        setShowDetailModal(false);
+                        setSelectedProductForDetail(null);
+                    }}
+                />
                 {showRestockModal && (
                     <div className="modal-overlay">
                         <div className="movement-modal glass-panel fade-in">

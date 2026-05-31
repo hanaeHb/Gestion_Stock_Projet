@@ -437,7 +437,39 @@
     content: "✎";
     font-size: 14px;
 }
+.btn-detail-small {
+    background: transparent;
+    color: #f39553;
+    border: 1.5px solid #f39553;
+    padding: 8px 18px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
 
+.btn-detail-small:hover {
+    background: linear-gradient(135deg, #f39553 0%, #730d19 100%);
+    color: white;
+    border-color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(243, 149, 83, 0.2);
+}
+
+
+.btn-detail-small:active {
+    transform: translateY(0);
+}
+
+.btn-detail-small::before {
+    content: "👁";
+    font-size: 14px;
+}
 td:last-child {
     text-align: right;
     padding-right: 25px;
