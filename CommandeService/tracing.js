@@ -8,7 +8,7 @@ const { ExpressInstrumentation } = require('@opentelemetry/instrumentation-expre
 const { PgInstrumentation } = require('@opentelemetry/instrumentation-pg');
 
 const zipkinExporter = new ZipkinExporter({
-    url: 'http://localhost:9411/api/v2/spans',
+    url: 'http://zipkin:9411/api/v2/spans',
     serviceName: 'service-commande'
 });
 

@@ -7,7 +7,7 @@ const { MongooseInstrumentation } = require('@opentelemetry/instrumentation-mong
 
 // 1. Configurer l'exportateur Zipkin
 const zipkinExporter = new ZipkinExporter({
-    url: 'http://localhost:9411/api/v2/spans',
+    url: 'http://zipkin:9411/api/v2/spans',
     serviceName: 'service-notification'
 });
 
