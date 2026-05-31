@@ -695,7 +695,7 @@ export default function InventoryManager() {
                                                         setSelectedProduct(product);
                                                         setMovementType("ENTREE");
                                                     }}
-                                                    title="Entrée de stock"
+                                                    title="Inventory entry"
                                                 > +
                                                 </button>
 
@@ -705,7 +705,7 @@ export default function InventoryManager() {
                                                         setSelectedProduct(product);
                                                         setMovementType("SORTIE");
                                                     }}
-                                                    title="Sortie de stock"
+                                                    title="Out of stock"
                                                 > -
                                                 </button>
                                                 {product.quantiteDisponible <= (product.seuilCritique || 5) && (
@@ -849,11 +849,11 @@ export default function InventoryManager() {
                                 animate={{ scale: 1 }}
                                 exit={{ scale: 0.8 }}
                             >
-                                <h3>{movementType === "ENTREE" ? "📥 Réception de Stock" : "📤 Sortie de Stock"}</h3>
-                                <p>Produit: <strong>{selectedProduct.nom}</strong></p>
+                                <h3>{movementType === "ENTREE" ? "📥 Receipt of Stock" : "📤 Out of Stock"}</h3>
+                                <p>Product: <strong>{selectedProduct.nom}</strong></p>
 
                                 <div className="form-group">
-                                    <label>Quantité</label>
+                                    <label>Quantity</label>
                                     <input
                                         type="number"
                                         value={movementQty}

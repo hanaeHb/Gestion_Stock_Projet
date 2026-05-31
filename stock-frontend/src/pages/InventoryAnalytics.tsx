@@ -77,7 +77,6 @@ const InventoryAnalytics: React.FC<AnalyticsProps> = ({ products, categories }) 
 
             <div className="analytics-charts-main-grid">
 
-                {/* 1. مبيان الـ Area Chart د قيمة الستوك الإجمالية لجميع المنتجات */}
                 <div className="analytics-glass-card chart-wide">
                     <div className="chart-card-header">
                         <h3><FaChartLine/> Financial Asset Valuation & Levels</h3>
@@ -152,48 +151,6 @@ const InventoryAnalytics: React.FC<AnalyticsProps> = ({ products, categories }) 
                     </div>
                 </div>
 
-                <div className="analytics-glass-card chart-wide">
-                    <div className="chart-card-header">
-                        <h3><FaFire style={{color: '#e36469'}}/> Top Performing Products (By Value)</h3>
-                        <span>Top 8 Sorted</span>
-                    </div>
-                    <div style={{width: "100%", height: 280}}>
-                        <ResponsiveContainer>
-                            <ComposedChart data={topProductsData}>
-                                <CartesianGrid stroke="#f8f0ee" vertical={false}/>
-                                <XAxis dataKey="name" fontSize={10} axisLine={false} tickLine={false}
-                                       tick={{fill: '#730d19'}}/>
-                                <YAxis fontSize={10} axisLine={false} tickLine={false}/>
-                                <Tooltip contentStyle={{borderRadius: '12px', border: '1px solid #730d19'}}/>
-                                <Bar dataKey="Value" name="Product Worth (DH)" fill="url(#colorValue)" barSize={25}
-                                     radius={[6, 6, 0, 0]}>
-                                    {topProductsData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={index === 0 ? "#730d19" : "#e36469"}/> // الأول يظهر فخم بالـ Burgundy
-                                    ))}
-                                </Bar>
-                            </ComposedChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-                <div className="analytics-glass-card chart-pie">
-                    <div className="chart-card-header">
-                        <h3><FaSortAmountDown/> Top Categories</h3>
-                        <span>Ranked</span>
-                    </div>
-                    <div style={{width: "100%", height: 280}}>
-                        <ResponsiveContainer>
-                            <ComposedChart data={sortedCategoriesData} layout="vertical">
-                                <CartesianGrid stroke="#f8f0ee" horizontal={false}/>
-                                <XAxis type="number" fontSize={10} axisLine={false} tickLine={false}/>
-                                <YAxis dataKey="name" type="category" fontSize={10} axisLine={false} tickLine={false}
-                                       tick={{fill: '#730d19'}}/>
-                                <Tooltip/>
-                                <Bar dataKey="value" name="Total Items" fill="#ff9a9e" barSize={14}
-                                     radius={[0, 4, 4, 0]}/>
-                            </ComposedChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
 
                 <div className="analytics-glass-card chart-full-wide">
                     <div className="chart-card-header">
