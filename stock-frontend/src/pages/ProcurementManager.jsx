@@ -884,7 +884,7 @@ export default function ProcurementManager() {
                                         allNotifications.filter(n => n.type === "WAITING_CONFIRMATION").map(notif => (
                                             <div key={notif._id} className="admin-notif-item">
                                                 <div className="notif-content">
-                                                    <p className="msg"><strong>In Transit 🚢</strong>: {notif.message}
+                                                    <p className="msg"><strong>In Transit</strong>: {notif.message}
                                                     </p>
 
                                                     <ShipmentDetails

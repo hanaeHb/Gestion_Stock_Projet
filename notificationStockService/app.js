@@ -438,7 +438,7 @@ const runKafkaConsumer = async () => {
             await emailService.sendEmail(
                 event.supplierEmail,
                 "Quote Accepted - Smart Stock Management",
-                `Good news! Your quote for ${productName} (Price: ${event.price} DH) has been accepted. 
+                `Good news! Your quote for ${productName} (Price: ${event.total_ligne} DH) has been accepted. 
                              Please log in to generate the invoice: http://localhost:3000/login`
             );
           }
