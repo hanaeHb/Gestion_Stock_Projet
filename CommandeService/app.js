@@ -109,7 +109,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Routes
 app.use('/api', commandeRoutes);
 
-app.listen(PORT, async () => {
+app.listen(PORT, '0.0.0.0', async () => {
   logger.info(`Commande microservice running on port ${PORT}`);
 
   try {

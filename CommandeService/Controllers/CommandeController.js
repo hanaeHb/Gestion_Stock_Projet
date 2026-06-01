@@ -79,14 +79,32 @@ const axios = require('axios');
 
 const getLocalIpAddress = () => {
     const interfaces = os.networkInterfaces();
+
     for (const name of Object.keys(interfaces)) {
+        if (name.toLowerCase().includes('wi-fi') || name.toLowerCase().includes('wlan') || name.toLowerCase().includes('sans fil')) {
+            for (const iface of interfaces[name]) {
+                if (iface.family === 'IPv4' && !iface.internal) {
+                    console.log(`🎯 [SUCCESS] Wi-Fi IP Detected: ${iface.address}`);
+                    return iface.address;
+                }
+            }
+        }
+    }
+
+    for (const name of Object.keys(interfaces)) {
+        if (name.toLowerCase().includes('virtual') || name.toLowerCase().includes('vbox') || name.toLowerCase().includes('wsl')) {
+            continue;
+        }
         for (const iface of interfaces[name]) {
             if (iface.family === 'IPv4' && !iface.internal) {
+                console.log(`⚠️ Alternative IP Detected: ${iface.address}`);
                 return iface.address;
             }
         }
     }
-    return '127.0.0.1';
+
+    console.log(`🚨 Using Manual Backup IP`);
+    return '192.168.195.130';
 };
 
 exports.fournisseurShipOrder = async (req, res) => {
