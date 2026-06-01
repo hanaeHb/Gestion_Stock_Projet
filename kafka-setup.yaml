@@ -47,6 +47,18 @@ spec:
     - port: 9092
       targetPort: 9092
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-service
+  namespace: default
+spec:
+  selector:
+    app: kafka
+  ports:
+    - port: 9092
+      targetPort: 9092
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -91,13 +103,22 @@ spec:
               value: "0"
             - name: KAFKA_CFG_ZOOKEEPER_CONNECT
               value: "zookeeper:2181"
+            - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT"
             - name: KAFKA_CFG_LISTENERS
-              value: "PLAINTEXT://0.0.0.0:9092"
+              value: "INTERNAL://0.0.0.0:9093,EXTERNAL://0.0.0.0:9092"
+
             - name: KAFKA_CFG_ADVERTISED_LISTENERS
-              value: "PLAINTEXT://kafka:9092"
+              value: "INTERNAL://127.0.0.1:9093,EXTERNAL://localhost:9092"
+            - name: KAFKA_CFG_INTER_BROKER_LISTENER_NAME
+              value: "INTERNAL"
             - name: ALLOW_PLAINTEXT_LISTENER
               value: "yes"
             - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
               value: "true"
             - name: KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_CFG_DEFAULT_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_CFG_NUM_PARTITIONS
               value: "1"

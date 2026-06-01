@@ -85,7 +85,7 @@ export default function QuotesManagement() {
                                 </div>
                                 <div className="p-meta-text">
                                     <h3>{group.productName}</h3>
-                                    <span className="sku-pill">SKU: {group.sku}</span>
+                                    <span className="sku-pill">ID: {group.productId}</span>
                                 </div>
                             </div>
 

@@ -1,5 +1,6 @@
 package org.example.produitstock_service.service.impl;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.produitstock_service.dto.ProduitRequestDTO;
@@ -107,6 +108,10 @@ public class ProduitServiceImpl implements ProduitService {
         produitRepository.deleteById(id);
     }
 
+    @PostConstruct
+    public void init() {
+        System.out.println("Kafka bootstrap servers: " + kafkaTemplate.getProducerFactory().getConfigurationProperties().get("bootstrap.servers"));
+    }
     public void sendRestockRequest(RestockRequestDTO request) {
         try {
 

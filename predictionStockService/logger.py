@@ -5,9 +5,9 @@ logger = logging.getLogger('predictionStockService')
 logger.setLevel(logging.INFO)
 
 logstash_handler = AsynchronousLogstashHandler(
-    host='logstash-service',
+    host='localhost',
     port=5044,
-    database_path='logstash.db'
+    #database_path='logstash.db'
 )
 
 class ServiceNameFilter(logging.Filter):

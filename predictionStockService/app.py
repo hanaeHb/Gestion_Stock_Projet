@@ -44,11 +44,11 @@ metrics = PrometheusMetrics(app)
 
 
 metrics.info('app_info', 'Prediction Service info', version='1.0.0')
-#EUREKA_SERVER = "http://localhost:8761/eureka/"
+EUREKA_SERVER = "http://localhost:8761/eureka/"
 SERVICE_NAME = "PREDICTION-SERVICE"
 SERVICE_PORT = 5008
 
-EUREKA_SERVER = "http://discovery-service:8761/eureka/"
+#EUREKA_SERVER = "http://discovery-service:8761/eureka/"
 
 def register_with_eureka():
     try:
