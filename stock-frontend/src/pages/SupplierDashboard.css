@@ -175,3 +175,199 @@
 }
 
 .btn-view-all:hover { background: #eef2ff; color: #ff9a9e; }
+
+/* تصميم لوحة الـ AI الجديدة */
+.ai-insights-panel {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: 20px;
+    padding: 24px;
+    flex: 1;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+}
+
+.card-header-v3 {
+    margin-bottom: 24px;
+}
+
+.ai-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.brain-pulse-icon {
+    font-size: 2.2rem;
+    color: #a55ce7;
+    animation: brainPulse 2s infinite ease-in-out;
+}
+
+.ai-title-wrapper h3 {
+    font-size: 1.2rem;
+    color: #1e293b;
+    margin: 0 0 4px 0;
+    font-weight: 700;
+}
+
+.ai-title-wrapper p {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin: 0;
+}
+
+/* شبكة كروت التصنيفات */
+.ai-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.ai-ranking-card {
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.01);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ai-ranking-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 25px rgba(165, 92, 231, 0.08);
+}
+
+.ai-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.ai-cat-badge {
+    background: #f1f5f9;
+    color: #334155;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.ai-rec-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.ai-rec-pill.gold { background: #fef3c7; color: #d97706; }
+.ai-rec-pill.silver { background: #e2e8f0; color: #475569; }
+
+.ai-score-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 18px;
+}
+
+.big-score h4 {
+    font-size: 1.8rem;
+    color: #a55ce7;
+    margin: 0;
+    font-weight: 800;
+}
+
+.big-score small {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.rank-badge {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+}
+
+.rank-badge span {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+}
+
+.rank-badge strong {
+    font-size: 1.4rem;
+    color: #1e293b;
+    font-weight: 700;
+}
+
+/* الـ Progress Bar الأنيق */
+.ai-progress-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.progressbar-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.ai-progress-bar-bg {
+    background: #f1f5f9;
+    height: 6px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.ai-progress-bar-fill {
+    background: linear-gradient(90deg, #a55ce7, #74b9ff);
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s ease-in-out;
+}
+
+/* حالات التحميل */
+.ai-loading-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 0;
+    gap: 12px;
+}
+
+.mini-spinner-purple {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #f1f5f9;
+    border-top-color: #a55ce7;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.efficiency-padd {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(165, 92, 231, 0.06);
+    color: #a55ce7;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 0.82rem;
+    font-weight: 500;
+}
+
+@keyframes brainPulse {
+    0%, 100% { transform: scale(1); opacity: 0.9; }
+    50% { transform: scale(1.06); opacity: 1; filter: drop-shadow(0 0 4px rgba(165,92,231,0.3)); }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

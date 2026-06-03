@@ -132,7 +132,43 @@ exports.getSupplierStats = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+exports.getSupplierProductStats = async (req, res) => {
+    try {
+        const { id_supplier } = req.params;
+        const totalCount = await Quotation.countDocuments({ id_supplier: id_supplier });
 
+        if (totalCount === 0) {
+            return res.json([]);
+        }
+
+        const productStats = await Quotation.aggregate([
+            { $match: { id_supplier: id_supplier } },
+            {
+                $group: {
+                    _id: "$pName",
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { count: -1 } },
+            { $limit: 5 }
+        ]);
+
+        const formattedResult = productStats.map(item => {
+            const percentage = ((item.count / totalCount) * 100).toFixed(0);
+            return {
+                productName: item._id || "Unknown Product",
+                count: item.count,
+                percentage: parseInt(percentage)
+            };
+        });
+
+        res.json(formattedResult);
+
+    } catch (err) {
+        console.error("❌ Error in getSupplierProductStats:", err.message);
+        res.status(500).json({ error: err.message });
+    }
+};
 exports.updateQuotationStatus = async (req, res) => {
     try {
         const { id } = req.params;
@@ -168,6 +204,41 @@ exports.updateQuotationStatus = async (req, res) => {
 
         res.json(updated);
     } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.getProductPriceEvolution = async (req, res) => {
+    try {
+        const { id_supplier } = req.params;
+        const { productName } = req.query;
+
+        if (!productName) {
+            return res.status(400).json({ error: "Le nom du produit est requis" });
+        }
+
+        const history = await Quotation.find({
+            id_supplier: id_supplier,
+            pName: productName
+        })
+            .sort({ createdAt: 1 }) // الترتيب من الأقدم للأحدث
+            .select('prix_unitaire createdAt');
+
+        // تحويل الداتا لـ عروض متسلسلة (Q1, Q2, Q3...) مع إظهار اليوم والساعة عند الـ hover
+        const formattedHistory = history.map((item, index) => ({
+            name: `Q${index + 1}`, // غاتعطينا Q1, Q2, Q3... ف الـ X-Axis
+            price: item.prix_unitaire,
+            fullDate: new Date(item.createdAt).toLocaleDateString('fr-FR', {
+                day: 'numeric',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit'
+            })
+        }));
+
+        res.json(formattedHistory);
+    } catch (err) {
+        console.error("❌ Error in getProductPriceEvolution:", err.message);
         res.status(500).json({ error: err.message });
     }
 };

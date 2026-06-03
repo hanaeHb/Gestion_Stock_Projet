@@ -46,6 +46,16 @@ router.get('/stats/:id_supplier', authMiddleware, (req, res, next) => {
     next();
 }, quotationController.getSupplierStats);
 
+router.get('/stats/:id_supplier/products', authMiddleware, (req, res, next) => {
+    logger.info(`Consultation des statistiques de products pour le fournisseur ID: ${req.params.id_supplier}`);
+    next();
+}, quotationController.getSupplierProductStats);
+
+router.get('/stats/:id_supplier/price-evolution', authMiddleware, (req, res, next) => {
+    logger.info(`Consultation des statistiques de price pour le fournisseur ID: ${req.params.id_supplier}`);
+    next();
+}, quotationController.getProductPriceEvolution);
+
 router.get('/test', (req, res) => res.json({ message: "Quotation Route is working!" }));
 
 router.get('/', authMiddleware, (req, res, next) => {
