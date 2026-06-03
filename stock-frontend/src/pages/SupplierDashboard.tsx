@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { FaPlus, FaFileAlt, FaExclamationTriangle, FaTags, FaBrain, FaAward, FaChartBar, FaUserShield } from 'react-icons/fa';
+import { FaPlus, FaFileAlt, FaExclamationTriangle, FaTags, FaBrain, FaAward, FaChartBar, FaUserShield, FaChevronRight } from 'react-icons/fa';
 import axios from 'axios';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import "./SupplierDashboard.css";
 
 interface AICategoryRank {
@@ -33,32 +33,41 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
 
                 const specsRes = await axios.get(
                     `http://localhost:8888/service-fournisseur/api/fournisseurs/${profile.idFournisseur}/specializations`,
-                    {
-                        headers: { Authorization: `Bearer ${token}` }
-                    }
+                    { headers: { Authorization: `Bearer ${token}` } }
                 );
-
                 const categoryIds: number[] = specsRes.data || [];
+
+                let allCategories: any[] = [];
+                try {
+                    const allCatsRes = await axios.get(`http://localhost:8888/produit-stock-service/v1/categories`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    allCategories = allCatsRes.data || [];
+                } catch (err) {
+                    console.error("⚠️ Failed to load category names, falling back to IDs:", err);
+                }
+
                 const fetchedRanks: AICategoryRank[] = [];
 
                 for (const catId of categoryIds) {
                     try {
                         const predRes = await axios.get(
                             `http://localhost:8888/prediction-service/prediction/predict-best-supplier/${catId}`,
-                            {
-                                headers: { Authorization: `Bearer ${token}` }
-                            }
+                            { headers: { Authorization: `Bearer ${token}` } }
                         );
 
                         const rankedList = predRes.data || [];
-
                         const myIndex = rankedList.findIndex(
                             (s: any) => s.id_fournisseur?.toString() === profile.idFournisseur?.toString()
                         );
 
+
+                        const matchedCat = allCategories.find((c: any) => (c.idCategory === catId || c.id === catId));
+                        const currentCategoryName = matchedCat?.nomCategory || matchedCat?.nom || `Category #${catId}`;
+
                         if (myIndex !== -1) {
                             fetchedRanks.push({
-                                categoryName: `Category #${catId}`,
+                                categoryName: currentCategoryName,
                                 categoryId: catId,
                                 aiScore: rankedList[myIndex].ai_score,
                                 recommendation: rankedList[myIndex].recommendation,
@@ -66,7 +75,7 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
                             });
                         } else {
                             fetchedRanks.push({
-                                categoryName: `Category #${catId}`,
+                                categoryName: currentCategoryName,
                                 categoryId: catId,
                                 aiScore: 0,
                                 recommendation: "RELIABLE",
@@ -77,7 +86,15 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
                         console.error(`Error fetching AI prediction for category ${catId}:`, err);
                     }
                 }
-                setAiInsights(fetchedRanks);
+
+                const sortedInsights = fetchedRanks.sort((a, b) => b.aiScore - a.aiScore);
+
+                const finalComputedRanks = sortedInsights.map((item, index) => ({
+                    ...item,
+                    rank: index + 1
+                }));
+
+                setAiInsights(finalComputedRanks);
 
             } catch (error) {
                 console.error("❌ Failed to resolve AI Telemetry:", error);
@@ -98,6 +115,7 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
                 </div>
             </header>
 
+            {/* Action Grid */}
             <div className="action-grid">
                 <button className="main-action-card" onClick={() => onNavigate("orders")}>
                     <div className="icon-box purple"><FaPlus/></div>
@@ -123,10 +141,14 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
                 <div className="ai-insights-panel">
                     <div className="card-header-v3">
                         <div className="ai-title-wrapper">
-                            <FaBrain className="brain-pulse-icon" />
                             <div>
-                                <h3>AI Algorithmic Competitive Matrix</h3>
-                                <p>RandomForest regression matrix focused on your individual account profile.</p>
+                                <h3><FaBrain className="brain-pulse-icon"/> AI Competitive Performance Standings</h3>
+                                <p>
+                                    Live RandomForest regression tracking. Automatically sorted by your strongest
+                                    category,
+                                    calculated based on your 🚀 <strong>Delivery Speed</strong> and 💰 <strong>Pricing
+                                    Performance</strong>.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -137,47 +159,61 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
                             <p>Running ML Regression Models...</p>
                         </div>
                     ) : aiInsights.length > 0 ? (
-                        <div className="ai-cards-grid">
-                            {aiInsights.map((insight, idx) => (
-                                <motion.div
-                                    key={idx}
-                                    className="ai-ranking-card"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: idx * 0.1 }}
-                                >
-                                    <div className="ai-card-top">
-                                        <span className="ai-cat-badge">{insight.categoryName}</span>
-                                        <span className={`ai-rec-pill ${insight.recommendation === 'TOP PICK' ? 'gold' : 'silver'}`}>
-                                            <FaAward /> {insight.recommendation}
-                                        </span>
-                                    </div>
 
-                                    <div className="ai-score-display">
-                                        <div className="big-score">
-                                            <h4>{insight.aiScore}</h4>
-                                            <small>AI Rating Score</small>
-                                        </div>
-                                        <div className="rank-badge">
-                                            <span>Rank</span>
-                                            <strong>#{insight.rank}</strong>
-                                        </div>
-                                    </div>
+                        <div className="ai-modern-rows-container">
+                        <AnimatePresence>
+                                {aiInsights.map((insight, idx) => (
+                                    <motion.div
+                                        key={insight.categoryId}
+                                        layout
+                                        className="ai-modern-row-card"
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, scale: 0.95 }}
+                                        transition={{
+                                            type: "spring",
+                                            stiffness: 120,
+                                            damping: 14,
+                                            delay: idx * 0.05
+                                        }}
+                                        whileHover={{ x: 5, backgroundColor: "rgba(243, 232, 255, 0.4)" }}
+                                    >
 
-                                    <div className="ai-progress-section">
-                                        <div className="progressbar-meta">
-                                            <span>Algorithmic Performance</span>
-                                            <span>{Math.min(Math.max(insight.aiScore, 0), 100)}%</span>
+                                        <div className="row-rank-badge">
+                                            <span>#{insight.rank}</span>
                                         </div>
-                                        <div className="ai-progress-bar-bg">
-                                            <div
-                                                className="ai-progress-bar-fill"
-                                                style={{ width: `${Math.min(Math.max(insight.aiScore, 5), 100)}%` }}
-                                            />
+
+                                        <div className="row-main-info">
+                                            <h4>{insight.categoryName}</h4>
+                                            <span className={`ai-modern-pill ${insight.recommendation === 'TOP PICK' ? 'gold' : 'silver'}`}>
+                                                <FaAward /> {insight.recommendation}
+                                            </span>
                                         </div>
-                                    </div>
-                                </motion.div>
-                            ))}
+
+
+                                        <div className="row-metrics-section">
+                                            <div className="row-score-meta">
+                                                <span className="score-number">{insight.aiScore}%</span>
+                                                <small>Score</small>
+                                            </div>
+                                            <div className="modern-progress-wrapper">
+                                                <div className="modern-progress-bg">
+                                                    <motion.div
+                                                        className="modern-progress-fill"
+                                                        initial={{ width: 0 }}
+                                                        animate={{ width: `${Math.min(Math.max(insight.aiScore, 5), 100)}%` }}
+                                                        transition={{ duration: 0.8, ease: "easeOut" }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="row-arrow-indicator">
+                                            <FaChevronRight />
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </AnimatePresence>
                         </div>
                     ) : (
                         <div className="ai-empty-state">
@@ -185,6 +221,7 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
                         </div>
                     )}
                 </div>
+
 
                 <div className="alerts-side-card">
                     <h3>Quick Status</h3>
