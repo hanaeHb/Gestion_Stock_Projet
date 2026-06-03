@@ -84,7 +84,6 @@ const SupplierAnalytics = () => {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
-                // هنا كياخد الداتا ديناميكياً كيفما جات من الـ API تماماً بلا إضافات
                 if (res.data && res.data.length > 0) {
                     setPriceHistory(res.data);
                 } else {
@@ -92,14 +91,13 @@ const SupplierAnalytics = () => {
                 }
             } catch (err) {
                 console.error("⚠️ Error fetching price history:", err);
-                setPriceHistory([]); // إيلا وقع خطأ أو مكانتش الداتا كيتصفر المبيان ديناميكياً
+                setPriceHistory([]);
             }
         };
 
         fetchPriceHistory();
     }, [selectedProduct]);
 
-    // Custom Tooltip ديناميكي كيقرا البيانات الحقيقية فقط
     const CustomTooltip = ({ active, payload }: any) => {
         if (active && payload && payload.length) {
             const data = payload[0].payload;
@@ -183,7 +181,7 @@ const SupplierAnalytics = () => {
                 </div>
             </div>
 
-            {/* 📈 الـ Row ديال المبيان الديناميكي بالكامل */}
+
             <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="chart-card-v2 price-evolution-card">
                 <div className="panel-header-v2 price-header-flex">
                     <div className="title-with-icon">

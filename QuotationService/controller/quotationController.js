@@ -89,6 +89,8 @@ exports.refuseQuotation = async (req, res) => {
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
+
+
 exports.getAllQuotations = async (req, res) => {
     try {
         const quotes = await Quotation.find().sort({ createdAt: -1 });
@@ -174,14 +176,21 @@ exports.updateQuotationStatus = async (req, res) => {
         const { id } = req.params;
         const { status } = req.body;
 
+        console.log(`📝 Updating quotation ${id} to status: ${status}`);
+
         const updated = await Quotation.findByIdAndUpdate(
             id,
             { status: status },
-            { new: true }
+            { new: true }  // TODO: replace with returnDocument: 'after' later
         );
 
+        if (!updated) {
+            return res.status(404).json({ error: "Quotation not found" });
+        }
+
+        await producer.connect();
+
         if (status === "ACCEPTED") {
-            await producer.connect();
             await producer.send({
                 topic: 'quotation-updates',
                 messages: [{
@@ -196,18 +205,56 @@ exports.updateQuotationStatus = async (req, res) => {
                         total_ligne: updated.total_ligne,
                         sName: updated.sName,
                         fournisseurId: updated.id_supplier,
+                        timestamp: new Date().toISOString()
                     })
                 }]
             });
-            await producer.disconnect();
+            console.log(`✅ Quotation ${id} ACCEPTED - Kafka event sent`);
+        }
+        else if (status === "REFUSED") {
+            await producer.send({
+                topic: 'quotation-updates',
+                messages: [{
+                    value: JSON.stringify({
+                        type: 'QUOTATION_REFUSED_BY_MANAGER',
+                        orderId: updated.id_commande,
+                        productId: updated.id_produit,
+                        productName: updated.pName,
+                        categoryId: updated.categoryId,
+                        requestedQty: updated.quantite,
+                        sName: updated.sName,
+                        supplierEmail: updated.supplierEmail,
+                        fournisseurId: updated.id_supplier,
+                        reason: "Refused by Manager",
+                        timestamp: new Date().toISOString()
+                    })
+                }]
+            });
+            console.log(`❌ Quotation ${id} REFUSED - Kafka event sent (Plan B triggered)`);
         }
 
-        res.json(updated);
+        // ✅ Disconnect after sending
+        await producer.disconnect();
+
+        res.status(200).json({
+            success: true,
+            message: `Quotation ${status.toLowerCase()} successfully`,
+            data: updated
+        });
+
     } catch (err) {
+        console.error("❌ Error in updateQuotationStatus:", err.message);
+
+        // ✅ Try to disconnect if connected
+        try {
+            await producer.disconnect();
+        } catch (disconnectErr) {
+            console.error("Error disconnecting producer:", disconnectErr.message);
+        }
+
         res.status(500).json({ error: err.message });
     }
 };
-
 exports.getProductPriceEvolution = async (req, res) => {
     try {
         const { id_supplier } = req.params;
@@ -221,12 +268,11 @@ exports.getProductPriceEvolution = async (req, res) => {
             id_supplier: id_supplier,
             pName: productName
         })
-            .sort({ createdAt: 1 }) // الترتيب من الأقدم للأحدث
+            .sort({ createdAt: 1 })
             .select('prix_unitaire createdAt');
 
-        // تحويل الداتا لـ عروض متسلسلة (Q1, Q2, Q3...) مع إظهار اليوم والساعة عند الـ hover
         const formattedHistory = history.map((item, index) => ({
-            name: `Q${index + 1}`, // غاتعطينا Q1, Q2, Q3... ف الـ X-Axis
+            name: `Q${index + 1}`,
             price: item.prix_unitaire,
             fullDate: new Date(item.createdAt).toLocaleDateString('fr-FR', {
                 day: 'numeric',

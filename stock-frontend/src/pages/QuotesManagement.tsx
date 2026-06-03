@@ -23,6 +23,7 @@ export default function QuotesManagement() {
                         productName: quote.pName,
                         productId: quote.id_produit,
                         sku: quote.sku || "N/A",
+                        categoryId: quote.categoryId,
                         offers: []
                     };
                 }
@@ -86,6 +87,7 @@ export default function QuotesManagement() {
                                 <div className="p-meta-text">
                                     <h3>{group.productName}</h3>
                                     <span className="sku-pill">ID: {group.productId}</span>
+                                    <span className="sku-pill">Category: {group.categoryId}</span>
                                 </div>
                             </div>
 

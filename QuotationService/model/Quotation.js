@@ -2,12 +2,14 @@ const mongoose = require('mongoose');
 
 
 const QuotationSchema = new mongoose.Schema({
-    id_commande: { type: String, required: true }, // ID ديال الـ Notification/RFQ
+    id_commande: { type: String, required: true },
     id_produit: { type: String, required: true },
     pName: { type: String },
     id_supplier: { type: String, required: true },
     sName: { type: String },
     supplierEmail: { type: String },
+    categoryId: { type: String },
+    sku: { type: String },
     quantite: { type: Number, required: true },
     prix_unitaire: { type: Number, required: true },
     total_ligne: { type: Number },

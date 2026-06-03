@@ -10,7 +10,7 @@ import {
     FaBoxes,
     FaUserTie,
     FaTags,
-    FaTasks, FaCheckCircle, FaSyncAlt, FaCheck, FaBoxOpen, FaPlus, FaTruckMoving
+    FaTasks, FaCheckCircle, FaSyncAlt, FaCheck, FaBoxOpen, FaPlus, FaTruckMoving, FaTimes
 } from "react-icons/fa";
 import { FaCamera, FaEnvelope, FaPhone, FaIdCard, FaBriefcase, FaCalendarAlt, FaStore } from "react-icons/fa";
 import { FiGrid } from "react-icons/fi";
@@ -357,7 +357,13 @@ export default function Fournisseur() {
 
     const quotationSuccessMessages = allNotifications.filter((n: any) =>
         n.type === "QUOTE_FINALIZED" &&
-        n.niveau === "SUCCESS" &&
+        n.niveau === "SUCCESS" && n.statut === "NON_LUE" &&
+        n.fournisseurId?.toString() === profile?.idFournisseur?.toString()
+    );
+
+    const quotationRefusedMessages = allNotifications.filter((n: any) =>
+        n.type === "QUOTATION_REFUSED" &&
+        n.statut === "NON_LUE" &&
         n.fournisseurId?.toString() === profile?.idFournisseur?.toString()
     );
 
@@ -399,6 +405,15 @@ export default function Fournisseur() {
                     quantity: selectedNotif.quantite,
                     unitPrice: selectedNotif.prix_unitaire || (selectedNotif.total_ligne / selectedNotif.quantite),
                     supplierName: selectedNotif.sName
+                },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            await axios.patch(
+                "http://localhost:8888/service-notification/api/notifications/mark-awaiting-reception-read",
+                {
+                    orderId: selectedNotif.orderId,
+                    fournisseurId: profile?.idFournisseur?.toString()
                 },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -516,10 +531,10 @@ export default function Fournisseur() {
                         <div className="admin-notifs-grid-fournisseur">
 
                             <section className="admin-notif-group">
-                                <div className="group-header" style={{ borderBottom: `3px solid #6c5ce7` }}>
-                                    <FaTags style={{ color: '#6c5ce7', fontSize: '1.4rem' }} />
+                                <div className="group-header" style={{borderBottom: `3px solid #6c5ce7`}}>
+                                    <FaTags style={{color: '#6c5ce7', fontSize: '1.4rem'}}/>
                                     <h3>New Order Requests</h3>
-                                    <span className="count-badge" style={{ background: '#6c5ce7' }}>
+                                    <span className="count-badge" style={{background: '#6c5ce7'}}>
                                          {orderRequests.length}
                                     </span>
                                 </div>
@@ -537,7 +552,8 @@ export default function Fournisseur() {
                                                         Set Price →
                                                     </button>
                                                 </div>
-                                                <span className="time">{new Date(notif.dateAlerte).toLocaleString()}</span>
+                                                <span
+                                                    className="time">{new Date(notif.dateAlerte).toLocaleString()}</span>
                                             </div>
                                         ))
                                     ) : (
@@ -546,10 +562,10 @@ export default function Fournisseur() {
                                 </div>
                             </section>
                             <section className="admin-notif-group">
-                                <div className="group-header" style={{ borderBottom: `3px solid #4facfe` }}>
-                                    <FaCheckCircle style={{ color: '#4facfe', fontSize: '1.4rem' }} />
+                                <div className="group-header" style={{borderBottom: `3px solid #4facfe`}}>
+                                    <FaCheckCircle style={{color: '#4facfe', fontSize: '1.4rem'}}/>
                                     <h3>Order Approvals</h3>
-                                    <span className="count-badge" style={{ background: '#4facfe' }}>
+                                    <span className="count-badge" style={{background: '#4facfe'}}>
                                         {quotationSuccessMessages.length}
                                     </span>
                                 </div>
@@ -563,14 +579,15 @@ export default function Fournisseur() {
                                                     {notif.type === "QUOTE_FINALIZED" && notif.niveau === "SUCCESS" && (
                                                         <button
                                                             className="btn-confirm"
-                                                            style={{ padding: '5px 12px', fontSize: '11px' }}
+                                                            style={{padding: '5px 12px', fontSize: '11px'}}
                                                             onClick={() => openShipModal(notif)}
                                                         >
                                                             Send Invoice & Ship
                                                         </button>
                                                     )}
                                                 </div>
-                                                <span className="time">{new Date(notif.dateAlerte).toLocaleString()}</span>
+                                                <span
+                                                    className="time">{new Date(notif.dateAlerte).toLocaleString()}</span>
                                             </div>
                                         ))
                                     ) : (
@@ -579,6 +596,34 @@ export default function Fournisseur() {
                                 </div>
                             </section>
 
+                            <section className="admin-notif-group">
+                                <div className="group-header" style={{borderBottom: `3px solid #d32f2f`}}>
+                                    <FaTimes style={{color: '#d32f2f', fontSize: '1.4rem'}}/>
+                                    <h3>Refused Quotations</h3>
+                                    <span className="count-badge" style={{background: '#d32f2f'}}>
+                                        {quotationRefusedMessages.length}
+                                    </span>
+                                </div>
+                                <div className="notif-scroll-area">
+                                    {quotationRefusedMessages.length > 0 ? (
+                                        quotationRefusedMessages.map((notif) => (
+                                            <div key={notif._id} className="admin-notif-item refused-item">
+                                                <p className="msg">{notif.message}</p>
+                                                <div className="meta-tags">
+                                                    <span className="tag refused">Refused by Manager</span>
+                                                    {notif.reason && (
+                                                        <span className="tag reason">Reason: {notif.reason}</span>
+                                                    )}
+                                                </div>
+                                                <span
+                                                    className="time">{new Date(notif.dateAlerte).toLocaleString()}</span>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="empty">No refused quotations.</p>
+                                    )}
+                                </div>
+                            </section>
                         </div>
                     </motion.div>
                 )}
@@ -587,14 +632,14 @@ export default function Fournisseur() {
                     {isModalOpen && (
                         <div className="ship-md-overlay">
                             <motion.div
-                                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                                transition={{ duration: 0.25, ease: "easeOut" }}
+                                initial={{opacity: 0, y: 20, scale: 0.95}}
+                                animate={{opacity: 1, y: 0, scale: 1}}
+                                exit={{opacity: 0, y: 20, scale: 0.95}}
+                                transition={{duration: 0.25, ease: "easeOut"}}
                                 className="ship-md-content-box"
                             >
                                 <div className="ship-md-icon-wrapper">
-                                    <FaTruckMoving />
+                                    <FaTruckMoving/>
                                 </div>
 
                                 <h3 className="ship-md-title">Shipping Confirmation</h3>

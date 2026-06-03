@@ -400,6 +400,160 @@ const runKafkaConsumer = async () => {
             console.log(`❌ === AUTOMATED FALLBACK TERMINATED: NO PLAN B MATCH ===`);
           }
         }
+        else if (type === "QUOTATION_REFUSED_BY_MANAGER") {
+
+          await Notification.create({
+            message: `Manager has rejected the quotation from supplier "${event.sName}" for ${event.requestedQty} Units of "${event.productName}". Activating Plan B.`,
+            niveau: "WARN",
+            statut: "NON_LUE",
+            type: "QUOTE_REFUSED_BY_MANAGER",
+            dateAlerte: new Date(),
+            orderId: event.orderId
+          });
+
+          await Notification.create({
+            message: `❌ Your quotation for "${event.productName}" (${event.requestedQty} units) has been REFUSED by the manager. Reason: ${event.reason || "Pricing or performance criteria not met"}.`,
+            niveau: "INFO",
+            statut: "NON_LUE",
+            type: "QUOTATION_REFUSED",
+            dateAlerte: new Date(),
+            orderId: event.orderId,
+            fournisseurId: event.fournisseurId,
+            productId: event.productId,
+            productName: event.productName,
+            quantite: event.requestedQty,
+            sName: event.sName
+          });
+          try {
+            const supplierEmail = event.supplierEmail;
+            if (supplierEmail) {
+              await emailService.sendEmail(
+                  supplierEmail,
+                  "Your Quotation Has Been Refused",
+                  `Hello ${event.sName},
+        
+                  Your quotation for ${event.requestedQty} units of ${event.productName} has been REFUSED by the manager.
+                  
+                  Reason: ${event.reason}`
+              );
+              logger.info(`📧 Refusal email sent to supplier: ${supplierEmail}`);
+            } else {
+              logger.warn(`⚠️ No email address for supplier: ${event.sName}`);
+            }
+          } catch (emailErr) {
+            logger.error(`❌ Failed to send refusal email: ${emailErr.message}`);
+          }
+
+          logger.warn(`=== 🤖 AUTOMATED FALLBACK ACTIVATED BY MANAGER (Product ID: ${event.productId}) ===`);
+          console.log(`=== 🤖 STARTING AUTOMATED FALLBACK PIPELINE FOR MANAGER REFUSAL ===`);
+
+          const internalAuthHeader = "Bearer " + process.env.INTERNAL_SERVICE_TOKEN;
+          let targetFournisseurs = [];
+          let aiRankings = [];
+          let resolvedCategoryId = event.categoryId;
+
+          console.log(`🎯 [Plan B - Manager hit]: Category ID: ${resolvedCategoryId}`);
+
+
+          try {
+            const resSuppliers = await axios.get(
+                `http://localhost:8888/service-fournisseur/api/fournisseurs/category/${resolvedCategoryId}`
+            );
+            targetFournisseurs = resSuppliers.data || [];
+            logger.info(`[Plan B] ${targetFournisseurs.length} fournisseurs alternatifs récupérés.`);
+          } catch (err) {
+            logger.error(`❌ [CRITICAL ERROR - PLAN B]: Impossible de contacter service-fournisseur.`);
+            return;
+          }
+
+
+          try {
+            const resAi = await axios.get(
+                `http://localhost:5008/prediction/predict-best-supplier/${resolvedCategoryId}`
+            );
+            aiRankings = resAi.data || [];
+            logger.info(`[Plan B] Classement IA chargé depuis le service de prédiction.`);
+          } catch (err) {
+            logger.error(`⚠️ [NON-CRITICAL ERROR - PLAN B]: Le pipeline IA Python n'est pas joignable.`);
+            aiRankings = [];
+          }
+
+          const sortedSuppliers = [...targetFournisseurs].sort((a, b) => {
+            const scoreA = aiRankings.find(r => Number(r.id_fournisseur) === Number(a.id_fournisseur))?.ai_score || 0;
+            const scoreB = aiRankings.find(r => Number(r.id_fournisseur) === Number(b.id_fournisseur))?.ai_score || 0;
+            return scoreB - scoreA;
+          });
+
+
+          const currentSupplierIndex = sortedSuppliers.findIndex(f => {
+            const fullName = `${f.prenom || ''} ${f.nom || ''}`.trim().toLowerCase();
+            const eventName = String(event.sName || '').trim().toLowerCase();
+            return fullName === eventName || String(f.nom).toLowerCase() === eventName;
+          });
+
+          let nextSupplier = null;
+          if (currentSupplierIndex === -1 && sortedSuppliers.length > 0) {
+            nextSupplier = sortedSuppliers[0];
+          } else if (currentSupplierIndex !== -1 && (currentSupplierIndex + 1) < sortedSuppliers.length) {
+            nextSupplier = sortedSuppliers[currentSupplierIndex + 1];
+          }
+
+          if (nextSupplier) {
+            logger.info(`🎯 [Plan B] Next target identified -> ${nextSupplier.prenom} ${nextSupplier.nom} (ID: ${nextSupplier.id_fournisseur}).`);
+            const backupQty = event.requestedQty || 1;
+
+            const newOrderData = {
+              id_commande: String(Date.now()),
+              id_fournisseur: Number(nextSupplier.id_fournisseur),
+              emailFournisseur: nextSupplier.email,
+              id_request: event.id_request || "AUTOMATED_PLAN_B_MANAGER",
+              status: 'WAITING_FOR_QUOTATION',
+              total: 0,
+              categoryId: Number(resolvedCategoryId),
+              items: [{
+                id_produit: event.productId,
+                productId: event.productId,
+                productName: event.productName,
+                quantite: backupQty,
+                categoryId: Number(resolvedCategoryId)
+              }],
+              dateCommande: new Date().toISOString()
+            };
+
+            try {
+              await axios.post("http://localhost:5001/api/commandes", newOrderData);
+              logger.info(`🚀 [Plan B] Commande de secours enregistrée.`);
+
+              await Notification.create({
+                message: `🤖 [Plan B Executed]: Quotation from "${event.sName}" was rejected by manager. System automatically routed a fallback request to the next best supplier: "${nextSupplier.prenom} ${nextSupplier.nom}" (ID: ${nextSupplier.id_fournisseur}) for ${backupQty}x "${event.productName}".`,
+                orderId: newOrderData.id_commande,
+                fournisseurId: nextSupplier.id_fournisseur,
+                niveau: "PLAN_B_ACTIVATED",
+                productId: event.productId,
+                categoryId: String(resolvedCategoryId),
+                productName: event.productName,
+                requestedQty: backupQty,
+                statut: "NON_LUE",
+                dateAlerte: new Date(),
+                type: "PLAN_B_ROUTED"
+              });
+
+            } catch (err) {
+              logger.error(`❌ [CRITICAL ERROR]: Échec de la distribution du Plan B: ${err.message}`);
+            }
+
+          } else {
+            logger.warn(`🚨 [Plan B] Aucun fournisseur alternatif disponible.`);
+            await Notification.create({
+              message: `Manager rejected "${event.productName}" from ${event.sName}, but no alternative fallback backup supplier exists in this category!`,
+              niveau: "ERROR",
+              statut: "NON_LUE",
+              type: "NO_FALLBACK_AVAILABLE",
+              dateAlerte: new Date(),
+              orderId: event.orderId
+            });
+          }
+        }
         else if (type === "QUOTATION_ACCEPTED") {
           const finalProductId = event.pId || event.productId || event.id_produit;
           const supplierIdFromEvent = event.fournisseurId || event.id_supplier;

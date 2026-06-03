@@ -32,9 +32,6 @@ exports.updateStatus = async (req, res) => {
         notification.statut = status.toUpperCase();
         await notification.save();
 
-        // ===============================
-        // Send email to fournisseur
-        // ===============================
         const email = notification.fournisseur?.email;
         if (email) {
             const subject = status === "validated" ? "Compte validé" : "Compte refusé";
@@ -111,6 +108,45 @@ exports.markAsRead = async (req, res) => {
         res.json({ message: "Notification marked as read", notification });
     } catch (error) {
         res.status(500).json({ message: "Erreur update notification", error: error.message });
+    }
+};
+
+exports.markAwaitingReceptionAsRead = async (req, res) => {
+    try {
+        const { orderId, fournisseurId } = req.body;
+
+        if (!orderId || !fournisseurId) {
+            return res.status(400).json({
+                message: "Missing required fields: orderId and fournisseurId"
+            });
+        }
+
+        const result = await Notification.updateMany(
+            {
+                orderId: orderId,
+                fournisseurId: fournisseurId,
+                type: "QUOTE_FINALIZED",
+                niveau: "SUCCESS",
+                statut: "NON_LUE"
+            },
+            {
+                $set: { statut: "LUE" }
+            }
+        );
+
+        console.log(`✅ Marked ${result.modifiedCount} notification(s) as LUE for order ${orderId}, fournisseur ${fournisseurId}`);
+
+        res.status(200).json({
+            success: true,
+            message: "Awaiting reception notification marked as read",
+            modifiedCount: result.modifiedCount
+        });
+    } catch (error) {
+        console.error("❌ Error marking awaiting reception as read:", error.message);
+        res.status(500).json({
+            message: "Error marking notification as read",
+            error: error.message
+        });
     }
 };
 

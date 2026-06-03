@@ -68,6 +68,8 @@ router.post('/refuse', authMiddleware, (req, res, next) => {
     next();
 }, quotationController.refuseQuotation);
 
+
+
 router.patch('/:id/status', authMiddleware, (req, res, next) => {
     logger.info(`Mise à jour du statut du devis ID: ${req.params.id} -> ${req.body.status || 'Nouveau Statut'}`);
     next();
