@@ -233,7 +233,6 @@ exports.updateQuotationStatus = async (req, res) => {
             console.log(`❌ Quotation ${id} REFUSED - Kafka event sent (Plan B triggered)`);
         }
 
-        // ✅ Disconnect after sending
         await producer.disconnect();
 
         res.status(200).json({

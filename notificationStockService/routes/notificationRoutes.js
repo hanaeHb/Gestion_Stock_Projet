@@ -146,6 +146,11 @@ router.get("/replenishment-requests", authMiddleware, hasRole("Procurement Manag
         res.status(500).json({ message: "Erreur fetching requests", error: err.message });
     }
 });
+router.get(
+    "/generate-invoice/:id",
+    authMiddleware,
+    notificationController.generateInvoicePDF
+);
 /**
  * @swagger
  * /api/notifications:

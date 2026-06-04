@@ -1,8 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { FaPlus, FaFileAlt, FaExclamationTriangle, FaTags, FaBrain, FaAward, FaChartBar, FaUserShield, FaChevronRight } from 'react-icons/fa';
+import {
+    FaPlus,
+    FaFileAlt,
+    FaExclamationTriangle,
+    FaTags,
+    FaBrain,
+    FaAward,
+    FaChartBar,
+    FaUserShield,
+    FaChevronRight,
+    FaCheckCircle
+} from 'react-icons/fa';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import "./SupplierDashboard.css";
+import ApprovedQuotesPage from './ApprovedQuotesPage';
 
 interface AICategoryRank {
     categoryName: string;
@@ -15,7 +27,12 @@ interface AICategoryRank {
 const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
     const [aiInsights, setAiInsights] = useState<AICategoryRank[]>([]);
     const [loadingAI, setLoadingAI] = useState<boolean>(true);
-
+    const [showApprovedPage, setShowApprovedPage] = useState(false);
+    const acceptedQuotes = notifications.filter((n: any) =>
+        n.type === "QUOTE_FINALIZED" &&
+        n.niveau === "SUCCESS" &&
+        n.fournisseurId?.toString() === profile?.idFournisseur?.toString()
+    );
     const relevantActivities = notifications.filter((n: any) =>
         (n.niveau === "RFQ" || (n.type === "QUOTE_FINALIZED" && n.niveau === "SUCCESS")) &&
         n.fournisseurId?.toString() === profile?.idFournisseur?.toString()
@@ -105,7 +122,9 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
 
         fetchAIScores();
     }, [profile]);
-
+    if (showApprovedPage) {
+        return <ApprovedQuotesPage profile={profile} onBack={() => setShowApprovedPage(false)} />;
+    }
     return (
         <div className="dashboard-container">
             <header className="workspace-header">
@@ -120,20 +139,27 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
                 <button className="main-action-card" onClick={() => onNavigate("orders")}>
                     <div className="icon-box purple"><FaPlus/></div>
                     <span>Create New Quote</span>
-                    <small style={{color: '#94a3b8'}}>Answer pending RFQs</small>
+
+                    <button className="stat-link-btn">Answer pending RFQs →</button>
                 </button>
 
                 <button className="main-action-card" onClick={() => onNavigate("specialization")}>
                     <div className="icon-box blue"><FaTags/></div>
                     <span>My Specializations</span>
-                    <small style={{color: '#94a3b8'}}>Update categories</small>
+
+                    <button className="stat-link-btn">Update categories →</button>
                 </button>
 
-                <button className="main-action-card" onClick={() => onNavigate("approved")}>
-                    <div className="icon-box green"><FaFileAlt/></div>
-                    <span>Approved Quotes</span>
-                    {approvalCount > 0 && <span className="action-badge success">{approvalCount}</span>}
-                </button>
+                <div className="stat-card-premium" onClick={() => setShowApprovedPage(true)}>
+                    <div className="stat-icon-bg" style={{background: 'linear-gradient(135deg, #ff9a9e20, #730d1908)'}}>
+                        <FaCheckCircle style={{color: '#730d19'}}/>
+                    </div>
+                    <div className="stat-info">
+                        <h3>{acceptedQuotes.length}</h3>
+                        <p>Approved Quotes</p>
+                    </div>
+                    <button className="stat-link-btn">View →</button>
+                </div>
             </div>
 
             <div className="dashboard-content-layout">
@@ -144,7 +170,7 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
                             <div>
                                 <h3><FaBrain className="brain-pulse-icon"/> AI Competitive Performance Standings</h3>
                                 <p>
-                                    Live RandomForest regression tracking. Automatically sorted by your strongest
+                                Live RandomForest regression tracking. Automatically sorted by your strongest
                                     category,
                                     calculated based on your 🚀 <strong>Delivery Speed</strong> and 💰 <strong>Pricing
                                     Performance</strong>.
