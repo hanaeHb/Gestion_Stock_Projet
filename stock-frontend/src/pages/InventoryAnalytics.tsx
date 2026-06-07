@@ -40,7 +40,7 @@ const InventoryAnalytics: React.FC<AnalyticsProps> = ({ products, categories }) 
     });
     const topProductsData = [...stockValueData]
         .sort((a, b) => b.Value - a.Value)
-        .slice(0, 8); // أفضل 8 منتجات بالترتيب
+        .slice(0, 8);
     const categoryDistribution = categories.map(cat => {
         const currentCatId = (cat.id )?.toString();
 

@@ -1339,7 +1339,7 @@ export default function ProcurementManager() {
                                         try {
                                             const token = localStorage.getItem("token");
 
-                                            // hna ghi les fields editable
+
                                             const updatedData = {
                                                 phone: profile?.phone,
                                                 cin: profile?.cin,

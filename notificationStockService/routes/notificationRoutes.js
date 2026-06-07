@@ -112,10 +112,12 @@ router.put("/:id/mark-as-read", authMiddleware, hasRole("Inventory Manager"), (r
     next();
 }, notificationController.markAsRead);
 
-router.put("/:id/mark-awaiting-reception-read", authMiddleware, (req, res, next) => {
-    logger.info(`Marquer la notification ID: ${req.params.id} comme lue`);
-    next();
-}, notificationController.markAwaitingReceptionAsRead);
+// Mark awaiting reception as read by orderId + fournisseurId (without :id in URL)
+router.patch(
+    "/mark-awaiting-reception-read",
+    authMiddleware,
+    notificationController.markAwaitingReceptionAsRead
+);
 
 router.put("/:id/status", authMiddleware, hasRole("Procurement Manager"), (req, res, next) => {
     logger.info(`Mise à jour du statut d'une demande/notif ID: ${req.params.id}`);

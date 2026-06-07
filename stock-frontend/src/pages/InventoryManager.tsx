@@ -888,7 +888,7 @@ export default function InventoryManager() {
                                     onClick={confirmRestockAction}
                                     disabled={requestedQty <= 0}
                                 >
-                                    Confirm & Send to Kafka 🚀
+                                    Confirm & Send
                                 </button>
                             </div>
                         </div>

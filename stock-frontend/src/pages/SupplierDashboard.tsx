@@ -9,7 +9,7 @@ import {
     FaChartBar,
     FaUserShield,
     FaChevronRight,
-    FaCheckCircle
+    FaCheckCircle, FaTimes
 } from 'react-icons/fa';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -38,9 +38,30 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
         n.fournisseurId?.toString() === profile?.idFournisseur?.toString()
     );
 
-    const rfqCount = relevantActivities.filter((n: any) => n.niveau === "RFQ").length;
+    const rfqCount = relevantActivities.filter((n: any) => n.niveau === "RFQ" && n.statut === "NON_LUE").length;
     const approvalCount = relevantActivities.filter((n: any) => n.type === "QUOTE_FINALIZED").length;
+    const [quotesStats, setQuotesStats] = useState({
+        totalQuotes: 0,
+        acceptedQuotes: 0,
+        refusedQuotes: 0,
+        pendingQuotes: 0,
+        totalRevenue: 0
+    });
 
+    const fetchQuotesStats = async () => {
+        if (!profile?.idFournisseur) return;
+
+        try {
+            const token = localStorage.getItem("token");
+            const res = await axios.get(
+                `http://localhost:8888/quotation-service/api/quotations/${profile.idFournisseur}/stats`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setQuotesStats(res.data);
+        } catch (err) {
+            console.error("Error fetching quotes stats:", err);
+        }
+    };
     useEffect(() => {
         const fetchAIScores = async () => {
             if (!profile?.idFournisseur) return;
@@ -119,7 +140,7 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
                 setLoadingAI(false);
             }
         };
-
+        fetchQuotesStats();
         fetchAIScores();
     }, [profile]);
     if (showApprovedPage) {
@@ -170,7 +191,7 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
                             <div>
                                 <h3><FaBrain className="brain-pulse-icon"/> AI Competitive Performance Standings</h3>
                                 <p>
-                                Live RandomForest regression tracking. Automatically sorted by your strongest
+                                    Live RandomForest regression tracking. Automatically sorted by your strongest
                                     category,
                                     calculated based on your 🚀 <strong>Delivery Speed</strong> and 💰 <strong>Pricing
                                     Performance</strong>.
@@ -187,22 +208,22 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
                     ) : aiInsights.length > 0 ? (
 
                         <div className="ai-modern-rows-container">
-                        <AnimatePresence>
+                            <AnimatePresence>
                                 {aiInsights.map((insight, idx) => (
                                     <motion.div
                                         key={insight.categoryId}
                                         layout
                                         className="ai-modern-row-card"
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, scale: 0.95 }}
+                                        initial={{opacity: 0, x: -20}}
+                                        animate={{opacity: 1, x: 0}}
+                                        exit={{opacity: 0, scale: 0.95}}
                                         transition={{
                                             type: "spring",
                                             stiffness: 120,
                                             damping: 14,
                                             delay: idx * 0.05
                                         }}
-                                        whileHover={{ x: 5, backgroundColor: "rgba(243, 232, 255, 0.4)" }}
+                                        whileHover={{x: 5, backgroundColor: "rgba(243, 232, 255, 0.4)"}}
                                     >
 
                                         <div className="row-rank-badge">
@@ -211,8 +232,9 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
 
                                         <div className="row-main-info">
                                             <h4>{insight.categoryName}</h4>
-                                            <span className={`ai-modern-pill ${insight.recommendation === 'TOP PICK' ? 'gold' : 'silver'}`}>
-                                                <FaAward /> {insight.recommendation}
+                                            <span
+                                                className={`ai-modern-pill ${insight.recommendation === 'TOP PICK' ? 'gold' : 'silver'}`}>
+                                                <FaAward/> {insight.recommendation}
                                             </span>
                                         </div>
 
@@ -226,16 +248,16 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
                                                 <div className="modern-progress-bg">
                                                     <motion.div
                                                         className="modern-progress-fill"
-                                                        initial={{ width: 0 }}
-                                                        animate={{ width: `${Math.min(Math.max(insight.aiScore, 5), 100)}%` }}
-                                                        transition={{ duration: 0.8, ease: "easeOut" }}
+                                                        initial={{width: 0}}
+                                                        animate={{width: `${Math.min(Math.max(insight.aiScore, 5), 100)}%`}}
+                                                        transition={{duration: 0.8, ease: "easeOut"}}
                                                     />
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div className="row-arrow-indicator">
-                                            <FaChevronRight />
+                                            <FaChevronRight/>
                                         </div>
                                     </motion.div>
                                 ))}
@@ -243,7 +265,8 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
                         </div>
                     ) : (
                         <div className="ai-empty-state">
-                            <p>No predictive ranking available. Setup your specializations to activate AI matrix insights.</p>
+                            <p>No predictive ranking available. Setup your specializations to activate AI matrix
+                                insights.</p>
                         </div>
                     )}
                 </div>
@@ -252,18 +275,36 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
                 <div className="alerts-side-card">
                     <h3>Quick Status</h3>
                     <div className="status-item-mini">
-                        <FaUserShield color="#10b981"/>
+                        <FaUserShield color="#730d19"/>
                         <span>Profile Registry: <strong>{profile?.status || "Active"}</strong></span>
                     </div>
                     <div className="status-item-mini">
-                        <FaExclamationTriangle color="#f59e0b"/>
-                        <span>Pending Requests: <strong>{rfqCount}</strong></span>
+                        <FaExclamationTriangle color="#ff9a9e"/>
+                        <span>Pending Requests: <strong className="status-count-badge">{rfqCount}</strong></span>
+                    </div>
+                    <div className="status-item-mini">
+                        <FaCheckCircle color="#28a745"/>
+                        <span>Approved Quotes: <strong
+                            className="status-count-badge approved">{quotesStats.acceptedQuotes}</strong></span>
                     </div>
 
-                    <div className="ai-efficiency-pills" style={{ marginTop: '25px' }}>
-                        <h4 style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '12px' }}>METRIC SHIELD</h4>
+
+                    <div className="status-item-mini">
+                        <FaTimes color="#dc3545"/>
+                        <span>Refused Quotes: <strong
+                            className="status-count-badge refused">{quotesStats.refusedQuotes}</strong></span>
+                    </div>
+
+
+                    <div className="status-item-mini">
+                        <FaChartBar color="#ff9a9e"/>
+                        <span>Total Revenue: <strong>{quotesStats.totalRevenue.toLocaleString()} DH</strong></span>
+                    </div>
+                    <div className="ai-efficiency-pills">
+                        <h4>PERFORMANCE METRICS</h4>
                         <div className="efficiency-padd">
-                            <FaChartBar /> <span>Live Sync With Eureka Cluster</span>
+                            <FaChartBar/>
+                            <span>AI Ranking Active</span>
                         </div>
                     </div>
                 </div>

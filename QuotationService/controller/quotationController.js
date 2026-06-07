@@ -287,3 +287,50 @@ exports.getProductPriceEvolution = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+exports.getSupplierQuotesStats = async (req, res) => {
+    try {
+        const { id_supplier } = req.params;
+
+        const stats = await Quotation.aggregate([
+            { $match: { id_supplier: id_supplier } },
+            {
+                $group: {
+                    _id: null,
+                    totalQuotes: { $sum: 1 },
+                    acceptedQuotes: {
+                        $sum: { $cond: [{ $eq: ["$status", "ACCEPTED"] }, 1, 0] }
+                    },
+                    refusedQuotes: {
+                        $sum: { $cond: [{ $eq: ["$status", "REFUSED"] }, 1, 0] }
+                    },
+                    pendingQuotes: {
+                        $sum: { $cond: [{ $eq: ["$status", "PENDING"] }, 1, 0] }
+                    },
+                    totalRevenue: {
+                        $sum: {
+                            $cond: [
+                                { $eq: ["$status", "ACCEPTED"] },
+                                "$total_ligne",
+                                0
+                            ]
+                        }
+                    }
+                }
+            }
+        ]);
+
+        const result = stats[0] || {
+            totalQuotes: 0,
+            acceptedQuotes: 0,
+            refusedQuotes: 0,
+            pendingQuotes: 0,
+            totalRevenue: 0
+        };
+
+        res.json(result);
+    } catch (err) {
+        console.error("❌ Error in getSupplierQuotesStats:", err.message);
+        res.status(500).json({ error: err.message });
+    }
+};
