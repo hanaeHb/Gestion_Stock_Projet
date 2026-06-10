@@ -77,8 +77,10 @@ const PredictionDashboard: React.FC<PredictionDashboardProps> = ({ products, cat
             })
                 .then(res => {
                     setRestockPrediction(res.data);
-                    if (res.data.dynamic_chart) {
+                    if (res.data && res.data.dynamic_chart) {
                         setDynamicChartData(res.data.dynamic_chart);
+                    } else {
+                        setDynamicChartData([]);
                     }
                 })
                 .catch(err => console.error(err))
@@ -93,7 +95,7 @@ const PredictionDashboard: React.FC<PredictionDashboardProps> = ({ products, cat
             setSelectedCategory(firstCatId);
 
             setLoadingSupplier(true);
-            const token = localStorage.getItem("token"); // 🔑
+            const token = localStorage.getItem("token"); //
             axios.get(`http://localhost:8888/prediction-service/prediction/predict-best-supplier/${firstCatId}`, {
                 headers: { Authorization: `Bearer ${token}` } // 🛡️
             })

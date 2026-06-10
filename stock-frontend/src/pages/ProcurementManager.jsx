@@ -1443,7 +1443,7 @@ export default function ProcurementManager() {
                                                             </button>
                                                             <button
                                                                 className="fs-btn-reject"
-                                                                onClick={() => rejectFournisseur(f._id)}
+                                                                onClick={() => updateNotificationStatus(f._id, "rejected", f.fournisseur?.userId)}
                                                             >
                                                                 Refuse
                                                             </button>
