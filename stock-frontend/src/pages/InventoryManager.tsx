@@ -19,6 +19,7 @@ import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 import InventoryAnalytics from "./InventoryAnalytics";
 import ProductEditModal from './ProductEditModal';
 import ProductDetailModal from './ProductDetailModal';
+import GestionnaireChatbot from "./GestionnaireChatbot";
 
 interface Profile {
     userId?: number;
@@ -248,15 +249,20 @@ export default function InventoryManager() {
     const handleMarkAsRead = async (id: string) => {
         try {
             const token = localStorage.getItem("token");
+
+
             await axios.put(
                 `http://localhost:8888/service-notification/api/notifications/${id}/mark-as-read`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-            setNotifications(prev => prev.filter(n => n._id !== id));
-            setUnreadCount(prev => Math.max(0, prev - 1));
 
-            console.log("Notification marked as read! ✅");
+            setNotifications(prev => prev.filter(n => n._id !== id));
+
+
+            setNotificationCount(prev => Math.max(0, prev - 1));
+
+            console.log("Notification marked as read and removed from view! ✅");
 
         } catch (err: any) {
             console.error("Error marking as read:", err.response?.data || err.message);
@@ -612,6 +618,12 @@ export default function InventoryManager() {
                                                 <span className="time">
                                                     {new Date(notif.dateAlerte).toLocaleString()}
                                                 </span>
+                                                <button
+                                                    className="btn-mark-read"
+                                                    onClick={() => handleMarkAsRead(notif._id)}
+                                                >
+                                                    Mark as Read
+                                                </button>
                                             </div>
                                         ))
                                     ) : (
@@ -621,7 +633,7 @@ export default function InventoryManager() {
                             </section>
 
                             <section className="admin-notif-group">
-                                <div className="group-header" style={{ borderBottom: `3px solid #10b981` }}>
+                                <div className="group-header" style={{borderBottom: `3px solid #10b981`}}>
                                     <FaBoxes style={{ color: '#10b981', fontSize: '1.4rem' }} />
                                     <h3>Confirmed Shipments</h3>
                                     <span className="count-badge" style={{ background: '#10b981' }}>
@@ -641,6 +653,12 @@ export default function InventoryManager() {
                                                 <span className="time">
                                                      {new Date(notif.dateAlerte).toLocaleString()}
                                                  </span>
+                                                <button
+                                                    className="btn-mark-read"
+                                                    onClick={() => handleMarkAsRead(notif._id)}
+                                                >
+                                                    Mark as Read
+                                                </button>
                                             </div>
                                         ))
                                     ) : (
@@ -1086,6 +1104,7 @@ export default function InventoryManager() {
                     </div>
                 )}
             </main>
+            <GestionnaireChatbot />
         </div>
     );
 }

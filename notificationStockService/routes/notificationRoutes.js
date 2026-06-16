@@ -107,7 +107,7 @@ router.get(
     }
 );
 
-router.put("/:id/mark-as-read", authMiddleware, hasRole("Inventory Manager"), (req, res, next) => {
+router.put("/:id/mark-as-read", authMiddleware, (req, res, next) => {
     logger.info(`Marquer la notification ID: ${req.params.id} comme lue`);
     next();
 }, notificationController.markAsRead);

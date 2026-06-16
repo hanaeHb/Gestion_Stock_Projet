@@ -9,6 +9,7 @@ from sklearn.ensemble import RandomForestRegressor
 import os
 import socket
 import requests
+import json
 import logging
 from logger import logger
 from opentelemetry import trace
@@ -149,6 +150,141 @@ def chatbot_local_ai():
     except Exception as e:
         print(f"💥 Crash internal code: {str(e)}")
         return jsonify({"answer": f"Désolé, une erreur est survenue: {str(e)}"}), 500
+
+
+def get_inventory_manager_live_data(token):
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    details = {
+        "total_products": 0,
+        "product_list": [],
+        "total_stock_value": 0,
+        "critical_alerts": [],
+        "confirmed_shipments": []
+    }
+
+    try:
+        prod_res = requests.get("http://localhost:8888/produit-stock-service/v1/produits", headers=headers, timeout=3)
+        if prod_res.status_code == 200:
+            products = prod_res.json()
+            details["total_products"] = len(products)
+
+            for p in products:
+                nom = p.get('nom', 'Inconnu')
+                qty = p.get('quantiteDisponible', 0)
+                prix = p.get('prixUnitaire', 0)
+                seuil = p.get('seuilCritique', 5)
+
+                details["product_list"].append(f"{nom} (Stock: {qty}, Prix: {prix} DH, Seuil: {seuil})")
+                details["total_stock_value"] += (qty * prix)
+    except Exception as e:
+        logger.error(f"⚠️ Erreur catalogue MySQL: {e}")
+
+    try:
+        alert_res = requests.get("http://localhost:8888/service-notification/api/notifications", headers=headers, timeout=3)
+        if alert_res.status_code == 200:
+            res_json = alert_res.json()
+
+            notifications = res_json.get('notifications', res_json) if isinstance(res_json, dict) else res_json
+
+            for n in notifications:
+                msg = n.get('message', '')
+                statut = n.get('statut', '')
+                niveau = n.get('niveau', '')
+                ntype = n.get('type', '')
+
+
+                if statut == "NON_LUE":
+                    if niveau == "ERROR":
+                        details["critical_alerts"].append(msg)
+                    if ntype == "CONFIRMED" or "confirm" in msg.lower():
+                        details["confirmed_shipments"].append(msg)
+    except Exception as e:
+        logger.error(f"⚠️ Erreur alertes MongoDB: {e}")
+
+
+    summary = f"--- STOCK REAL-TIME DATA ---\\n"
+    summary += f"Nombre total de produits: {details['total_products']}\\n"
+    summary += f"Articles de l'entrepôt: {', '.join(details['product_list']) if details['product_list'] else 'Aucun'}\\n"
+    summary += f"Valeur financière globale de l'inventaire: {details['total_stock_value']} DH\\n"
+    summary += f"Alertes de Rupture Critiques Actives (Niveau ERROR): {'; '.join(details['critical_alerts']) if details['critical_alerts'] else 'Aucune alerte critique non lue'}\\n"
+    summary += f"Arrivages / Livraisons Validées (Type CONFIRMED): {'; '.join(details['confirmed_shipments']) if details['confirmed_shipments'] else 'Aucun mouvement récemment confirmé'}\\n"
+    summary += f"Opérations: Flux Kafka connecté pour l'envoi des requêtes automatiques de réapprovisionnement."
+
+    return summary
+
+
+@app.route('/prediction/assistant/secure/gestionnaire/chat', methods=['POST'])
+def chatbot_gestionnaire_ai():
+    logger.info("⚡ Assistant Logistique Sécurisé - Inventory Manager Core")
+    try:
+        auth_header = request.headers.get('Authorization', None)
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({"answer": "Accès refusé. Authentification requise (401)."}), 401
+
+        token = auth_header.split(' ')[1]
+        data = request.json
+        user_question = data.get('question', '')
+
+        if not user_question:
+            return jsonify({"answer": "Veuillez spécifier votre requête logistique."}), 400
+
+        live_context = get_inventory_manager_live_data(token)
+
+        INVENTORY_PROMPT = f"""
+        Tu es l'assistant IA expert intégré à l'espace de l'INVENTORY_MANAGER de l'application "IN GO STOCK".
+        Ton rôle est double : 
+        1. Donner des réponses ultra-précises, chiffrées et complètes basées UNIQUEMENT sur les données réelles du système.
+        2. Guider et former les nouveaux utilisateurs (recherche d'onglets, utilisation de l'application, compréhension des graphiques).
+
+        CONTEXTE TECHNIQUE ET DONNÉES EN TEMPS RÉEL (Microservices & Bases de données) :
+        {live_context}
+
+        CONSIGNES DE RÉPONSE :
+        - S'il s'agit d'une QUESTION PRATIQUE/COMPTABLE (Ex: liste des produits, alertes, valeur du stock, confirmed items), examine minutieusement le CONTEXTE ci-dessus et donne TOUS les noms, chiffres exacts et détails disponibles sans faire de résumé ou couper la liste.
+        - S'il s'agit d'une QUESTION D'UN NOUVEAU GESTIONNAIRE (Ex: comment faire une entrée/sortie, où voir les graphiques) :
+           * Guide-le vers l'onglet "Inventory Analytics" (qui contient les graphiques AreaChart et BarChart rose/rouge fonçé pour la valeur des stocks).
+           * Explique-lui que pour ajouter un produit il doit cliquer sur "Create Product", et pour modifier/voir les détails il utilise les boutons d'action sur le tableau.
+           * Explique-lui que la prévision se base sur la Régression Linéaire (Forecast Insights) où les barres roses sont les ventes passées et la ligne rouge fonçé est la tendance future de l'IA.
+        - Ne cite JAMAIS de faux noms (comme Produit A, B). Reste professionnel, précis, complet et réponds en Français (ou la langue de l'utilisateur).
+        """
+
+        GROQ_API_KEY = "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"
+        GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+
+        headers = {
+            "Authorization": f"Bearer {GROQ_API_KEY}",
+            "Content-Type": "application/json; charset=utf-8"
+        }
+
+        payload = {
+            "model": "llama-3.1-8b-instant",
+            "messages": [
+                {"role": "system", "content": INVENTORY_PROMPT},
+                {"role": "user", "content": user_question}
+            ],
+            "temperature": 0.1
+        }
+
+        response = requests.post(GROQ_URL, data=json.dumps(payload, ensure_ascii=False).encode('utf-8'), headers=headers, timeout=10)
+
+        if response.status_code != 200:
+            return jsonify({"answer": "Erreur de communication avec le cœur IA."}), response.status_code
+
+        bot_answer = response.json()['choices'][0]['message']['content'].strip()
+
+        return app.response_class(
+            response=json.dumps({"answer": bot_answer}, ensure_ascii=False),
+            status=200,
+            mimetype='application/json; charset=utf-8'
+        )
+
+    except Exception as e:
+        return jsonify({"answer": f"Erreur interne du serveur : {str(e)}"}), 500
+
 @app.route('/prediction/predict-restock/<int:product_id>', methods=['GET'])
 def predict_restock_dynamic(product_id):
     logger.info(f"Démarrage de la prédiction de restock pour le produit ID: {product_id}")

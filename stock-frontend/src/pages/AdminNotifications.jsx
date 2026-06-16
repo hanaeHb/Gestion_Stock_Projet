@@ -6,9 +6,9 @@ import './AdminNotifications.css';
 
 const AdminNotifications = ({ notifications, refresh, loading, setTotalCount }) => {
 
-    const stockAlerts = notifications.filter(n => n.niveau === 'ERROR');
-    const purchaseRequests = notifications.filter(n => n.type === 'NEW_ORDER_REQUEST' || n.type === 'QUOTE_RECEIVED' || n.type === 'PLAN_B_ROUTED');
-    const logistics = notifications.filter(n => n.type === 'WAITING_CONFIRMATION' || n.type === 'AWAITING_RECEPTION' || n.type === 'ORDER_SHIPPED');
+    const stockAlerts = notifications.filter(n => n.niveau === 'ERROR' && n.statut === "NON_LUE");
+    const purchaseRequests = notifications.filter(n => n.type === 'NEW_ORDER_REQUEST' && n.statut === "NON_LUE" || n.type === 'QUOTE_RECEIVED' && n.statut === "NON_LUE" || n.type === 'PLAN_B_ROUTED' && n.statut === "NON_LUE");
+    const logistics = notifications.filter(n => n.type === 'WAITING_CONFIRMATION' && n.statut === "NON_LUE" || n.type === 'AWAITING_RECEPTION' && n.statut === "NON_LUE" || n.type === 'ORDER_SHIPPED' && n.statut === "NON_LUE");
     const finalized = notifications.filter(n => n.type === 'CONFIRMED');
     useEffect(() => {
         const total = stockAlerts.length + purchaseRequests.length + logistics.length + finalized.length;
@@ -39,6 +39,24 @@ const AdminNotifications = ({ notifications, refresh, loading, setTotalCount }) 
 
         return configs[key] || { label: key, className: 'badge-default' };
     };
+    const handleMarkAsRead = async (id) => {
+        try {
+            const token = localStorage.getItem("token");
+
+            await axios.put(
+                `http://localhost:8888/service-notification/api/notifications/${id}/mark-as-read`,
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            console.log("Notification marked as read! ✅");
+
+            if (refresh) refresh();
+
+        } catch (err) {
+            console.error("Error marking as read:", err.response?.data || err.message);
+        }
+    };
     const renderGroup = (title, icon, data, color) => (
         <section className="admin-notif-group glass-panel">
             <div className="group-header" style={{ borderBottom: `3px solid ${color}` }}>
@@ -67,6 +85,12 @@ const AdminNotifications = ({ notifications, refresh, loading, setTotalCount }) 
                                 </span>
                                 <span className="time">{new Date(n.dateAlerte).toLocaleString()}</span>
                             </div>
+                            <button
+                                className="btn-mark-read"
+                                onClick={() => handleMarkAsRead(n._id)}
+                            >
+                                Mark as Read
+                            </button>
                         </div>
                     );
                 }) : <p className="empty-msg">No activity recorded yet.</p>}
@@ -80,7 +104,7 @@ const AdminNotifications = ({ notifications, refresh, loading, setTotalCount }) 
             animate={{opacity: 1, y: 0}}
             className="admin-notifs-page"
         >
-            <div className="admin-notifs-header">
+        <div className="admin-notifs-header">
                 <div className="title-section">
                     <h1><FaBell className="bell-icon"/> Notifications Center</h1>
                     <p>Monitor all microservices activities in real-time</p>

@@ -99,6 +99,7 @@ exports.create = async (req, res) => {
     }
 };
 
+
 exports.markAsRead = async (req, res) => {
     try {
         const notification = await Notification.findByIdAndUpdate(
@@ -107,8 +108,14 @@ exports.markAsRead = async (req, res) => {
             { new: true }
         );
 
-        if (!notification) return res.status(404).json({ message: "Notification not found" });
-        res.json({ message: "Notification marked as read", notification });
+        if (!notification) {
+            return res.status(404).json({ message: "Notification not found" });
+        }
+
+        res.json({
+            message: "Notification marked as read successfully",
+            notification
+        });
     } catch (error) {
         res.status(500).json({ message: "Erreur update notification", error: error.message });
     }

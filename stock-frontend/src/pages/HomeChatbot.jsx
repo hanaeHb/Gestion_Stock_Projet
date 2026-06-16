@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { FaComments, FaTimes, FaPaperPlane, FaRobot } from "react-icons/fa";
-import axios from "axios"; // Darori n-importiw axios l l-connexion API
+import axios from "axios";
 import "./homeChatbot.css";
 
 const HomeChatbot = () => {
@@ -28,18 +28,18 @@ const HomeChatbot = () => {
         if (!input.trim()) return;
 
         const userText = input;
-        // 1. Affiche l'avis de l'utilisateur sur l'écran
+
         setMessages((prev) => [...prev, { sender: "user", text: userText }]);
         setInput("");
         setIsLoading(true);
 
         try {
-            // 2. Appel Réel de l'API via ton API Gateway (port 8080)
+
             const response = await axios.post("http://localhost:8888/prediction-service/prediction/assistant/public/chat", {
                 question: userText
             });
 
-            // 3. Récupère la réponse générée par Phi-3 localement
+
             const botResponse = response.data.answer || "Désolé, je n'ai pas pu générer de réponse.";
 
             setMessages((prev) => [...prev, { sender: "bot", text: botResponse }]);
@@ -56,12 +56,12 @@ const HomeChatbot = () => {
 
     return (
         <div className="chatbot-wrapper">
-            {/* L-Icon floating dyal l-Chatbot */}
+
             <button className="chatbot-toggle-btn" onClick={() => setIsOpen(!isOpen)}>
                 {isOpen ? <FaTimes /> : <FaComments />}
             </button>
 
-            {/* Chat Window */}
+
             {isOpen && (
                 <div className="chatbot-window">
                     <div className="chatbot-header">
@@ -96,7 +96,7 @@ const HomeChatbot = () => {
                             placeholder="Posez votre question à l'IA..."
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            disabled={isLoading} // Bloque l'input pendant le calcul de l'IA
+                            disabled={isLoading}
                         />
                         <button type="submit" className="chatbot-send-btn" disabled={isLoading}>
                             <FaPaperPlane />

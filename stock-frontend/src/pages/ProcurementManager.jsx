@@ -213,10 +213,10 @@ export default function ProcurementManager() {
     const [isWizardOpen, setIsWizardOpen] = useState(false);
     const [currentRequest, setCurrentRequest] = useState(null);
     const [allNotifications, setAllNotifications] = useState([]);
-    const quoteNotifications = allNotifications.filter(n => n.type === "QUOTE_RECEIVED");
-    const refusedQuotes = allNotifications.filter(n => n.type === "QUOTE_REFUSED_BY_SUPPLIER");
-    const planB = allNotifications.filter(n => n.type === "PLAN_B_ROUTED");
-    const noFallback = allNotifications.filter(n => n.type === "NO_FALLBACK_AVAILABLE");
+    const quoteNotifications = allNotifications.filter(n => n.type === "QUOTE_RECEIVED" && n.statut === "NON_LUE");
+    const refusedQuotes = allNotifications.filter(n => n.type === "QUOTE_REFUSED_BY_SUPPLIER" && n.statut === "NON_LUE");
+    const planB = allNotifications.filter(n => n.type === "PLAN_B_ROUTED" && n.statut === "NON_LUE");
+    const noFallback = allNotifications.filter(n => n.type === "NO_FALLBACK_AVAILABLE" && n.statut === "NON_LUE");
     const handleConfirmReception = async (notif) => {
         try {
             const token = localStorage.getItem("token");
@@ -388,17 +388,14 @@ export default function ProcurementManager() {
         const logoBase64 = await loadLogoAsBase64();
         const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-        // 1. BACKGROUND BYAD TALJ (Forcer pure white 3la l-canvas kaml)
         doc.setFillColor(255, 255, 255);
         doc.rect(0, 0, 210, 297, "F");
 
-        // 2. THE BIG LOGO SYSTEM (Ajusté b l-qyas l-kbir mndmaj m3a l-blanc)
         if (logoBase64) {
-            // Grand format exact dyal single report (38mm x 16mm)
             doc.addImage(logoBase64, "PNG", 14, 12, 38, 16, undefined, 'FAST');
         }
 
-        // 3. TYPOGRAPHY & HEADER METRICS (Position adjusted text-flow nicely)
+
         doc.setFont("helvetica", "bold");
         doc.setFontSize(22);
         doc.setTextColor(114, 15, 42); // Burgundy premium text
@@ -406,10 +403,9 @@ export default function ProcurementManager() {
 
         doc.setFont("helvetica", "normal");
         doc.setFontSize(9.5);
-        doc.setTextColor(100, 116, 139); // Clean slate text secondary
+        doc.setTextColor(100, 116, 139);
         doc.text(`Consolidated Sourcing Pipeline • Generated: ${new Date().toLocaleDateString()}`, 14, 50);
 
-        // 4. MAPPING DATA
         const tableRows = reports.map(item => [
             item.produitId?.toString() || "N/A",
             item.nomProduit || "Unknown",
@@ -418,20 +414,19 @@ export default function ProcurementManager() {
             item.bestSupplier?.name || "Searching..."
         ]);
 
-        // 5. GLOBAL TABLE SYSTEM (Clean without pink-grey borders)
         autoTable(doc, {
             head: [['ID', 'Product Name', 'Stock Level', 'AI Forecast', 'Strategic Supplier']],
             body: tableRows,
-            startY: 58, // Hbatna space pur 3la l-header
+            startY: 58,
             margin: { left: 14, right: 14 },
             theme: 'plain',
             styles: {
                 font: 'helvetica',
                 fontSize: 9.5,
                 cellPadding: 5.5,
-                textColor: [51, 65, 85], // Slate-700 readable font
+                textColor: [51, 65, 85],
                 borderBottomWidth: 0.3,
-                borderBottomColor: [241, 245, 249] // Ultra soft clean horizontal separator lines
+                borderBottomColor: [241, 245, 249]
             },
             headStyles: {
                 fillColor: [114, 15, 42], // Burgundy header box matchy
@@ -443,55 +438,52 @@ export default function ProcurementManager() {
 
             didParseCell: function (data) {
                 if (data.section === 'body') {
-                    // Zebra rows striping with absolute white base and ultra-light tint
                     if (data.row.index % 2 === 1) {
                         data.cell.styles.fillColor = [248, 250, 252];
                     } else {
                         data.cell.styles.fillColor = [255, 255, 255];
                     }
 
-                    // Metric highlighters b loen clear & clean
                     if (data.column.index === 2) {
                         const stockVal = parseInt(data.cell.text[0]);
                         if (stockVal <= 10) {
-                            data.cell.styles.textColor = [239, 68, 68]; // Red alert text
+                            data.cell.styles.textColor = [239, 68, 68];
                             data.cell.styles.fontStyle = 'bold';
                         }
                     }
                     if (data.column.index === 3) {
-                        data.cell.styles.textColor = [59, 130, 246]; // Blue forecast text
+                        data.cell.styles.textColor = [59, 130, 246];
                         data.cell.styles.fontStyle = 'bold';
                     }
                     if (data.column.index === 4) {
-                        data.cell.styles.textColor = [168, 85, 247]; // Purple supplier text
+                        data.cell.styles.textColor = [168, 85, 247];
                         data.cell.styles.fontStyle = 'bold';
                     }
                 }
             }
         });
 
-        // 6. PREMIUM CLEAN FOOTER
         const pageCount = doc.internal.getNumberOfPages();
         doc.setFontSize(8);
         doc.setTextColor(148, 163, 184);
         doc.text("Automated Replenishment Dashboard System • StockFlow Intelligence", 14, 285);
 
         doc.setFont("helvetica", "bold");
-        doc.setTextColor(114, 15, 42); // Matchy burgundy page number
+        doc.setTextColor(114, 15, 42);
         doc.text(`Page ${pageCount}`, 195, 285, { align: "right" });
 
-        // Save Action
+
         doc.save("Full_Inventory_Intelligence_Report.pdf");
     };
 
-    // --- 2. Refresh Logic ---
+
     const handleRefresh = async () => {
         setIsRefreshing(true);
         await generateSmartReport();
         setIsRefreshing(false);
     };
 
-    // --- 3. Pagination Logic ---
+
     const [currentPage, setCurrentPage] = useState(1);
     const [reports, setReports] = useState([]);
 
@@ -560,6 +552,31 @@ export default function ProcurementManager() {
         };
         fetchProducts();
     }, []);
+    const handleMarkAsRead = async (id) => {
+        try {
+            const token = localStorage.getItem("token");
+
+            setAllNotifications(prev => {
+                const updated = prev.filter(n => n._id !== id);
+                setNotificationCount(prevCount => Math.max(0, prevCount - 1));
+                return updated;
+            });
+
+            await axios.put(
+                `http://localhost:8888/service-notification/api/notifications/${id}/mark-as-read`,
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            console.log("Notification marked as read! ✅");
+
+            fetchAllNotifications();
+
+        } catch (err) {
+            console.error("Error marking as read:", err.response?.data || err.message);
+            fetchAllNotifications();
+        }
+    };
     return (
         <div className="manager-container">
 
@@ -686,12 +703,14 @@ export default function ProcurementManager() {
                                         replenishmentRequests.map(req => (
                                             <div key={req._id} className="admin-notif-item" onClick={() => setActiveSection("restock_orders")}>
                                                 <div className="notif-content">
-                                                    <p className="msg"><strong>{req.productName}</strong>: New restock request for {req.requestedQty} units.</p>
+                                                    <p className="msg"><strong>{req.productName}</strong>: New restock
+                                                        request for {req.requestedQty} units.</p>
                                                     <div className="meta-tags">
                                                         <span className="tag product">Product</span>
                                                         <span className="tag qty">{req.requestedQty} Units</span>
                                                     </div>
-                                                    <span className="time">From: {req.fromManager} • {new Date(req.dateAlerte).toLocaleString()}</span>
+                                                    <span
+                                                        className="time">From: {req.fromManager} • {new Date(req.dateAlerte).toLocaleString()}</span>
                                                 </div>
                                             </div>
                                         ))
@@ -715,11 +734,14 @@ export default function ProcurementManager() {
                                         pendingFournisseurs.map(f => (
                                             <div key={f._id} className="admin-notif-item" onClick={() => setActiveSection("fournisseurs")}>
                                                 <div className="notif-content">
-                                                    <p className="msg"><strong>{f.firstName} {f.lastName}</strong> applied as a new supplier.</p>
+                                                    <p className="msg">
+                                                        <strong>{f.firstName} {f.lastName}</strong> applied as a new
+                                                        supplier.</p>
                                                     <div className="meta-tags">
                                                         <span className="tag">New Applicant</span>
                                                     </div>
-                                                    <span className="time">{new Date(f.dateAlerte).toLocaleDateString()}</span>
+                                                    <span
+                                                        className="time">{new Date(f.dateAlerte).toLocaleDateString()}</span>
                                                 </div>
                                             </div>
                                         ))
@@ -793,6 +815,15 @@ export default function ProcurementManager() {
                                                     </div>
                                                     <span
                                                         className="time">{new Date(notif.dateAlerte).toLocaleString()}</span>
+                                                    <button
+                                                        className="btn-mark-read"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleMarkAsRead(notif._id);
+                                                        }}
+                                                    >
+                                                        Mark as Read
+                                                    </button>
                                                 </div>
                                             </div>
                                         );

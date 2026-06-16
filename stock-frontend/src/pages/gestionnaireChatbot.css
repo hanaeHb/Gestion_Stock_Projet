@@ -1,0 +1,223 @@
+
+.g-chatbot-wrapper {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+
+.g-chatbot-toggle-btn {
+    background: linear-gradient(135deg, #730d19, #e36469);
+    color: white;
+    border: none;
+    padding: 14px 22px;
+    border-radius: 50px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(115, 13, 25, 0.35);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.g-chatbot-toggle-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(115, 13, 25, 0.45);
+}
+
+.g-btn-text {
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+/* نافذة الشات */
+.g-chatbot-window {
+    position: absolute;
+    bottom: 65px;
+    right: 0;
+    width: 350px;
+    height: 460px;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(255, 154, 158, 0.4);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    box-shadow: 0 12px 35px rgba(114, 15, 42, 0.18);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: gSlideUp 0.3s ease-out;
+}
+
+@keyframes gSlideUp {
+    from { transform: translateY(15px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* الهيدر */
+.g-chatbot-header {
+    background: #730d19;
+    color: white;
+    padding: 15px;
+}
+
+.g-bot-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.g-avatar-ring {
+    position: relative;
+    background: rgba(255, 255, 255, 0.1);
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.g-bot-icon-avatar {
+    font-size: 1.1rem;
+    color: #ff9a9e;
+}
+
+.g-pulse-dot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
+    background-color: #2ecc71;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #2ecc71;
+}
+
+.g-bot-info h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.g-bot-info span {
+    font-size: 0.75rem;
+    color: #ff9a9e;
+    display: block;
+    margin-top: 2px;
+}
+
+/* منطقة الرسائل */
+.g-chatbot-messages {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: linear-gradient(to bottom, rgba(255, 240, 241, 0.2), transparent);
+}
+
+.g-message-bubble {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 0.88rem;
+    line-height: 1.4;
+}
+
+.g-message-bubble p {
+    margin: 0;
+}
+
+.g-message-bubble.bot {
+    background: #f8f0ee;
+    color: #730d19;
+    align-self: flex-start;
+    border-bottom-left-radius: 3px;
+    border-left: 3px solid #730d19;
+}
+
+.g-message-bubble.user {
+    background: linear-gradient(135deg, #ff9a9e, #e36469);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 3px;
+}
+
+/* الـ Loading Dots */
+.g-loading {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 16px;
+}
+
+.g-dot {
+    width: 6px;
+    height: 6px;
+    background-color: #730d19;
+    border-radius: 50%;
+    animation: gBounce 1.4s infinite ease-in-out both;
+}
+
+.g-dot:nth-child(1) { animation-delay: -0.32s; }
+.g-dot:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes gBounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1.0); }
+}
+
+/* الفورم والمدخلات */
+.g-chatbot-input-form {
+    display: flex;
+    padding: 12px;
+    border-top: 1px solid rgba(248, 240, 240, 0.8);
+    background: white;
+    align-items: center;
+    gap: 8px;
+}
+
+.g-chatbot-input-form input {
+    flex: 1;
+    border: 1px solid rgba(255, 154, 158, 0.4);
+    padding: 10px 14px;
+    border-radius: 25px;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #fafafa;
+}
+
+.g-chatbot-input-form input:focus {
+    border-color: #730d19;
+    background: white;
+}
+
+.g-chatbot-send-btn {
+    background: #730d19;
+    color: white;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.g-chatbot-send-btn:hover {
+    background: #b34246;
+    transform: scale(1.05);
+}
+
+.g-chatbot-send-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
