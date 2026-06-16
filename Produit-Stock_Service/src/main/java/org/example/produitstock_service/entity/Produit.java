@@ -21,7 +21,7 @@ public class Produit {
     private String nom;
     private String description;
     private double prixUnitaire;
-    private String categorie;
+
     @Lob
     @Column(columnDefinition = "LONGTEXT")
     private String image;
@@ -44,14 +44,6 @@ public class Produit {
 
     public void setActive(boolean active) {
         this.active = active;
-    }
-
-    public String getCategorie() {
-        return categorie;
-    }
-
-    public void setCategorie(String categorie) {
-        this.categorie = categorie;
     }
 
     public String getDescription() {

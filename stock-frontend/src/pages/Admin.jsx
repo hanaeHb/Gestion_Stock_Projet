@@ -36,6 +36,7 @@ import BudgetManagement from "./BudgetManagement";
 import AnalyticsDashboard from "./AnalyticsDashboard";
 import AdminNotifications from "./AdminNotifications";
 import PredictionDashboard from "./PredictionDashboard";
+import AdminChatbot from "./AdminChatbot";
 export default function Admin() {
     const [activeSection, setActiveSection] = useState("dashboard");
     const [showForm, setShowForm] = useState(false);
@@ -1645,6 +1646,7 @@ export default function Admin() {
                 )}
 
             </main>
+            <AdminChatbot />
         </div>
     );
 }

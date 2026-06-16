@@ -8,7 +8,7 @@ const HomeChatbot = () => {
     const [messages, setMessages] = useState([
         {
             sender: "bot",
-            text: "Bonjour! 👋 Je suis l'assistant intelligent de IN GO STOCK. Comment puis-je vous aider à optimiser votre gestion de stock aujourd'hui?"
+            text: "Hello! 👋 I am the IN GO STOCK AI assistant. How can I help you optimize your inventory management today?"
         }
     ]);
     const [input, setInput] = useState("");
@@ -34,20 +34,18 @@ const HomeChatbot = () => {
         setIsLoading(true);
 
         try {
-
             const response = await axios.post("http://localhost:8888/prediction-service/prediction/assistant/public/chat", {
                 question: userText
             });
 
-
-            const botResponse = response.data.answer || "Désolé, je n'ai pas pu générer de réponse.";
+            const botResponse = response.data.answer || "Sorry, I couldn't generate a response.";
 
             setMessages((prev) => [...prev, { sender: "bot", text: botResponse }]);
         } catch (error) {
-            console.error("Erreur connexion Chatbot:", error);
+            console.error("Chatbot connection error:", error);
             setMessages((prev) => [
                 ...prev,
-                { sender: "bot", text: "Désolé, le service d'assistance rencontre un problème de connexion. Veuillez réessayer." }
+                { sender: "bot", text: "Sorry, I'm currently unable to connect. Please try again later." }
             ]);
         } finally {
             setIsLoading(false);
@@ -56,11 +54,9 @@ const HomeChatbot = () => {
 
     return (
         <div className="chatbot-wrapper">
-
             <button className="chatbot-toggle-btn" onClick={() => setIsOpen(!isOpen)}>
                 {isOpen ? <FaTimes /> : <FaComments />}
             </button>
-
 
             {isOpen && (
                 <div className="chatbot-window">
@@ -69,7 +65,7 @@ const HomeChatbot = () => {
                             <FaRobot className="bot-icon-avatar" />
                             <div>
                                 <h4>GO STOCK Agent</h4>
-                                <span>En ligne (IA Locale)</span>
+                                <span>Online (AI Support)</span>
                             </div>
                         </div>
                     </div>
@@ -93,7 +89,7 @@ const HomeChatbot = () => {
                     <form className="chatbot-input-form" onSubmit={handleSend}>
                         <input
                             type="text"
-                            placeholder="Posez votre question à l'IA..."
+                            placeholder="Ask me anything..."
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             disabled={isLoading}

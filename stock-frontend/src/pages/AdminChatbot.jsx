@@ -1,14 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { FaRobot, FaTimes, FaPaperPlane } from 'react-icons/fa';
-import './gestionnaireChatbot.css';
 
-const GestionnaireChatbot = () => {
+const AdminChatbot = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
         {
             id: 1,
-            text: "Hello Manager! 📊 I am your AI Logistics Assistant, connected to live inventory data. Ask me about stock alerts, critical thresholds, or demand forecasts.",
+            text: "Hello Administrator. I am your Strategic AI Advisor, connected to your predictive stock and supplier performance models. How can I assist you with your procurement, budget, or inventory strategy today?",
             isBot: true
         }
     ]);
@@ -39,7 +38,7 @@ const GestionnaireChatbot = () => {
 
             // API Call
             const response = await axios.post(
-                "http://localhost:8888/prediction-service/prediction/assistant/secure/gestionnaire/chat",
+                "http://localhost:8888/prediction-service/prediction/assistant/secure/admin/chat",
                 { question: userQuestion },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -47,10 +46,10 @@ const GestionnaireChatbot = () => {
             // Add AI response
             setMessages(prev => [...prev, { id: Date.now() + 1, text: response.data.answer, isBot: true }]);
         } catch (err) {
-            console.error("Gestionnaire Chatbot Error:", err);
+            console.error("Predictive Admin Chat Error:", err);
             setMessages(prev => [...prev, {
                 id: Date.now() + 1,
-                text: "System Error: Unable to connect to inventory data. Please ensure the backend services are active.",
+                text: "System Error: Unable to compile predictive model data. Please ensure the analytics backend is active.",
                 isBot: true
             }]);
         } finally {
@@ -63,7 +62,7 @@ const GestionnaireChatbot = () => {
             {/* Toggle Button */}
             <button className="g-chatbot-toggle-btn" onClick={() => setIsOpen(!isOpen)}>
                 {isOpen ? <FaTimes /> : <FaRobot />}
-                <span className="g-btn-text">{isOpen ? "Close" : "AI Stock Core"}</span>
+                <span className="g-btn-text">{isOpen ? "Close" : "Strategic AI Advisor"}</span>
             </button>
 
             {/* Chat Window */}
@@ -77,7 +76,7 @@ const GestionnaireChatbot = () => {
                             </div>
                             <div>
                                 <h4>GOSTOCK AI</h4>
-                                <span>Inventory Manager Assistant</span>
+                                <span>Strategic Analytics & Budget</span>
                             </div>
                         </div>
                     </div>
@@ -108,7 +107,7 @@ const GestionnaireChatbot = () => {
                     <form className="g-chatbot-input-form" onSubmit={handleSendMessage}>
                         <input
                             type="text"
-                            placeholder="e.g. How many items are below threshold?"
+                            placeholder="Ask about restock, suppliers, or budget..."
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             disabled={loading}
@@ -127,4 +126,4 @@ const GestionnaireChatbot = () => {
     );
 };
 
-export default GestionnaireChatbot;
+export default AdminChatbot;
