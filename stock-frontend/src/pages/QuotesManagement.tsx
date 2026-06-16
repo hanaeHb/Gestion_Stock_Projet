@@ -100,16 +100,9 @@ export default function QuotesManagement() {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            await axios.post(
-                `http://localhost:8888/budgetstock/v1/budgets/consume`,
-                { amount: budgetCheckResult.quoteCost, quotationId: selectedQuote._id },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            await fetchBudget();
             setShowBudgetModal(false);
             fetchQuotes();
-            alert(`✅ Offer accepted! ${budgetCheckResult.quoteCost.toLocaleString()} DH deducted from budget.`);
+            alert(`✅ Offer accepted successfully!`);
         } catch (err) {
             console.error("Error accepting offer", err);
             alert("❌ Error accepting offer");

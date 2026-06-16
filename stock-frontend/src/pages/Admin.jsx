@@ -68,7 +68,7 @@ export default function Admin() {
         metierRole: "ADMIN"
     });
     const [currentPage, setCurrentPage] = useState(1);
-    const usersPerPage = 6;
+    const usersPerPage = 8;
 
     const filteredUsers = users.filter(user => !user.roles.includes("Fournisseur"));
     const indexOfLastUser = currentPage * usersPerPage;
@@ -635,8 +635,7 @@ export default function Admin() {
                 {/* ===================== Top Nav ===================== */}
                 <div className="top-nav">
                     <a href="/" className="nav-logo">
-                        <span className="logo-box">GO</span>
-                        <img src="/images/logoostock.jpeg" alt="Stockflow Logo" className="logo-image"/>
+                        <img src="/favicon.ico" alt="Stockflow Logo" className="loo-image"/>
                     </a>
 
 

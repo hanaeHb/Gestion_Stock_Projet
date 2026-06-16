@@ -432,8 +432,7 @@ export default function InventoryManager() {
                 {/* Navbar */}
                 <div className="top-nav">
                     <a href="/" className="nav-logo">
-                        <span className="logo-box">GO</span>
-                        <img src="/images/logoostock.jpeg" alt="logo" className="logo-image"/>
+                        <img src="/favicon.ico" alt="logo" className="loo-image"/>
                     </a>
 
                     <div className="nav-right">

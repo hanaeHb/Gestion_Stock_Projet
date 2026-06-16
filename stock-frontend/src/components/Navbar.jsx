@@ -9,10 +9,7 @@ const Navbar = () => {
     return (
         <nav className="navbar">
             <div className="nav-container">
-                <a href="/" className="nav-logo">
-                    <span className="logo-box">GO</span>
-                    <img src="/images/logoostock.jpeg" alt="Stockflow Logo" className="logo-image"/>
-                </a>
+                    <img src="/favicon.ico" alt="Stockflow Logo" className="loo-image"/>
 
                 <div className={`nav-links ${isOpen ? 'active' : ''}`}>
                     <a href="#home">Home</a>

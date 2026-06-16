@@ -29,10 +29,10 @@
     text-decoration: none;
 }
 
-.logo-image {
-    height: 48px;
-    width: auto;
-    object-fit: contain; /* bach ma ttdamarch */
+.loo-image {
+    height: 75px;
+    width: 95px;
+    object-fit: contain;
 }
 
 /* Logo-box still flexible */
@@ -51,7 +51,7 @@
 
 @media (max-width: 768px) {
     .logo-image {
-        height: 50px; /* responsive size */
+        height: 80px; /* responsive size */
     }
 }
 .logo-box:hover {

@@ -23,6 +23,7 @@ import {
     FaBrain,
     FaUserShield
 } from "react-icons/fa";
+import HomeChatbot from "../pages/HomeChatbot";
 const Home = () => {
     return (
         <>
@@ -37,8 +38,7 @@ const Home = () => {
                         <p className="hero-subtitle">
                             The best Smart Inventory Management platform for modern businesses
                         </p>
-                        <h1 className="hero-title">IN <span>GO <img src="/images/logoostock.jpeg" alt="Stockflow Logo"
-                                                                    className="logo-image"/></span></h1>
+                        <h1 className="hero-title">IN <span>GO STOCK</span></h1>
                         <p className="hero-description">
                             Automate restocking, track your inventory in real-time,
                             and streamline your supply chain with our intelligent platform.
@@ -87,7 +87,7 @@ const Home = () => {
 
                     <div className="content-row">
                         <div className="left-image">
-                            <img src="/images/logoostock.jpeg" alt="Smart Stock App"/>
+                            <img src="/favicon.ico" alt="Smart Stock App"/>
                         </div>
 
                         <div className="right-text">
@@ -329,7 +329,7 @@ const Home = () => {
                         © 2026 Stockflow | All Rights Reserved
                     </div>
                 </footer>
-
+                <HomeChatbot />
             </div>
         </>
     );

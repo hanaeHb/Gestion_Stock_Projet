@@ -8,6 +8,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 import os
 import socket
+import requests
 import logging
 from logger import logger
 from opentelemetry import trace
@@ -50,6 +51,25 @@ SERVICE_PORT = 5008
 
 #EUREKA_SERVER = "http://discovery-service:8761/eureka/"
 
+OLLAMA_API_URL = "http://localhost:11434/api/generate"
+SYSTEM_PROMPT = """
+Tu es l'assistant IA officiel de la plateforme "IN GO STOCK" (ou Stockflow).
+Ton rôle est d'informer les visiteurs de la page d'accueil, de répondre à leurs questions techniques ou fonctionnelles sur l'application, et de les inciter à s'inscrire.
+
+Voici les informations exactes de l'application issues de notre rapport technique :
+- Architecture : Cloud-Native basée sur des Microservices avec Spring Cloud Gateway pour le routage et Eureka pour le Service Discovery. La communication asynchrone est gérée par Apache Kafka.
+- Les 3 Microservices principaux (tous sur PostgreSQL) :
+  1. Users-Service (Spring Boot) -> Gère les profils utilisateurs (user_profiles).
+  2. Commande-Service (Node.js) -> Gère le système de commandes (commande_system).
+  3. Procurement-Service (Node.js + Python Flask pour l'IA) -> Gère l'approvisionnement (procurement_system).
+- Fonctionnalités clés : Suivi des stocks en temps réel, gestion multi-entrepôts, système d'alertes intelligentes (stocks bas, anomalies) et surtout la prévision de la demande par l'IA (Machine Learning / Random Forest et Régression Linéaire) intégrée directement dans ce Prediction-Service.
+- Partenaires logistiques : DHL, FedEx, UPS, Maersk.
+
+Consignes de réponse :
+- Réponds de manière très professionnelle, polie, chaleureuse et concise (maximum 3 sentences) dans la même langue que celle utilisée par l'utilisateur (Français, Arabe, Darija, ou Anglais).
+- Reste strictement dans ce contexte. Si on te demande comment tester, dis de cliquer sur 'Book a Demo' ou de s'inscrire en haut de la page.
+"""
+
 def register_with_eureka():
     try:
         pod_ip = socket.gethostbyname(socket.gethostname())
@@ -73,7 +93,62 @@ def register_with_eureka():
 
 register_with_eureka()
 
+@app.route('/prediction/assistant/public/chat', methods=['POST'])
+def chatbot_local_ai():
+    logger.info("Réception d'une question pour le Chatbot AI (via Groq Cloud)")
+    try:
+        data = request.json
+        user_question = data.get('question', '')
 
+        if not user_question:
+            return jsonify({"status": "error", "message": "Veuillez poser une question valide."}), 400
+
+
+        GROQ_API_KEY = "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"
+        GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+
+        headers = {
+            "Authorization": f"Bearer {GROQ_API_KEY}",
+            "Content-Type": "application/json; charset=utf-8"
+        }
+
+
+        payload = {
+            "model": "llama-3.1-8b-instant",
+            "messages": [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_question}
+            ],
+            "temperature": 0.5
+        }
+
+        import json
+        response = requests.post(
+            GROQ_URL,
+            data=json.dumps(payload, ensure_ascii=False).encode('utf-8'),
+            headers=headers,
+            timeout=10
+        )
+        response_data = response.json()
+
+
+        if response.status_code != 200:
+            print(f"❌ Groq API Error Status: {response.status_code}")
+            print(f"❌ Groq API Message: {response_data}")
+            return jsonify({"answer": f"Erreur Groq API: {response_data.get('error', {}).get('message', 'Unknown error')}"}), response.status_code
+
+
+        bot_answer = response_data['choices'][0]['message']['content'].strip()
+        logger.info("Réponse générée avec succès par Groq")
+        return app.response_class(
+            response=json.dumps({"answer": bot_answer}, ensure_ascii=False),
+            status=200,
+            mimetype='application/json; charset=utf-8'
+        )
+
+    except Exception as e:
+        print(f"💥 Crash internal code: {str(e)}")
+        return jsonify({"answer": f"Désolé, une erreur est survenue: {str(e)}"}), 500
 @app.route('/prediction/predict-restock/<int:product_id>', methods=['GET'])
 def predict_restock_dynamic(product_id):
     logger.info(f"Démarrage de la prédiction de restock pour le produit ID: {product_id}")

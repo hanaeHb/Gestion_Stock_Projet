@@ -185,28 +185,33 @@ const SupplierAnalytics = () => {
             <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="chart-card-v2 price-evolution-card">
                 <div className="panel-header-v2 price-header-flex">
                     <div className="title-with-icon">
-                        <FaChartLine style={{ color: '#800020', fontSize: '1.3rem' }} />
-                        <h3 style={{ color: '#800020', fontWeight: 'bold' }}>
+                        <FaChartLine style={{color: '#800020', fontSize: '1.3rem'}}/>
+                        <h3 style={{color: '#800020', fontWeight: 'bold'}}>
                             Dynamic Price Track: {selectedProduct || "Product"}
                         </h3>
                     </div>
 
-                    <select
-                        className="modern-select-product"
-                        value={selectedProduct}
-                        onChange={(e) => setSelectedProduct(e.target.value)}
-                    >
-                        {topProducts.map((prod, index) => (
-                            <option key={index} value={prod.productName}>{prod.productName}</option>
-                        ))}
-                    </select>
+                    <div className="modern-select-wrapper">
+                        <select
+                            className="modern-select-product"
+                            value={selectedProduct}
+                            onChange={(e) => setSelectedProduct(e.target.value)}
+                        >
+                            {topProducts.map((prod, index) => (
+                                <option key={index} value={prod.productName}>
+                                    {prod.productName}
+                                </option>
+                            ))}
+                        </select>
+                        <span className="select-custom-arrow"></span>
+                    </div>
                 </div>
 
-                <div className="recharts-wrapper-fix" style={{ width: '100%', height: 350, marginTop: '20px' }}>
+                <div className="recharts-wrapper-fix" style={{width: '100%', height: 350, marginTop: '20px'}}>
                     {priceHistory.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={priceHistory} margin={{ top: 20, right: 30, left: 10, bottom: 10 }}>
-                                <CartesianGrid stroke="rgba(0,0,0,0.03)" vertical={false} />
+                            <LineChart data={priceHistory} margin={{top: 20, right: 30, left: 10, bottom: 10}}>
+                                <CartesianGrid stroke="rgba(0,0,0,0.03)" vertical={false}/>
                                 <XAxis dataKey="name" stroke="#95a5a6" fontSize={12} tickLine={false} axisLine={false} />
                                 <YAxis stroke="#95a5a6" fontSize={12} tickLine={false} axisLine={false} unit=" DH" />
 

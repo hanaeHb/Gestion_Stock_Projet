@@ -27,6 +27,7 @@ public class SecurityConfig {
                         .pathMatchers("/notification-service/**").permitAll()
                         .pathMatchers("/notification-service/api-docs/**").permitAll()
                         .pathMatchers("/service-fournisseur/uploads/**").permitAll()
+                        .pathMatchers("/prediction-service/prediction/assistant/public/**").permitAll()
                         .pathMatchers("/uploads/**").permitAll()
                         .pathMatchers("/actuator/**").permitAll()
                         .anyExchange().authenticated()

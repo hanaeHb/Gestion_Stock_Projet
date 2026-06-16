@@ -269,10 +269,10 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes blink { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
 
-/* ستايل الـ Tooltip الخاص بـ AI Projections المماثل للصورة */
+
 .custom-forecasting-tooltip {
     background: #ffffff;
-    border: 1.5px solid #a55ce7; /* الإطار البنفسجي */
+    border: 1.5px solid #a55ce7;
     padding: 12px 16px;
     border-radius: 14px;
     box-shadow: 0 6px 25px rgba(165, 92, 231, 0.1);
@@ -289,7 +289,7 @@
 .tooltip-value {
     margin: 0;
     font-size: 0.88rem;
-    color: #27ae60; /* اللون الأخضر للـ Live Metrics */
+    color: #27ae60;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -300,8 +300,87 @@
     font-size: 1rem;
 }
 
-/* تنسيق إضافي لعنوان المبيان */
+
 .price-header-flex h3 {
     font-size: 1.15rem;
     letter-spacing: -0.3px;
+}
+
+.modern-select-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    max-width: 320px;
+}
+
+
+.modern-select-product {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    width: 100%;
+    padding: 12px 46px 12px 18px;
+    font-size: 0.92rem;
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-weight: 600;
+    color: #1e293b;
+
+
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+
+    border: 1px solid rgba(168, 85, 247, 0.4);
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.02);
+    cursor: pointer;
+    transition: all 0.25s ease-in-out;
+}
+
+
+.modern-select-product:hover {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: #a855f7;
+    box-shadow: 0 6px 16px rgba(168, 85, 247, 0.05);
+}
+
+
+.modern-select-product:focus {
+    outline: none;
+    background: #ffffff;
+    border-color: #a855f7;
+    box-shadow: 0 0 0 4px rgba(168, 85, 247, 0.15);
+}
+
+
+.modern-select-product option {
+    font-family: 'Inter', sans-serif;
+    font-weight: 550;
+    padding: 14px;
+    background-color: #ffffff;
+    color: #334155;
+}
+
+.modern-select-product option:hover,
+.modern-select-product option:focus,
+.modern-select-product option:active,
+.modern-select-product option:checked {
+    background: rgba(168, 85, 247, 0.1) !important;
+    color: #a855f7 !important;
+}
+
+.select-custom-arrow {
+    position: absolute;
+    top: 50%;
+    right: 18px;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a855f7' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
 }
