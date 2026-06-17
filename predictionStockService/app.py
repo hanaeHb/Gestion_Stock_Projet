@@ -30,17 +30,17 @@ from db import (
 app = Flask(__name__)
 resource = Resource.create(attributes={"service.name": "prediction-service"})
 
-provider = TracerProvider(resource=resource)
-trace.set_tracer_provider(provider)
+#provider = TracerProvider(resource=resource)
+#trace.set_tracer_provider(provider)
 
-zipkin_exporter = ZipkinExporter(
-    endpoint="http://zipkin:9411/api/v2/spans"
-)
+#zipkin_exporter = ZipkinExporter(
+    #endpoint="http://zipkin:9411/api/v2/spans"
+#)
 
-span_processor = BatchSpanProcessor(zipkin_exporter)
-provider.add_span_processor(span_processor)
+#span_processor = BatchSpanProcessor(zipkin_exporter)
+#provider.add_span_processor(span_processor)
 
-FlaskInstrumentor().instrument_app(app)
+#FlaskInstrumentor().instrument_app(app)
 
 metrics = PrometheusMetrics(app)
 
@@ -180,7 +180,7 @@ def get_inventory_manager_live_data(token, product_id=None):
                 if qty <= seuil:
                     details["critical_alerts"].append(f"{nom} (Stock: {qty} / Threshold: {seuil})")
 
-                # Récupérer les prédictions pour ce produit
+
                 if product_id is None or product_id_current == product_id:
                     try:
                         pred_url = f"http://localhost:5008/prediction/predict-restock/{product_id_current}"
@@ -189,29 +189,25 @@ def get_inventory_manager_live_data(token, product_id=None):
                         if pred_res.status_code == 200:
                             pred_data = pred_res.json()
                             if pred_data.get('status') == 'success':
-                                # Ton endpoint retourne:
-                                # - predicted_demand: pour 7 jours
-                                # - current_stock
-                                # - recommended_quantity: pour 7 jours
+
 
                                 predicted_7days = pred_data.get('predicted_demand', 0)
                                 current_stock = pred_data.get('current_stock', 0)
                                 recommended_7days = pred_data.get('recommended_quantity', 0)
 
-                                # Calculer des estimations pour 30 jours et 365 jours
-                                # Basé sur la prédiction 7 jours
+
                                 avg_daily = predicted_7days / 7 if predicted_7days > 0 else 0
 
-                                # Prédiction 30 jours (basée sur la moyenne quotidienne * 30)
-                                predicted_30days = int(avg_daily * 30 * 1.1)  # +10% pour la marge
+
+                                predicted_30days = int(avg_daily * 30 * 1.1)
                                 recommended_30days = max(0, predicted_30days - current_stock)
 
-                                # Prédiction 365 jours (basée sur la moyenne quotidienne * 365)
-                                predicted_365days = int(avg_daily * 365 * 1.15)  # +15% pour la marge annuelle
+
+                                predicted_365days = int(avg_daily * 365 * 1.15)
                                 recommended_365days = max(0, predicted_365days - current_stock)
 
-                                # Estimation des ventes annuelles totales
-                                total_annual_sales = int(predicted_365days * 0.85)  # Estimation
+
+                                total_annual_sales = int(predicted_365days * 0.85)
 
                                 details["predictions"][nom] = {
                                     "7_days": {
@@ -232,7 +228,7 @@ def get_inventory_manager_live_data(token, product_id=None):
                                 }
                     except Exception as e:
                         logger.error(f"Prediction error for product {product_id_current}: {e}")
-                        # Données par défaut basées sur le stock
+
                         details["predictions"][nom] = {
                             "7_days": {
                                 "predicted_demand": max(0, int(qty * 0.5)),
@@ -254,7 +250,7 @@ def get_inventory_manager_live_data(token, product_id=None):
     except Exception as e:
         logger.error(f"Error: {e}")
 
-    # Construction du résumé
+
     summary = "--- LIVE INVENTORY DATA ---\n"
     summary += f"Total Products Monitored: {details['total_products']}\n"
     summary += f"Products in CRITICAL STATUS (Stock <= Threshold): {'; '.join(details['critical_alerts']) if details['critical_alerts'] else 'NONE'}\n"
@@ -292,7 +288,7 @@ def chatbot_gestionnaire_ai():
         token = auth_header.split(' ')[1]
         data = request.json
         user_question = data.get('question', '')
-        product_id = data.get('product_id', None)  # Optionnel: pour focus sur un produit spécifique
+        product_id = data.get('product_id', None)
 
         if not user_question:
             return jsonify({"answer": "Veuillez spécifier votre requête logistique."}), 400
@@ -847,19 +843,19 @@ def get_admin_dashboard_absolute_data(token, specific_product_id=None):
     finalized = system_state["notifications"]["finalized"]
     if finalized:
         context += f"  ✅ Completed Operations ({len(finalized)} total):\n"
-        for n in finalized[:5]:  # Limiter à 5 pour ne pas surcharger
+        for n in finalized[:5]:
             context += f"    • {n.get('message', 'No message')}\n"
         if len(finalized) > 5:
             context += f"    • ... and {len(finalized) - 5} more\n"
     else:
         context += "  ✅ Completed Operations: NONE\n"
 
-    # Total des notifications
+
     total_notifs = len(system_state["notifications"]["all"])
     unread_notifs = len(stock_alerts) + len(purchase_requests) + len(logistics)
     context += f"  📊 Total Notifications: {total_notifs} | Unread: {unread_notifs}\n\n"
 
-# Section des produits critiques avec compteur précis
+
     if system_state["critical_products"]:
         context += f"⚠️ CRITICAL PRODUCTS (Stock <= Threshold): {len(system_state['critical_products'])} products\n"
         for p in system_state["critical_products"]:
@@ -897,230 +893,77 @@ def chatbot_admin_ai():
         real_machine_learning_context = get_admin_dashboard_absolute_data(token)
 
         ADMIN_PREDICTIVE_PROMPT = f"""
-        You are the **Strategic AI Administrator** for the "IN GO STOCK" platform.
-        Your role is to be the **executive decision-maker's advisor**, providing comprehensive oversight of the entire platform including users, products, categories, budgets, suppliers, notifications, and system performance.
-        
-        ---
-        
-        ## 🎯 YOUR CORE RESPONSIBILITIES:
-        
-        ### 1. **USER MANAGEMENT**
-        - Monitor all users across the platform (Admin, Procurement Manager, Inventory Manager, Suppliers)
-        - Track user roles and permissions
-        - Monitor user activity status (Active/Inactive)
-        - Provide insights on user distribution by role
-        - Identify inactive or suspicious accounts
-        
-        ### 2. **PRODUCT & CATEGORY MANAGEMENT**
-        - Oversee the entire product catalog
-        - Monitor stock levels across all products
-        - Identify critical stock items (Stock <= Threshold)
-        - Track product categories and their distribution
-        - Analyze total stock value
-        - Monitor product pricing and SKU management
-        
-        ### 3. **BUDGET OVERSIGHT**
-        - Track all budgets (current and historical)
-        - Monitor budget allocation and consumption
-        - Identify budget exhaustion risks
-        - Provide budget forecasts and recommendations
-        - Analyze budget utilization patterns
-        
-        ### 4. **SUPPLIER ECOSYSTEM**
-        - Monitor supplier registrations (pending and validated)
-        - Track supplier performance scores
-        - Identify best suppliers by category
-        - Alert about suppliers with issues
-        - Analyze supplier distribution by category
-        
-        ### 5. **NOTIFICATION CENTER**
-        - **Stock Alerts**: Critical inventory warnings (ERROR level, UNREAD)
-        - **Purchase Requests**: RFQ requests and supplier quotes
-        - **Logistics**: Shipments in transit and waiting confirmation
-        - **Completed Operations**: Finalized and confirmed operations
-        - Monitor notification volume and patterns
-        - Identify urgent notifications requiring action
-        
-        ### 6. **SYSTEM PERFORMANCE**
-        - Monitor microservices health via Grafana
-        - Track system-wide metrics
-        - Identify performance bottlenecks
-        - Alert about service disruptions
-        
-        ### 7. **PREDICTIVE ANALYTICS**
-        - View AI-powered predictions for restocking
-        - Analyze demand forecasts
-        - Review recommended order quantities
-        - Track AI score for supplier selection
-        - Monitor critical product predictions
-        
-        ### 8. **REPORTING & INSIGHTS**
-        - Generate executive summaries
-        - Provide actionable business insights
-        - Create trend analysis reports
-        - Identify cost-saving opportunities
-        
-        ---
-        
-        ## 📊 DATA AVAILABLE TO YOU:
-        
-        ### Users:
-        - Total users, roles, status
-        - User distribution charts (by role and status)
-        - Pending and validated suppliers
-        
-        ### Products & Stock:
-        - Total products count
-        - Products by category
-        - Low stock items (Critical)
-        - Total stock value
-        - Product details (ID, name, price, stock, threshold)
-        
-        ### Budgets:
-        - Current budget (Alloué, Consommé, Restant, Statut)
-        - Budget history (ALL BUDGETS)
-        - Budget descriptions and periods
-        
-        ### Notifications:
-        - **Stock Alerts**: ERROR level, UNREAD
-        - **Purchase Requests**: NEW_ORDER_REQUEST, QUOTE_RECEIVED, PLAN_B_ROUTED
-        - **Logistics**: WAITING_CONFIRMATION, AWAITING_RECEPTION, ORDER_SHIPPED
-        - **Completed**: CONFIRMED operations
-        
-        ### Suppliers:
-        - Pending supplier registrations
-        - Validated suppliers
-        - AI-ranked best suppliers by category
-        - Supplier performance scores
-        
-        ### Predictions:
-        - Product demand forecasts
-        - Recommended reorder quantities
-        - Best supplier recommendations
-        
-        ---
-        
-        ## 📋 RULES FOR RESPONDING:
-        
-        1. **LANGUAGE**: Always respond in the SAME LANGUAGE the user used (Darija, English, Français, العربية)
-        
-        2. **EXECUTIVE TONE**: Be professional, strategic, and action-oriented. Provide executive-level insights.
-        
-        3. **BE CONCISE**: Get straight to the point. Use bullet points for lists. No fluff.
-        
-        4. **USE REAL DATA ONLY**: 
-           - NEVER invent data or examples
-           - If data doesn't exist, say "Aucune donnée disponible" or "No data available"
-           - ALWAYS reference specific numbers from the data
-        
-        5. **COUNT PRECISELY**: 
-           - Count items correctly before writing numbers
-           - The count MUST match the number of items you list
-           - If you list 19 products, the count MUST be 19
-        
-        6. **PROVIDE CONTEXT**: 
-           - Explain what the numbers mean
-           - Highlight critical situations
-           - Give actionable recommendations
-        
-        7. **NO TECH JARGON**: 
-           - Never mention APIs, microservices, databases, or technical architecture
-           - Use business and management language
-        
-        8. **PRIORITIZE**: 
-           - Highlight urgent issues first
-           - Separate critical from non-critical
-           - Recommend next steps
-        
-        ---
-        
-        ## 💡 EXAMPLES OF QUESTIONS YOU CAN ANSWER:
-        
-        ### User Questions:
-        - "How many users are on the platform?"
-        - "What are the user roles?"
-        - "Who are the pending suppliers?"
-        - "Show me inactive users"
-        
-        ### Product Questions:
-        - "How many products are in the catalog?"
-        - "Which products are critically low?"
-        - "What's the total stock value?"
-        - "Show me products by category"
-        
-        ### Budget Questions:
-        - "What's the current budget status?"
-        - "Show me all budgets"
-        - "Which budget is active?"
-        - "How much budget remains?"
-        
-        ### Notification Questions:
-        - "What are the current alerts?"
-        - "How many unread notifications?"
-        - "Show me purchase requests"
-        - "What shipments are in transit?"
-        
-        ### Supplier Questions:
-        - "Who is the best supplier for electronics?"
-        - "How many pending suppliers?"
-        - "Show me validated suppliers"
-        - "Which suppliers have issues?"
-        
-        ### System Questions:
-        - "What's the overall system status?"
-        - "Are all services running?"
-        - "What needs my attention?"
-        
-        ### Prediction Questions:
-        - "What products need restocking?"
-        - "What's the AI forecast for product X?"
-        - "Who is the best supplier for category X?"
-        
-        ---
-        
-        ## 🎯 FINAL INSTRUCTION:
-        You are the **eyes and ears** of the Administrator. Your answers should provide a **complete picture** of the platform status and help make **strategic decisions**. Always be accurate, comprehensive, and action-oriented.
-        
-        ---
-        
-        ## REAL-TIME BUSINESS DATA:
+        You are the Strategic AI Administrator for the "IN GO STOCK" platform.
+        Your role is to provide comprehensive oversight of users, products, budgets, suppliers, and notifications.
+
+        RULES:
+        1. Respond in the SAME LANGUAGE as the user.
+        2. NEVER mention technical architecture.
+        3. Be concise and professional.
+        4. Use ONLY the data provided.
+        5. Count items precisely.
+
+        DATA:
         {real_machine_learning_context}
-        
-        ---
-        
-        EXAMPLES OF CORRECT RESPONSES:
-        
-        ✅ CORRECT: "Currently, there are 25 products in the catalog. 12 products are critically low (Stock <= Threshold). The total stock value is 7,931,146.94 DH. There are 5 pending suppliers waiting for validation."
-        
-        ✅ CORRECT: "Budget status: 145,000 DH allocated, 12,060 DH consumed, 132,940 DH remaining. Status: ACTIVE. Description: june budget. Period: 2026-06-07 → 2026-07-06."
-        
-        ✅ CORRECT: "There are 3 unread stock alerts:
-           - MacBook Pro M3 (ID: 6) - Stock: 2/5 (CRITICAL)
-           - Dell XPS 15 (ID: 8) - Stock: 1/5 (CRITICAL)
-           - Cisco Router C9200 (ID: 11) - Stock: 3/5 (CRITICAL)"
-        
-        ❌ WRONG: "I don't have that data" (if it exists in the context)
-        ❌ WRONG: "There are 12 critical products" (if you're listing 19 products)
         """
 
         GROQ_API_KEY = "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"
         GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
-        response = requests.post(
-            GROQ_URL,
-            data=json.dumps({
-                "model": "llama-3.1-8b-instant",
-                "messages": [
-                    {"role": "system", "content": ADMIN_PREDICTIVE_PROMPT},
-                    {"role": "user", "content": user_question}
-                ],
-                "temperature": 0.1
-            }, ensure_ascii=False).encode('utf-8'),
-            headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json; charset=utf-8"},
-            timeout=15
-        )
+        payload = {
+            "model": "llama-3.1-8b-instant",
+            "messages": [
+                {"role": "system", "content": ADMIN_PREDICTIVE_PROMPT},
+                {"role": "user", "content": user_question}
+            ],
+            "temperature": 0.1
+        }
 
-        bot_answer = response.json()['choices'][0]['message']['content'].strip()
+        logger.info(f"📤 Envoi à Groq: {user_question[:50]}...")
+
+        try:
+            response = requests.post(
+                GROQ_URL,
+                data=json.dumps(payload, ensure_ascii=False).encode('utf-8'),
+                headers={
+                    "Authorization": f"Bearer {GROQ_API_KEY}",
+                    "Content-Type": "application/json; charset=utf-8"
+                },
+                timeout=15
+            )
+        except requests.exceptions.Timeout:
+            logger.error("⏰ Timeout Groq API")
+            return jsonify({"answer": "L'IA est temporairement indisponible. Veuillez réessayer."}), 504
+        except requests.exceptions.ConnectionError:
+            logger.error("🔌 Connection error Groq API")
+            return jsonify({"answer": "Impossible de contacter le service IA. Vérifiez votre connexion."}), 503
+
+        logger.info(f"📥 Groq status: {response.status_code}")
+
+        if response.status_code != 200:
+            logger.error(f"❌ Groq status {response.status_code}: {response.text}")
+            try:
+                error_data = response.json()
+                error_msg = error_data.get('error', {}).get('message', 'Erreur inconnue')
+            except:
+                error_msg = response.text[:200]
+            return jsonify({"answer": f"Erreur IA: {error_msg}"}), response.status_code
+
+        try:
+            response_data = response.json()
+        except Exception as e:
+            logger.error(f"❌ Erreur parsing JSON: {e}")
+            return jsonify({"answer": "Erreur de format de réponse de l'IA."}), 500
+
+        if 'choices' not in response_data or len(response_data['choices']) == 0:
+            logger.error(f"❌ Pas de 'choices' dans la réponse: {response_data}")
+            return jsonify({
+                "answer": "L'IA n'a pas pu générer une réponse. Veuillez reformuler votre question."
+            }), 500
+
+        bot_answer = response_data['choices'][0]['message']['content'].strip()
+        logger.info(f"✅ Réponse générée: {bot_answer[:100]}...")
+
         return app.response_class(
             response=json.dumps({"answer": bot_answer}, ensure_ascii=False),
             status=200,
@@ -1128,8 +971,10 @@ def chatbot_admin_ai():
         )
 
     except Exception as e:
-        logger.error(f"Error in Admin AI processing: {str(e)}")
-        return jsonify({"answer": "Sorry, I am currently unable to process your request. Please try again."}), 500
+        logger.error(f"💥 Error in Admin AI: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return jsonify({"answer": f"Erreur interne: {str(e)}"}), 500
 
 def get_procurement_dashboard_data(token):
     headers = {
@@ -1151,7 +996,6 @@ def get_procurement_dashboard_data(token):
         "total_products": 0,
         "low_stock_count": 0,
         "categories": [],
-        # ===== NOUVEAU: Notifications filtrées comme dans le frontend =====
         "notifications": {
             "quote_received": [],
             "refused_quotes": [],
@@ -1162,7 +1006,6 @@ def get_procurement_dashboard_data(token):
         }
     }
 
-    # ===== BUDGET =====
     try:
         budget_res = requests.get("http://localhost:8888/budgetstock/v1/budgets/current", headers=headers, timeout=3)
         if budget_res.status_code == 200:
@@ -1189,7 +1032,6 @@ def get_procurement_dashboard_data(token):
     except Exception as e:
         logger.error(f"❌ Erreur Budget: {e}")
 
-    # ===== TOUTES LES NOTIFICATIONS =====
     try:
         notif_res = requests.get(
             "http://localhost:8888/service-notification/api/notifications",
@@ -1208,32 +1050,31 @@ def get_procurement_dashboard_data(token):
 
             system_state["notifications"]["all"] = all_notifs
 
-            # ===== FILTRER COMME DANS LE FRONTEND =====
-            # Quote Received (NON_LUE)
+
             system_state["notifications"]["quote_received"] = [
                 n for n in all_notifs
                 if n.get('type') == "QUOTE_RECEIVED" and n.get('statut') == "NON_LUE"
             ]
 
-            # Refused Quotes (NON_LUE)
+
             system_state["notifications"]["refused_quotes"] = [
                 n for n in all_notifs
                 if n.get('type') == "QUOTE_REFUSED_BY_SUPPLIER" and n.get('statut') == "NON_LUE"
             ]
 
-            # Plan B Routed (NON_LUE)
+
             system_state["notifications"]["plan_b"] = [
                 n for n in all_notifs
                 if n.get('type') == "PLAN_B_ROUTED" and n.get('statut') == "NON_LUE"
             ]
 
-            # No Fallback Available (NON_LUE)
+
             system_state["notifications"]["no_fallback"] = [
                 n for n in all_notifs
                 if n.get('type') == "NO_FALLBACK_AVAILABLE" and n.get('statut') == "NON_LUE"
             ]
 
-            # Waiting Confirmation (Shipments)
+
             system_state["notifications"]["waiting_confirmation"] = [
                 n for n in all_notifs
                 if n.get('type') == "WAITING_CONFIRMATION"
@@ -1249,7 +1090,7 @@ def get_procurement_dashboard_data(token):
     except Exception as e:
         logger.error(f"❌ Erreur Notifications: {e}")
 
-    # ===== REPLENISHMENT REQUESTS =====
+
     try:
         restock_url = "http://localhost:8888/service-notification/api/notifications/replenishment-requests"
         restock_res = requests.get(restock_url, headers=headers, timeout=5)
@@ -1263,7 +1104,7 @@ def get_procurement_dashboard_data(token):
     except Exception as e:
         logger.error(f"❌ Erreur Replenishment Requests: {e}")
 
-    # ===== QUOTES =====
+
     try:
         quote_res = requests.get("http://localhost:8888/quotation-service/api/quotations", headers=headers, timeout=3)
         if quote_res.status_code == 200:
@@ -1275,7 +1116,7 @@ def get_procurement_dashboard_data(token):
     except Exception as e:
         logger.error(f"❌ Erreur Quotes: {e}")
 
-    # ===== SUPPLIERS =====
+
     try:
         pending_res = requests.get(
             "http://localhost:8888/service-notification/api/notifications/pending",
@@ -1304,7 +1145,7 @@ def get_procurement_dashboard_data(token):
     except Exception as e:
         logger.error(f"❌ Erreur Validated Suppliers: {e}")
 
-    # ===== PRODUCTS =====
+
     try:
         prod_res = requests.get("http://localhost:8888/produit-stock-service/v1/produits", headers=headers, timeout=3)
         if prod_res.status_code == 200:
@@ -1326,40 +1167,40 @@ def get_procurement_dashboard_data(token):
     except Exception as e:
         logger.error(f"❌ Erreur Products: {e}")
 
-    # ===== BUILD CONTEXT =====
+
     context = "=== 🛒 PROCUREMENT DASHBOARD DATA ===\n\n"
 
-    # Budget
+
     context += f"💰 {system_state['budget_info']}\n\n"
 
-    # ===== NOTIFICATIONS (COMME DANS LE FRONTEND) =====
+
     context += "🔔 NOTIFICATIONS CENTER:\n"
 
-    # Quote Received
+
     quote_received = system_state["notifications"]["quote_received"]
     context += f"  • Quotes Received: {len(quote_received)}\n"
     for n in quote_received[:5]:
         context += f"    - {n.get('message', 'New quote received')}\n"
 
-    # Refused Quotes
+
     refused_quotes = system_state["notifications"]["refused_quotes"]
     context += f"  • Refused Quotes: {len(refused_quotes)}\n"
     for n in refused_quotes[:5]:
         context += f"    - {n.get('message', 'Quote refused')}\n"
 
-    # Plan B
+
     plan_b = system_state["notifications"]["plan_b"]
     context += f"  • Plan B Routed: {len(plan_b)}\n"
     for n in plan_b[:5]:
         context += f"    - {n.get('message', 'Plan B executed')}\n"
 
-    # No Fallback
+
     no_fallback = system_state["notifications"]["no_fallback"]
     context += f"  • No Fallback Available: {len(no_fallback)}\n"
     for n in no_fallback[:5]:
         context += f"    - {n.get('message', 'No fallback available')}\n"
 
-    # Waiting Confirmation (Shipments)
+
     waiting_conf = system_state["notifications"]["waiting_confirmation"]
     context += f"  • Shipments (Waiting Confirmation): {len(waiting_conf)}\n"
     for n in waiting_conf[:5]:
@@ -1367,7 +1208,7 @@ def get_procurement_dashboard_data(token):
 
     context += "\n"
 
-    # ===== REPLENISHMENT REQUESTS =====
+
     context += f"📋 REPLENISHMENT REQUESTS:\n"
     context += f"  • Total: {len(system_state['replenishment_requests'])}\n"
     if system_state["replenishment_requests"]:
@@ -1378,7 +1219,7 @@ def get_procurement_dashboard_data(token):
             context += f"    - {product_name}: {quantity} units (from {from_manager})\n"
     context += "\n"
 
-    # ===== SUPPLIERS =====
+
     context += f"👥 SUPPLIERS:\n"
     context += f"  • Pending: {len(system_state['pending_suppliers'])}\n"
     for s in system_state["pending_suppliers"][:5]:
@@ -1393,7 +1234,7 @@ def get_procurement_dashboard_data(token):
             context += f"    - {name} (Active)\n"
     context += "\n"
 
-    # ===== QUOTES =====
+
     context += f"📦 QUOTES MANAGEMENT:\n"
     context += f"  • Total Quotes: {len(system_state['quotes'])}\n"
     context += f"  • Pending: {len(system_state['pending_quotes'])}\n"
@@ -1401,7 +1242,7 @@ def get_procurement_dashboard_data(token):
     context += f"  • Refused: {len(system_state['refused_quotes'])}\n"
     context += "\n"
 
-    # ===== PRODUCTS =====
+
     context += f"📊 INVENTORY SUMMARY:\n"
     context += f"  • Total Products: {system_state['total_products']}\n"
     context += f"  • Low Stock Items: {system_state['low_stock_count']}\n"
@@ -1858,7 +1699,7 @@ def get_supplier_dashboard_data(token):
         "all_orders": []
     }
 
-    # Récupérer le profil
+
     try:
         res = requests.get("http://localhost:8888/service-fournisseur/api/fournisseurs/me", headers=headers, timeout=3)
         if res.status_code == 200:
@@ -1867,7 +1708,7 @@ def get_supplier_dashboard_data(token):
     except Exception as e:
         logger.error(f"❌ Erreur Profile: {e}")
 
-    # Récupérer toutes les catégories
+
     try:
         cat_res = requests.get("http://localhost:8888/produit-stock-service/v1/categories", headers=headers, timeout=3)
         if cat_res.status_code == 200:
@@ -1875,7 +1716,7 @@ def get_supplier_dashboard_data(token):
     except Exception as e:
         logger.error(f"❌ Erreur Categories: {e}")
 
-    # Récupérer les spécialisations
+
     if system_state["profile"]:
         try:
             supplier_id = system_state["profile"].get('idFournisseur')
@@ -1889,7 +1730,7 @@ def get_supplier_dashboard_data(token):
         except Exception as e:
             logger.error(f"❌ Erreur Specializations: {e}")
 
-    # ===== RÉCUPÉRER TOUTES LES NOTIFICATIONS =====
+
     try:
         notif_res = requests.get("http://localhost:8888/service-notification/api/notifications", headers=headers, timeout=5)
         if notif_res.status_code == 200:
@@ -1907,7 +1748,7 @@ def get_supplier_dashboard_data(token):
             supplier_id = str(system_state["profile"].get('idFournisseur')) if system_state["profile"] else None
 
             if supplier_id:
-                # ===== ORDER REQUESTS (RFQ - NON_LUE) =====
+
                 system_state["order_requests"] = [
                     n for n in all_notifs
                     if n.get('niveau') == "RFQ"
@@ -1916,7 +1757,7 @@ def get_supplier_dashboard_data(token):
                 ]
                 logger.info(f"📦 Order requests: {len(system_state['order_requests'])}")
 
-                # ===== APPROVED QUOTES (QUOTE_FINALIZED + SUCCESS) =====
+
                 system_state["approved_quotes"] = [
                     n for n in all_notifs
                     if n.get('type') == "QUOTE_FINALIZED"
@@ -1925,7 +1766,7 @@ def get_supplier_dashboard_data(token):
                 ]
                 logger.info(f"✅ Approved quotes: {len(system_state['approved_quotes'])}")
 
-                # ===== REFUSED QUOTES (QUOTATION_REFUSED) =====
+
                 system_state["refused_quotes"] = [
                     n for n in all_notifs
                     if n.get('type') == "QUOTATION_REFUSED"
@@ -1933,7 +1774,7 @@ def get_supplier_dashboard_data(token):
                 ]
                 logger.info(f"❌ Refused quotes: {len(system_state['refused_quotes'])}")
 
-                # ===== EXTRAIRE LES INFOS DES MANAGERS =====
+
                 for req in system_state["order_requests"]:
                     message = req.get('message', '')
                     import re
@@ -1943,13 +1784,12 @@ def get_supplier_dashboard_data(token):
                     else:
                         req['manager_name'] = req.get('fromManager', 'Unknown')
 
-                # ===== EXTRAIRE LES INFOS DES APPROVED QUOTES =====
+
                 for approved in system_state["approved_quotes"]:
-                    # Calculer le prix unitaire si non présent
+
                     if not approved.get('prix_unitaire') and approved.get('total_ligne') and approved.get('quantite'):
                         approved['prix_unitaire'] = approved['total_ligne'] / approved['quantite']
 
-                    # Extraire le nom du manager
                     message = approved.get('message', '')
                     import re
                     match = re.search(r'(?:from|par|de|approved by)\s+([A-Za-zÀ-ÿ\s]+?)(?:\s|$|\.)', message, re.IGNORECASE)
@@ -1958,10 +1798,10 @@ def get_supplier_dashboard_data(token):
                     else:
                         approved['manager_name'] = approved.get('fromManager', 'Procurement Manager')
 
-                    # Ajouter l'ID de commande
+
                     approved['orderId'] = approved.get('orderId', approved.get('_id', 'N/A'))
 
-                # ===== EXTRAIRE LES INFOS DES REFUSED QUOTES =====
+
                 for refused in system_state["refused_quotes"]:
                     refused['reason'] = refused.get('message', 'No reason provided')
                     message = refused.get('message', '')
@@ -1975,7 +1815,7 @@ def get_supplier_dashboard_data(token):
     except Exception as e:
         logger.error(f"❌ Erreur Notifications: {e}")
 
-    # ===== RÉCUPÉRER LES SCORES AI =====
+
     if system_state["profile"] and system_state["specializations"]:
         try:
             supplier_id = system_state["profile"].get('idFournisseur')
@@ -2005,7 +1845,7 @@ def get_supplier_dashboard_data(token):
         except Exception as e:
             logger.error(f"❌ Erreur AI Rankings: {e}")
 
-    # ===== RÉCUPÉRER LES ANALYTICS =====
+
     if system_state["profile"]:
         try:
             supplier_id = system_state["profile"].get('idFournisseur')
@@ -2018,10 +1858,10 @@ def get_supplier_dashboard_data(token):
         except Exception as e:
             logger.error(f"❌ Erreur Analytics: {e}")
 
-    # ===== BUILD CONTEXT =====
+
     context = "=== 🏪 SUPPLIER DASHBOARD DATA ===\n\n"
 
-    # Profil
+
     if system_state["profile"]:
         p = system_state["profile"]
         context += f"👤 PROFILE: {p.get('prenom', '')} {p.get('nom', '')}\n"
@@ -2029,7 +1869,7 @@ def get_supplier_dashboard_data(token):
         context += f"  • Email: {p.get('email', 'N/A')}\n"
         context += f"  • Status: {p.get('status', 'Active')}\n\n"
 
-    # ===== ORDER REQUESTS =====
+
     context += f"📦 ORDER REQUESTS (RFQ):\n"
     context += f"  • Total: {len(system_state['order_requests'])}\n"
     if system_state["order_requests"]:
@@ -2042,7 +1882,7 @@ def get_supplier_dashboard_data(token):
         context += "  • No pending order requests\n"
     context += "\n"
 
-    # ===== APPROVED QUOTES (AVEC DÉTAILS POUR FACTURES) =====
+
     context += f"✅ APPROVED QUOTES (with invoices):\n"
     context += f"  • Total: {len(system_state['approved_quotes'])}\n"
     if system_state["approved_quotes"]:
@@ -2069,7 +1909,7 @@ def get_supplier_dashboard_data(token):
         context += "  • No approved quotes yet\n"
     context += "\n"
 
-    # ===== REFUSED QUOTES =====
+
     context += f"❌ REFUSED QUOTES:\n"
     context += f"  • Total: {len(system_state['refused_quotes'])}\n"
     if system_state["refused_quotes"]:
@@ -2086,7 +1926,7 @@ def get_supplier_dashboard_data(token):
         context += "  • No refused quotes\n"
     context += "\n"
 
-    # ===== AI RANKINGS =====
+
     context += "🤖 AI COMPETITIVE RANKING:\n"
     if system_state["ai_rankings"]:
         for rank in system_state["ai_rankings"]:
@@ -2103,7 +1943,7 @@ def get_supplier_dashboard_data(token):
         context += "  • No AI ranking data available\n"
     context += "\n"
 
-    # ===== ANALYTICS =====
+
     context += f"📊 ANALYTICS:\n"
     if system_state["analytics"]:
         a = system_state["analytics"]
@@ -2116,7 +1956,7 @@ def get_supplier_dashboard_data(token):
         context += "  • No analytics data available\n"
     context += "\n"
 
-    # ===== SPÉCIALISATIONS =====
+
     context += f"🏷️ MY SPECIALIZATIONS:\n"
     if system_state["specializations"]:
         for cat_id in system_state["specializations"]:
@@ -2129,7 +1969,7 @@ def get_supplier_dashboard_data(token):
     else:
         context += "  • No specializations registered\n"
 
-    # ===== RESUME DES FACTURES =====
+
     if system_state["approved_quotes"]:
         context += "\n📄 INVOICES SUMMARY:\n"
         context += f"  • Total Approved Quotes: {len(system_state['approved_quotes'])}\n"
