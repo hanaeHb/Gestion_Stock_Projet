@@ -37,7 +37,11 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
         (n.niveau === "RFQ" || (n.type === "QUOTE_FINALIZED" && n.niveau === "SUCCESS")) &&
         n.fournisseurId?.toString() === profile?.idFournisseur?.toString()
     );
-
+    const refusedQuotes = notifications.filter((n: any) =>
+        n.type === "QUOTATION_REFUSED" &&
+        n.statut === "NON_LUE" &&
+        n.fournisseurId?.toString() === profile?.idFournisseur?.toString()
+    );
     const rfqCount = relevantActivities.filter((n: any) => n.niveau === "RFQ" && n.statut === "NON_LUE").length;
     const approvalCount = relevantActivities.filter((n: any) => n.type === "QUOTE_FINALIZED").length;
     const [quotesStats, setQuotesStats] = useState({
@@ -285,14 +289,14 @@ const SupplierDashboard = ({ profile, notifications, onNavigate }: any) => {
                     <div className="status-item-mini">
                         <FaCheckCircle color="#28a745"/>
                         <span>Approved Quotes: <strong
-                            className="status-count-badge approved">{quotesStats.acceptedQuotes}</strong></span>
+                            className="status-count-badge approved">{acceptedQuotes.length}</strong></span>
                     </div>
 
 
                     <div className="status-item-mini">
                         <FaTimes color="#dc3545"/>
                         <span>Refused Quotes: <strong
-                            className="status-count-badge refused">{quotesStats.refusedQuotes}</strong></span>
+                            className="status-count-badge refused">{refusedQuotes.length}</strong></span>
                     </div>
 
 

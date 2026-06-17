@@ -16,6 +16,7 @@ import PurchaseBudgetTracker from "./PurchaseBudgetTracker";
 import OrderWizard from "./OrderWizard";
 import QuotesManagement from "./QuotesManagement";
 import ShipmentDetails from "./ShipmentDetails";
+import ProcurementChatbot from './ProcurementChatbot';
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 export default function ProcurementManager() {
@@ -1485,7 +1486,7 @@ export default function ProcurementManager() {
                         </div>
                     )}
                     </main>
-
+                    <ProcurementChatbot />
                     </div>
                     );
                 }

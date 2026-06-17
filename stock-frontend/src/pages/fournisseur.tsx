@@ -18,6 +18,7 @@ import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import SupplierAnalytics from "./SupplierAnalytics";
 import SupplierDashboard from './SupplierDashboard';
+import SupplierChatbot from './SupplierChatbot';
 interface Profile {
     userId?: number;
     idFournisseur?: number;
@@ -918,6 +919,7 @@ export default function Fournisseur() {
                 )}
 
             </main>
+            <SupplierChatbot />
         </div>
     );
 }
