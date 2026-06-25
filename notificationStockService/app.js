@@ -55,9 +55,9 @@ app.get('/metrics', async (req, res) => {
 const client = new Eureka({
   instance: {
     app: 'service-notification',
-    hostName: 'localhost',      // Trje3 localhost
+    hostName: 'localhost',
     instanceId: `service-notification:${PORT}`,
-    ipAddr: '127.0.0.1',        // Trje3 IP local
+    ipAddr: '127.0.0.1',
     statusPageUrl: `http://localhost:${PORT}/info`,
     healthCheckUrl: `http://localhost:${PORT}/health`,
     port: {
@@ -71,7 +71,6 @@ const client = new Eureka({
     },
   },
   eureka: {
-    // Eureka server f l-PC dyalk
     host: 'localhost',
     port: 8761,
     servicePath: '/eureka/apps/',

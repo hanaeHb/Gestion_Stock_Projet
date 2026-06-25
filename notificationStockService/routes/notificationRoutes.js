@@ -6,6 +6,10 @@ const hasRole = require("../middleware/hasRole");
 const Notification = require("../models/Notification");
 const { hasAnyRole } = require("../middleware/hasAnyRole");
 const logger = require("../logger");
+const emailService = require("../Service/emailService");
+
+global.tempCode = global.tempCode || "";
+
 /**
  * @swagger
  * tags:
@@ -153,6 +157,29 @@ router.get(
     authMiddleware,
     notificationController.generateInvoicePDF
 );
+
+router.post('/send-auth-code', async (req, res) => {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    global.tempCode = code;
+    await emailService.sendEmail("admingostock@gmail.com", "Code d'accès Grafana", `Votre code est: ${code}`);
+    res.status(200).send({ message: "Code envoyé" });
+});
+
+router.post('/verify-code', async (req, res) => {
+    const userCode = String(req.body.userCode).trim();
+    const storedCode = String(global.tempCode || "").trim();
+
+    console.log("Code reçu:", userCode);
+    console.log("Code stocké:", storedCode);
+
+    if (userCode === storedCode && userCode !== "") {
+        global.tempCode = "";
+        res.status(200).json({ authorized: true });
+    } else {
+        res.status(401).json({ authorized: false });
+    }
+});
+
 /**
  * @swagger
  * /api/notifications:

@@ -2478,7 +2478,7 @@ input:checked + .fs-slider:before { transform: translateX(22px); }
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
-/* 🚚 تحسينات صف مبيان الموردين الجديد */
+
 .chart-header-with-meta {
     display: flex;
     justify-content: space-between;
@@ -2487,7 +2487,7 @@ input:checked + .fs-slider:before { transform: translateX(22px); }
 }
 
 .full-width-chart-section {
-    grid-column: span 2; /* باش ياخد المساحة كاملة العرض ويجي متناسق */
+    grid-column: span 2;
     background: #ffffff;
     border: 1px solid #ece7f2;
     border-radius: 16px;
@@ -2506,14 +2506,14 @@ input:checked + .fs-slider:before { transform: translateX(22px); }
     font-weight: 600;
 }
 
-/* البادج د الموردين المعلقين - وردي بارد */
+
 .meta-badge.pending-badge {
     background-color: #fff2f3;
     color: #d6454b;
     border: 1px solid #fce4e5;
 }
 
-/* البادج د الموردين المقبولين - خضر نعناعي بارد */
+
 .meta-badge.validated-badge {
     background-color: #eefbf4;
     color: #1ea061;
@@ -2529,4 +2529,67 @@ input:checked + .fs-slider:before { transform: translateX(22px); }
     .full-width-chart-section {
         grid-column: span 1;
     }
+}
+.access-container {
+    padding: 40px;
+    background: linear-gradient(135deg, #FFB347, #FF6961);
+    border-radius: 20px;
+    text-align: center;
+    max-width: 600px;
+    margin: 100px auto;
+    color: white;
+}
+
+.access-title {
+    margin-bottom: 25px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.access-input {
+    width: 80%;
+    padding: 15px;
+    font-size: 20px;
+    border-radius: 12px;
+    border: none;
+    text-align: center;
+    outline: none;
+    margin-bottom: 20px;
+}
+
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.btn-resend {
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid white;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-resend:hover {
+    background: white;
+    color: #FF6961;
+}
+
+.btn-verify {
+    padding: 10px 25px;
+    background: #fff;
+    color: #FF6961;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-verify:hover {
+    transform: scale(1.05);
+    background: #f0f0f0;
 }

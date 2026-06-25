@@ -533,6 +533,42 @@ export default function Admin() {
             setNotifsLoading(false);
         }
     };
+    const handleSendCode = async () => {
+        await axios.post("http://localhost:8888/service-notification/api/notifications/send-auth-code", {}, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        alert("Code envoyé à l'email admin !");
+    };
+
+    const verifyCode = async () => {
+        const token = localStorage.getItem("token");
+        console.log("Token:", token); // تأكدي أن التوكين ماشي null
+
+        try {
+            const res = await axios.post(
+                "http://localhost:8888/service-notification/api/notifications/verify-code",
+                { userCode: code }, // هنا كيتصيفط الكود في الـ Body
+                {
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
+
+            if (res.data.authorized) {
+                setIsAuthorized(true);
+            } else {
+                alert("Code invalide !");
+            }
+        } catch (err) {
+            console.error("Error:", err.response?.data);
+            alert("Erreur: Le code est invalide ou expiré.");
+        }
+    };
+    const [isAuthorized, setIsAuthorized] = useState(false);
+    const [code, setCode] = useState('');
+    const inputsRef = useRef([]);
 
     useEffect(() => {
         fetchAllNotifications();
@@ -669,22 +705,45 @@ export default function Admin() {
                 {activeSection === "grafana" && (
                     <div className="grafana-container" style={{ width: '100%', height: 'calc(100vh - 80px)', padding: '20px' }}>
                         <h2 style={{ fontFamily: 'Berlin Sans FB Demi', color: '#333', marginBottom: '15px' }}>
-                            📊 Microservices Real-time Monitoring
+                            📊 Technical Admin Exclusive: Real-time Microservices Monitoring via GRAFANA.
                         </h2>
 
-                        <iframe
-                            src="http://localhost:6060/d/advnnmw/up-services?orgId=1&from=now-30m&to=now&timezone=browser"
-                            title="Grafana Dashboard"
-                            width="100%"
-                            height="100%"
-                            frameBorder="0"
-                            style={{
-                                borderRadius: '12px',
-                                boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-                                border: '1px solid #eee',
-                                background: '#fff'
-                            }}
-                        />
+                        {!isAuthorized ? (
+                            <div className="access-container">
+                                <h3 className="access-title">Restricted access: Enter the code</h3>
+
+                                <input
+                                    type="text"
+                                    className="access-input"
+                                    placeholder="Entrez le code"
+                                    value={code}
+                                    onChange={(e) => setCode(e.target.value)}
+                                />
+
+                                <div className="button-group">
+                                    <button className="btn-resend" onClick={handleSendCode}>
+                                        Resend the code
+                                    </button>
+                                    <button className="btn-verify" onClick={verifyCode}>
+                                        Check
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <iframe
+                                src="http://localhost:6060/d/advnnmw/up-services?orgId=1&from=now-30m&to=now&timezone=browser"
+                                title="Grafana Dashboard"
+                                width="100%"
+                                height="100%"
+                                frameBorder="0"
+                                style={{
+                                    borderRadius: '12px',
+                                    boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+                                    border: '1px solid #eee',
+                                    background: '#fff'
+                                }}
+                            />
+                        )}
                     </div>
                 )}
                 {activeSection === "budget" && <BudgetManagement />}
