@@ -285,7 +285,7 @@ const runKafkaConsumer = async () => {
 
           try {
             const resSuppliers = await axios.get(
-                `http://localhost:8888/service-fournisseur/api/fournisseurs/category/${resolvedCategoryId}`
+                `http://service-fournisseur:5000/api/fournisseurs/category/${resolvedCategoryId}`
             );
             targetFournisseurs = resSuppliers.data || [];
             logger.info(`[Plan B] ${targetFournisseurs.length} fournisseurs alternatifs récupérés.`);
@@ -299,7 +299,7 @@ const runKafkaConsumer = async () => {
           try {
 
             const resAi = await axios.get(
-                `http://localhost:5008/prediction/predict-best-supplier/${resolvedCategoryId}`
+                `http://prediction-service:5008/prediction/predict-best-supplier/${resolvedCategoryId}`
             );
             aiRankings = resAi.data || [];
             logger.info(`[Plan B] Classement IA chargé depuis le service de prédiction Python.`);
