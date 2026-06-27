@@ -24,7 +24,7 @@ spec:
 
             # Kafka
             - name: KAFKA_BOOTSTRAP_SERVERS
-              value: "localhost:9092"
+              value: "kafka-service:9092"
 
             # Eureka
             - name: EUREKA_HOST

@@ -162,6 +162,7 @@ export default function ProcurementManager() {
     useEffect(() => {
         fetchAllNotifications();
     }, [activeSection]);
+
     const downloadCV = async (cvFile) => {
         try {
             if (!cvFile) {
@@ -169,10 +170,22 @@ export default function ProcurementManager() {
                 return;
             }
 
+            let cleanFileName = cvFile;
+            if (cvFile.includes('/')) {
+                cleanFileName = cvFile.split('/').pop();
+            }
+            if (cvFile.includes('\\')) {
+                cleanFileName = cvFile.split('\\').pop();
+            }
+
+            cleanFileName = cleanFileName.replace(/^\/+/, '');
+
+            console.log("📁 Downloading file:", cleanFileName);
+
             const token = localStorage.getItem("token");
 
             const response = await axios.get(
-                `http://localhost:8888/security-stock/v1/users/download/${cvFile}`,
+                `http://localhost:8888/security-stock/v1/users/download/${encodeURIComponent(cleanFileName)}`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                     responseType: "blob"
@@ -182,7 +195,7 @@ export default function ProcurementManager() {
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement("a");
             link.href = url;
-            link.setAttribute("download", cvFile);
+            link.setAttribute("download", cleanFileName);
             document.body.appendChild(link);
             link.click();
             link.remove();
@@ -192,6 +205,7 @@ export default function ProcurementManager() {
             alert("Failed to download CV. Make sure you are logged in.");
         }
     };
+
     const [replenishmentRequests, setReplenishmentRequests] = useState([]);
     useEffect(() => {
         const fetchRequests = async () => {
@@ -1388,8 +1402,20 @@ export default function ProcurementManager() {
                                                             <button
                                                                 className="fs-download-btn light"
                                                                 onClick={() => {
-                                                                    const cleanPath = f.fournisseur.cvPath.replace(/^\/?uploads\/cv\//, '').replace(/\\/g, '/');
-                                                                    const fileName = cleanPath.split('/').pop();
+
+                                                                    const cvPath = f.fournisseur?.cvPath || f.cvPath || '';
+                                                                    let fileName = cvPath;
+
+
+                                                                    if (fileName.includes('/')) {
+                                                                        fileName = fileName.split('/').pop();
+                                                                    }
+                                                                    if (fileName.includes('\\')) {
+                                                                        fileName = fileName.split('\\').pop();
+                                                                    }
+
+                                                                    console.log("📁 Original path:", cvPath);
+                                                                    console.log("📁 Clean file name:", fileName);
                                                                     downloadCV(fileName);
                                                                 }}
                                                             >
@@ -1469,8 +1495,20 @@ export default function ProcurementManager() {
                                                     <td>{new Date(f.dateAlerte).toLocaleDateString()}</td>
                                                     <td>
                                                         {f.cvFile ? (
-                                                            <button className="fs-download-btn light"
-                                                                    onClick={() => downloadCV(f.cvFile.replace(/^\/?uploads\/cv\//, ''))}>
+                                                            <button
+                                                                className="fs-download-btn light"
+                                                                onClick={() => {
+                                                                    const cvFile = f.cvFile || f.cvPath || '';
+                                                                    let fileName = cvFile;
+                                                                    if (fileName.includes('/')) {
+                                                                        fileName = fileName.split('/').pop();
+                                                                    }
+                                                                    if (fileName.includes('\\')) {
+                                                                        fileName = fileName.split('\\').pop();
+                                                                    }
+                                                                    downloadCV(fileName);
+                                                                }}
+                                                            >
                                                                 <FaDownload/> CV
                                                             </button>
                                                         ) : "N/A"}

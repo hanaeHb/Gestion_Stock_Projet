@@ -46,10 +46,13 @@ spec:
               value: "classpath:keys/publicKey.pem"
             - name: RSA_PRIVATEKEY
               value: "classpath:keys/privateKey.pem"
+            - name: FILE_UPLOAD_DIR
+              value: /app/uploads/cv
       volumes:
         - name: storage-cv
           hostPath:
             path: "/run/desktop/mnt/host/c/Users/admin/Desktop/Gestion_Stock_Projet/Security_Stock/uploads/cv"
+            type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service

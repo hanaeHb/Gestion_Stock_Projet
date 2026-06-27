@@ -10,7 +10,7 @@ const swaggerJsdoc = require('swagger-jsdoc');
 const connectDB = require('./db');
 const { Kafka } = require('kafkajs');
 const Notification = require('./models/Notification');
-const emailService = require('./Service/emailService');7
+const emailService = require('./Service/emailService');
 const clien = require('prom-client');
 const logger = require('./logger');
 
@@ -31,7 +31,7 @@ app.get('/metrics', async (req, res) => {
 });
 
 
-/*const client = new Eureka({
+const client = new Eureka({
   instance: {
     app: 'service-notification',
     hostName: 'service-notification',
@@ -50,9 +50,9 @@ app.get('/metrics', async (req, res) => {
     port: 8761,
     servicePath: '/eureka/apps/',
   },
-});*/
+});
 
-const client = new Eureka({
+/*const client = new Eureka({
   instance: {
     app: 'service-notification',
     hostName: 'localhost',
@@ -75,7 +75,7 @@ const client = new Eureka({
     port: 8761,
     servicePath: '/eureka/apps/',
   },
-});
+});*/
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -119,7 +119,7 @@ app.use('/api/notifications', notificationRoutes);
 
 const kafka = new Kafka({
   clientId: "notification-service",
-  brokers: [process.env.KAFKA_BROKERS || "localhost:9092"]
+  brokers: [process.env.KAFKA_BOOTSTRAP_SERVERS || "kafka-service:9092"]
 });
 
 const consumer = kafka.consumer({ groupId: "notification-group" });
@@ -634,7 +634,20 @@ const runKafkaConsumer = async () => {
   });
 };
 
-runKafkaConsumer().catch((err) => logger.error(`Erreur critique du Consumer Kafka: ${err.message}`));
+async function startConsumer() {
+  while (true) {
+    try {
+      await runKafkaConsumer();
+      break;
+    } catch (err) {
+      logger.error(`Kafka non disponible: ${err.message}`);
+      logger.info("Nouvelle tentative dans 5 secondes...");
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
+  }
+}
+
+startConsumer();
 
 app.listen(PORT, () => {
   logger.info(`Notification microservice running on port ${PORT}`);

@@ -32,7 +32,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/quotation_d
     .catch(err => logger.error(`❌ MongoDB Connection Error: ${err.message}`));
 
 // --- 3. Eureka Client Setup ---
-/*const eurekaClient = new Eureka({
+const eurekaClient = new Eureka({
   instance: {
     app: 'QUOTATION-SERVICE',
     hostName: 'quotation-service',
@@ -51,9 +51,9 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/quotation_d
     port: 8761,
     servicePath: '/eureka/apps/',
   },
-});*/
+});
 
-eurekaClient = new Eureka({
+/*eurekaClient = new Eureka({
   instance: {
     app: 'QUOTATION-SERVICE',
     hostName: process.env.HOSTNAME || 'localhost',
@@ -70,7 +70,7 @@ eurekaClient = new Eureka({
     port: 8761,
     servicePath: '/eureka/apps/',
   },
-});
+});*/
 
 
 app.use('/api/quotations', quotationRoutes);

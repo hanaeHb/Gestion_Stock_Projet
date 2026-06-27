@@ -731,10 +731,10 @@ export default function Admin() {
                             </div>
                         ) : (
                             <iframe
-                                src="http://localhost:6060/d/advnnmw/up-services?orgId=1&from=now-30m&to=now&timezone=browser"
+                                src="http://localhost:6060/d/admbk8q/services-status-menotoring?orgId=1&from=now-15m&to=now&timezone=browser"
                                 title="Grafana Dashboard"
                                 width="100%"
-                                height="100%"
+                                height="1000px"
                                 frameBorder="0"
                                 style={{
                                     borderRadius: '12px',

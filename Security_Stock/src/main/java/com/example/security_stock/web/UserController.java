@@ -9,6 +9,7 @@ import com.example.security_stock.entities.User;
 import com.example.security_stock.mapper.UserMapper;
 import com.example.security_stock.repository.RoleRepository;
 import com.example.security_stock.repository.UserRepository;
+import com.example.security_stock.web.FileStorageConfig;
 import com.example.security_stock.service.RefreshTokenService;
 import com.example.security_stock.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,6 +39,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -262,27 +265,25 @@ public class UserController {
     }
 
     // --- DOWNLOAD CV ---
+    @Autowired
+    private FileStorageConfig fileStorageConfig;
+
     @PreAuthorize("hasAnyRole('ADMIN','Procurement Manager')")
     @GetMapping("/download/{fileName}")
     public ResponseEntity<byte[]> downloadCV(@PathVariable String fileName) {
         try {
-            java.nio.file.Path finalPath = java.nio.file.Paths.get("Security_Stock", "uploads", "cv", fileName).normalize();
+            Path filePath = fileStorageConfig.getCVPath(fileName);
 
-            System.out.println("🔍 Debug: Looking for file at: " + finalPath.toAbsolutePath());
+            System.out.println("🔍 Looking for file at: " + filePath.toAbsolutePath());
 
-            if (!java.nio.file.Files.exists(finalPath)) {
-                // 2. Ila mazal malqahch, n-jerbo n-choufo gha f uploads (fallback)
-                finalPath = java.nio.file.Paths.get("uploads", "cv", fileName).normalize();
-            }
-
-            if (!java.nio.file.Files.exists(finalPath)) {
-                System.err.println("❌ File not found at: " + finalPath.toAbsolutePath());
+            if (!Files.exists(filePath)) {
+                System.err.println("❌ File not found at: " + filePath.toAbsolutePath());
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
 
-            byte[] data = java.nio.file.Files.readAllBytes(finalPath);
+            byte[] data = Files.readAllBytes(filePath);
 
-            String contentType = java.nio.file.Files.probeContentType(finalPath);
+            String contentType = Files.probeContentType(filePath);
             if (contentType == null) contentType = "application/octet-stream";
 
             return ResponseEntity.ok()
@@ -291,6 +292,7 @@ public class UserController {
                     .body(data);
 
         } catch (IOException e) {
+            log.error("Error downloading file: {}", fileName, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

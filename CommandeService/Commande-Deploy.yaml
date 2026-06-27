@@ -38,7 +38,7 @@ spec:
               value: "8761"
 
             - name: KAFKA_BOOTSTRAP_SERVERS
-              value: "kafka-service:9092"
+              value: "host.docker.internal:9092"
 
 ---
 apiVersion: v1

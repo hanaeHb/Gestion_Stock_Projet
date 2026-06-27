@@ -35,9 +35,11 @@ spec:
               value: http://discovery-service:8761/eureka/
             - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
               value: "true"
+            - name: BUDGET_SERVICE_URL
+              value: "http://budget-service:8064/v1/budgets"
 
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
-              value: kafka-service:9092
+              value: "kafka-service:9092"
 
             # JWT Keys
             - name: RSA_PUBLICKEY

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.math.BigDecimal;
 
 
-@FeignClient(name = "budget-service", url = "http://localhost:8888/budgetstock/v1/budgets")
+@FeignClient(name = "budget-service", url = "http://budget-service:8064/v1/budgets")
 public interface BudgetClient {
 
     @PostMapping("/check-consume")

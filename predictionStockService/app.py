@@ -46,11 +46,11 @@ metrics = PrometheusMetrics(app)
 
 
 metrics.info('app_info', 'Prediction Service info', version='1.0.0')
-EUREKA_SERVER = "http://localhost:8761/eureka/"
+#EUREKA_SERVER = "http://localhost:8761/eureka/"
 SERVICE_NAME = "PREDICTION-SERVICE"
 SERVICE_PORT = 5008
 
-#EUREKA_SERVER = "http://discovery-service:8761/eureka/"
+EUREKA_SERVER = "http://discovery-service:8761/eureka/"
 
 OLLAMA_API_URL = "http://localhost:11434/api/generate"
 SYSTEM_PROMPT = """

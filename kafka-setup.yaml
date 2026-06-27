@@ -74,24 +74,6 @@ spec:
       labels:
         app: kafka
     spec:
-      initContainers:
-        - name: wait-for-zookeeper
-          image: busybox:1.36
-          command:
-            - sh
-            - -c
-            - |
-              echo "Waiting for Zookeeper at zookeeper:2181..."
-              for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
-                if nc -z zookeeper 2181 2>/dev/null; then
-                  echo "Zookeeper is ready!"
-                  exit 0
-                fi
-                echo "Attempt $i/20: Zookeeper not ready yet..."
-                sleep 2
-              done
-              echo "Zookeeper not available after 40 seconds"
-              exit 1
       containers:
         - name: kafka
           image: bitnamilegacy/kafka:3.7
@@ -104,14 +86,12 @@ spec:
             - name: KAFKA_CFG_ZOOKEEPER_CONNECT
               value: "zookeeper:2181"
             - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
-              value: "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT"
+              value: "PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT"
             - name: KAFKA_CFG_LISTENERS
-              value: "INTERNAL://0.0.0.0:9093,EXTERNAL://0.0.0.0:9092"
+              value: "PLAINTEXT://0.0.0.0:9092,EXTERNAL://0.0.0.0:9093"
 
             - name: KAFKA_CFG_ADVERTISED_LISTENERS
-              value: "INTERNAL://127.0.0.1:9093,EXTERNAL://localhost:9092"
-            - name: KAFKA_CFG_INTER_BROKER_LISTENER_NAME
-              value: "INTERNAL"
+              value: "PLAINTEXT://kafka-service:9092,EXTERNAL://localhost:9093"
             - name: ALLOW_PLAINTEXT_LISTENER
               value: "yes"
             - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
@@ -122,3 +102,34 @@ spec:
               value: "1"
             - name: KAFKA_CFG_NUM_PARTITIONS
               value: "1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-service
+  namespace: default
+spec:
+  selector:
+    app: kafka
+  ports:
+    - name: internal
+      port: 9092
+      targetPort: 9092
+    - name: external
+      port: 9093
+      targetPort: 9093
+  type: ClusterIP
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-external
+  namespace: default
+spec:
+  selector:
+    app: kafka
+  ports:
+    - port: 9092
+      targetPort: 9092
+  type: NodePort
