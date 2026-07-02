@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: userstock-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: userstock-service
+  template:
+    metadata:
+      labels:
+        app: userstock-service
+    spec:
+      containers:
+        - name: userstock-service
+          image: userstock-service:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8060
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://host.docker.internal:5432/user_profiles
+            - name: SPRING_DATASOURCE_USERNAME
+              value: postgres
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "hanae"
+            - name: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+              value: org.postgresql.Driver
+            - name: SPRING_JPA_DATABASE_PLATFORM
+              value: org.hibernate.dialect.PostgreSQLDialect
+
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://discovery-service:8761/eureka/
+            - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+              value: "true"
+
+            # JWT Keys
+            - name: RSA_PUBLICKEY
+              value: "classpath:keys/publicKey.pem"
+            - name: RSA_PRIVATEKEY
+              value: "classpath:keys/privateKey.pem"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: userstock-service
+spec:
+  selector:
+    app: userstock-service
+  ports:
+    - protocol: TCP
+      port: 8060
+      targetPort: 8060
+  type: LoadBalancer
